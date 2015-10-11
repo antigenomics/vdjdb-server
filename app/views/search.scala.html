@@ -6,13 +6,13 @@
         </div>
 
         <search class="row">
-            <div class="col-md-8 col-md-offset-2">
+            <div class="col-md-12">
                 <div class="box">
                     <div class="box-header">
                         Search filters
                     </div>
                     <div class="box-body">
-                        <table class="table table-responsive">
+                        <table class="table table-responsive" ng-show="filters.length">
                             <thead>
                                 <tr>
                                     <th>Field</th>
@@ -25,7 +25,7 @@
                                 <tr ng-repeat="filter in filters">
                                     <td>
                                         <select class="form-control" ng-model="filter.field" name="fieldSelect">
-                                            <option ng-repeat="field in ::availableFields" value="{{ field[0] }}">{{ field[1] }}</option>
+                                            <option ng-repeat="field in ::availableFields" value="{{ ::field.db_name }}">{{ ::field.name }}</option>
                                         </select>
                                     </td>
                                     <td>
@@ -64,7 +64,24 @@
                     <div class="box-footer">
                         <button class="btn btn-primary" ng-click="addFilter()">Add new filter</button>
                         <button class="btn btn-primary" ng-click="logFilters()">Log filters</button>
-                        <button class="pull-left btn btn-primary" ng-click="search()">Search</button>
+                        <button class="pull-right btn btn-primary" ng-click="search()">Search</button>
+                    </div>
+                </div>
+                <div class="box box-solid" ng-if="isNoResults()">
+                    <div class="box-header">No results found in our database</div>
+                </div>
+                <div class="box box-solid" ng-repeat="result in results">
+                    <div class="box-header">
+                        {{ ::result.cdr3 }}
+                    </div>
+                    <div class="box-body">
+                        <table class="table table-responsive">
+                            <tbody>
+                                <tr ng-repeat="entry in ::result.cdrEntries">
+                                    <td ng-repeat="field in ::availableFields">{{ ::entry[field.db_name] }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
