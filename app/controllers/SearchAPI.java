@@ -20,6 +20,8 @@ import utils.ServerErrors.ErrorResponse;
 import utils.ServerErrors.ServerErrorCode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class SearchAPI extends Controller {
@@ -70,6 +72,24 @@ public class SearchAPI extends Controller {
             }
         }
         return filters;
+    }
+
+    public static F.Promise<Result> getAvailableFields() {
+        return F.Promise.promise(new F.Function0<Result>() {
+            @Override
+            public Result apply() throws Throwable {
+                List<List<String>> fields = new ArrayList<>();
+                for (EntryDB.Fields entryField : EntryDB.Fields.values()) {
+                    if (!entryField.getFieldName().contains("id"))
+                        fields.add(Arrays.asList(entryField.getFieldName(), entryField.getName()));
+                }
+                for (CdrEntrySetDB.Fields setEntryField : CdrEntrySetDB.Fields.values()) {
+                    if (!setEntryField.getFieldName().contains("id"))
+                        fields.add(Arrays.asList(setEntryField.getFieldName(), setEntryField.getName()));
+                }
+                return ok(Json.toJson(fields));
+            }
+        });
     }
 
     public static F.Promise<Result> search() {

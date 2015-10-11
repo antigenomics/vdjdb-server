@@ -4,12 +4,14 @@
 
 # Home page
 GET     /                                 controllers.Application.index()
+GET     /search                           controllers.Application.searchPage()
 
 # API
 GET     /api/generateToken                controllers.Application.generateToken()
 GET     /api/testtoken/:tokenUUID/        controllers.Application.tokenTest(tokenUUID : String)
 
 
+GET     /api/getAvailableFields           controllers.SearchAPI.getAvailableFields()
 POST    /api/search                       controllers.SearchAPI.search()
 
 # Map static resources from the /public folder to the /assets URL path

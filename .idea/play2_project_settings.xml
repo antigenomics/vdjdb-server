@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Play2ExcludedModulesSettings">
+    <option name="INFO">
+      <map>
+        <entry key="vdjdb-server">
+          <value>
+            <ProjectSettingsEntry>
+              <option name="version" value="2.2.4" />
+              <option name="sourceDir" value="$PROJECT_DIR$/conf" />
+              <option name="confDir" value="$PROJECT_DIR$/app" />
+              <option name="playDistrPath" value="$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.10/jars/play_2.10-2.2.4.jar" />
+              <option name="routesImports">
+                <list>
+                  <option value="play.libs.F" />
+                </list>
+              </option>
+              <option name="uri" value="$PROJECT_DIR$" />
+            </ProjectSettingsEntry>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

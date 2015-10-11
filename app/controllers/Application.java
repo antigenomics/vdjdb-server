@@ -39,6 +39,10 @@ public class Application extends Controller {
         return ok(token.getUuid());
     }
 
+    public static Result searchPage() {
+        return ok(search.render());
+    }
+
     public static Result tokenTest(String tokenUUID) {
         Token token = Token.findByUUID(tokenUUID);
         if (token != null) {

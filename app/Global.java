@@ -34,7 +34,7 @@ public class Global extends GlobalSettings {
                 };
             }
         }
-        ipAddress.login();
+        //ipAddress.login();
         return super.onRequest(request, method);
     }
 
