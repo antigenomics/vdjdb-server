@@ -10,20 +10,28 @@ public class LogUtil {
     }
 
 
-    public static void log(String message) {
-        log(message, LogType.INFO);
+    public static void log(String message, String token) {
+        log(message, token, LogType.INFO);
     }
 
-    public static void log(String message, LogType logType) {
+    public static void errorLog(String message, String token) {
+        log(message, token, LogType.ERROR);
+    }
+
+    public static void warnLog(String message, String token) {
+        log(message, token, LogType.WARN);
+    }
+
+    public static void log(String message, String token, LogType logType) {
         switch (logType) {
             case INFO:
-                Logger.info(message);
+                Logger.info("Token: " + token + ":  " + message);
                 break;
             case WARN:
-                Logger.warn(message);
+                Logger.warn("Token: " + token + ":  " + message);
                 break;
             case ERROR:
-                Logger.error(message);
+                Logger.error("Token: " + token + ":  " + message );
                 break;
         }
     }

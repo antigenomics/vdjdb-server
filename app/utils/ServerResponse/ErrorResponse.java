@@ -1,4 +1,4 @@
-package utils.ServerErrors;
+package utils.ServerResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,5 +28,9 @@ public class ErrorResponse {
 
     public List<ServerError> getErrors() {
         return errors;
+    }
+
+    public String getResult() {
+        return "error";
     }
 }

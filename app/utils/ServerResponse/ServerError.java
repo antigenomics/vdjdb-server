@@ -1,4 +1,4 @@
-package utils.ServerErrors;
+package utils.ServerResponse;
 
 /**
  * Created by bvdmitri on 07.10.15.

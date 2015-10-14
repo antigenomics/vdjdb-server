@@ -9,8 +9,14 @@ GET     /search                           controllers.Application.searchPage()
 # API
 GET     /api/generateToken                controllers.Application.generateToken()
 GET     /api/testtoken/:tokenUUID/        controllers.Application.tokenTest(tokenUUID : String)
+GET     /annotations/upload               controllers.annotations.AnnotationsPages.annotationsUploadFilesPage()
+GET     /annotations                      controllers.annotations.AnnotationsPages.annotationsResultPage()
 
 
+GET     /api/annotations/filesinfo        controllers.annotations.AnnotationsAPI.getFilesInfo()
+POST    /api/annotations/data             controllers.annotations.AnnotationsAPI.getData()
+POST    /api/annotations/upload           controllers.annotations.AnnotationsAPI.upload()
+POST    /api/annotations/delete           controllers.annotations.AnnotationsAPI.delete()
 GET     /api/getAvailableFields           controllers.SearchAPI.getAvailableFields()
 POST    /api/search                       controllers.SearchAPI.search()
 

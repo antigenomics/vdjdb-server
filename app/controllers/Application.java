@@ -17,18 +17,7 @@ public class Application extends Controller {
     public static Result generateToken() {
         String tempParameter = request().getQueryString("temp");
         String ip = request().remoteAddress();
-        boolean temp;
-        if (tempParameter == null) {
-            temp = false;
-        } else {
-            try {
-                temp = Boolean.valueOf(tempParameter);
-            } catch (Exception ignored) {
-                temp = true;
-            }
-        }
-        Token token = new Token(temp);
-        token.save();
+        Token token = Token.generateNewToken(tempParameter);
         IPAddress ipAddress = IPAddress.findByIP(ip);
         if (ipAddress == null) {
             ipAddress = new IPAddress(ip);
@@ -40,7 +29,8 @@ public class Application extends Controller {
     }
 
     public static Result searchPage() {
-        return ok(search.render());
+        Token token = authtorize();
+        return ok(search.render(token.getUuid()));
     }
 
     public static Result tokenTest(String tokenUUID) {
@@ -53,6 +43,20 @@ public class Application extends Controller {
             return ok(token.getIpAddressList().toString());
         }
         return ok("not found");
+    }
+
+    public static Token authtorize() {
+        if (!session().containsKey("token")) {
+            Token newToken = Token.generateNewToken(true);
+            session().put("token", newToken.getUuid());
+            return newToken;
+        }
+        Token token = Token.findByUUID(session().get("token"));
+        if (token == null) {
+            session().clear();
+            return authtorize();
+        }
+        return token;
     }
 
 }

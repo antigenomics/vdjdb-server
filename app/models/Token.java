@@ -1,15 +1,15 @@
 package models;
 
+import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
 import play.data.validation.Constraints;
 import play.db.ebean.Model;
+import utils.Configuration;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -24,6 +24,11 @@ public class Token extends Model {
     private DateTime createdAt;
     @ManyToMany
     private List<IPAddress> ipAddressList;
+    private int maxFileSize;
+    private int maxFilesCount;
+    private int maxClonotypesCount;
+    @OneToMany(mappedBy="token")
+    private List<SampleFile> files;
 
     public Token(boolean temp) {
         this.temp = temp;
@@ -31,6 +36,33 @@ public class Token extends Model {
         this.lastUsage = new DateTime();
         this.createdAt = this.lastUsage;
         this.ipAddressList = new ArrayList<>();
+        this.maxFileSize = Configuration.maxFileSize;
+        this.maxFilesCount = Configuration.maxFilesCount;
+        this.maxClonotypesCount = Configuration.maxClonotypesCount;
+    }
+
+
+    //TODO
+    public static class TokenInformation {
+        public List<String> fileNames;
+        public Integer maxFilesCount;
+        public Integer maxFileSize;
+
+        public TokenInformation(Token token) {
+            this.fileNames = token.getFileNames();
+            this.maxFilesCount = token.maxFilesCount;
+            this.maxFileSize = token.maxFileSize;
+        }
+    }
+
+    public static Token generateDebugToken() {
+        Token debugToken = Token.findByUUID(Configuration.debugToken);
+        if (debugToken == null) {
+            debugToken = new Token(false);
+            debugToken.setUuid(Configuration.debugToken);
+            debugToken.save();
+        }
+        return debugToken;
     }
 
     public static Token findByUUID(String uuid) {
@@ -45,6 +77,72 @@ public class Token extends Model {
     public void updateLastUsage() {
         this.lastUsage = new DateTime();
         this.update();
+    }
+
+    public SampleFile findFilebyNameWithoutExtension(String fileName) {
+        for (SampleFile file : files) {
+            if (Objects.equals(FilenameUtils.removeExtension(file.getFileName()), fileName)) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    public SampleFile findFileByName(String fileName) {
+        for (SampleFile file : files) {
+            if (Objects.equals(file.getFileName(), fileName)) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    public static Token generateNewToken(String tempParameter) {
+        boolean temp;
+        if (tempParameter == null) {
+            temp = false;
+        } else {
+            try {
+                temp = Boolean.valueOf(tempParameter);
+            } catch (Exception ignored) {
+                temp = true;
+            }
+        }
+        return generateNewToken(temp);
+    }
+
+    public static Token generateNewToken(Boolean temp) {
+        Token token = new Token(temp);
+        token.save();
+        return token;
+    }
+
+    public List<SampleFile> getFiles() {
+        return files;
+    }
+
+    public List<String> getFileNames() {
+        List<String> fileNames = new ArrayList<>();
+        for (SampleFile file : files) {
+            fileNames.add(file.getFileName());
+        }
+        return fileNames;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public int getMaxFileSize() {
+        return maxFileSize;
+    }
+
+    public int getMaxFilesCount() {
+        return maxFilesCount;
+    }
+
+    public int getMaxClonotypesCount() {
+        return maxClonotypesCount;
     }
 
     public String getUuid() {

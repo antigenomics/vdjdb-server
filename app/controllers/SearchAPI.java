@@ -9,19 +9,17 @@ import com.antigenomics.vdjdb.models.CdrEntrySetDB;
 import com.antigenomics.vdjdb.models.EntryDB;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import models.IPAddress;
 import models.Token;
 import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.LogUtil;
-import utils.ServerErrors.ErrorResponse;
-import utils.ServerErrors.ServerErrorCode;
+import utils.ServerResponse.ErrorResponse;
+import utils.ServerResponse.ServerErrorCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class SearchAPI extends Controller {
@@ -105,18 +103,18 @@ public class SearchAPI extends Controller {
                         throw new NullPointerException();
                     }
                 } catch (Exception ignored) {
-                    LogUtil.log("Bad request: " + request, LogUtil.LogType.WARN);
+                    LogUtil.warnLog("Bad request: " + request, "Empty token");
                     return badRequest(Json.toJson(new ErrorResponse("Bad request: " + request, ServerErrorCode.INVALID_SEARCH_PARAMETERS)));
                 }
 
                 if (searchParameters.token == null) {
-                    LogUtil.log("Unauthorized access: null token from " + request().remoteAddress(), LogUtil.LogType.WARN);
+                    LogUtil.warnLog("Unauthorized access: null token from " + request().remoteAddress(), "Null token");
                     return badRequest(Json.toJson(new ErrorResponse("Unauthorized access: null token", ServerErrorCode.NULL_TOKEN)));
                 }
 
                 Token token = Token.findByUUID(searchParameters.token);
                 if (token == null) {
-                    LogUtil.log("Unauthorized access: bad token " + searchParameters.token + " from " + request().remoteAddress(), LogUtil.LogType.WARN);
+                    LogUtil.warnLog("Unauthorized access: bad token " + searchParameters.token + " from " + request().remoteAddress(), searchParameters.token);
                     return badRequest(Json.toJson(new ErrorResponse("Unauthorized access: bad token", ServerErrorCode.BAD_TOKEN)));
                 }
                 token.updateLastUsage();
@@ -131,7 +129,7 @@ public class SearchAPI extends Controller {
                     searchResults = databaseSearcher.search(filters);
                     databaseSearcher.close();
                 } catch (Exception e) {
-                    LogUtil.log("Search error for token " + token.getUuid() + "\nFilters used: " + filters.toString(), LogUtil.LogType.ERROR);
+                    LogUtil.errorLog("Search error \nFilters used: " + filters.toString(), searchParameters.token);
                     e.printStackTrace();
                     return badRequest(Json.toJson(new ErrorResponse("Search error", ServerErrorCode.SEARCH_ERROR)));
                 }

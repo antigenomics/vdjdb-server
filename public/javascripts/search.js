@@ -16,7 +16,7 @@
         };
     });
 
-    app.factory('token', ['$http', '$log', function($hhtp, $log) {
+    app.factory('token', ['$http', '$log', function($http, $log) {
 
     }]);
 
@@ -40,7 +40,7 @@
             noResults = false;
             $http.post('/api/search', {
                 filters: filters,
-                token: '78879f71-48c5-4fc5-9e12-3015b7b50dcf'
+                token: token
             })
                 .success(function(data) {
                     if (data.length == 0) noResults = true;

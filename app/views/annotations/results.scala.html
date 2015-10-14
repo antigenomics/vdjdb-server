@@ -1,0 +1,103 @@
+@main("Annotations") {
+    <script src="@routes.Assets.at("lib/angular/ui-bootstrap-tpls-0.14.2.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/fileUpload/jquery.ui.widget.js")"></script>
+    <script src="@routes.Assets.at("lib/fileUpload/jquery.fileupload.js")"></script>
+    <script src="@routes.Assets.at("lib/fileUpload/jquery.iframe-transport.js")"></script>
+    <script src="@routes.Assets.at("lib/d3/d3.min.js")"></script>
+    <script src="@routes.Assets.at("lib/dataTable/media/js/jquery.dataTables.min.js")"></script>
+    <script src="@routes.Assets.at("javascripts/annotations.js")" type="text/javascript"></script>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/annotations.css")">
+    <div ng-app="annotations">
+        <annotations-results>
+            <div class="col-md-2">
+                <div class="box">
+                    <div class="box-body">
+                        <table class="table table-hover files_sidebar">
+                            <thead>
+                                <tr>
+                                    <th><h4 class="pull-left">
+                                        Files</h4><a class="btn btn-red pull-right" href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">
+                                        Upload</a></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-hide="isUserHaveFiles()">
+                                    <td>You have no files</td>
+                                </tr>
+                                <tr ng-repeat="file in files" ng-class="{'success':isActiveFile(file)}" ng-click="setActiveFile(file)" ng-mouseenter="hover=true" ng-mouseleave="hover=false">
+                                    <td>
+                                        <p class="pull-left">{{ file.fileName }}</p>
+                                        <i class="fa fa-trash-o pull-right" ng-show="hover" ng-click="$event.stopPropagation(); deleteFile(file)"
+                                        tooltip-placement="right" tooltip="Delete"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-red pull-right" ng-click="deleteAllFiles()" ng-show="isUserHaveFiles()">
+                            Delete all</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-10" ng-hide="isActiveFile('')">
+                <div class="box">
+                    <div class="box-body">
+                        <button class="btn btn-default">Annotations table</button>
+                        <button class="btn btn-default">Graph1</button>
+                        <button class="btn btn-default">Graph2</button>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box-body">
+                        <div class="file_result" ng-repeat="file in files" ng-show="isActiveFile(file)">
+                            <div class="well well-lg" ng-show="isInitError(file)">
+                                <p class="text-center">No data available</p>
+                            </div>
+                            <div>
+                                <table class="table table-responsive">
+                                    <thead style="cursor : pointer ;">
+                                        <tr>
+                                            <th>Frequency</th>
+                                            <th>CDR3aa</th>
+                                            <th>V</th>
+                                            <th>J</th>
+                                            <th>Chain</th>
+                                            <th>MHC</th>
+                                            <th>Nature</th>
+                                            <th>Disease</th>
+                                            <th>Origin</th>
+                                            <th>AntigenSeq</th>
+                                            <th>AntigenName</th>
+                                            <th>Method</th>
+                                            <th>GenBank</th>
+                                            <th>Reference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="row in file.data.table.rows">
+                                            <td>{{ ::row.freq }}</td>
+                                            <td ng-bind-html="::cdr3aaColored(row.cdr3aaCell)"></td>
+                                            <td>{{ ::row.vCell.v }}</td>
+                                            <td>{{ ::row.jCell.j }}</td>
+                                            <td>{{ ::row.chain }}</td>
+                                            <td>{{ ::row.mhc }}</td>
+                                            <td>{{ ::row.nature }}</td>
+                                            <td>{{ ::row.disease }}</td>
+                                            <td>{{ ::row.origin }}</td>
+                                            <td>{{ ::row.antigenSeq }}</td>
+                                            <td>{{ ::row.antigenName }}</td>
+                                            <td>{{ ::row.method }}</td>
+                                            <td>{{ ::row.genbank }}</td>
+                                            <td>{{ ::row.reference }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </annotations-results>
+    </div>
+}
