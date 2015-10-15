@@ -4,37 +4,24 @@
     var app = angular.module('annotations', ['ui.bootstrap']);
 
     app.factory('user', ['$http', '$log', function($http, $log) {
-        var files = [];
+
         //TODO!!!!!!!!!!!!!!!!!!
         var fields = [];
+
+        var files = [];
+        var uid = 0;
+        var maxFileSize = 0;
+        var maxFilesCount = 0;
         var initialized = false;
         var initializeError = false;
-
         $http.get('/api/annotations/filesinfo')
             .success(function(data) {
                 initialized = true;
-                var length = data.fileNames.length;
+                maxFileSize = data['maxFileSize'];
+                maxFilesCount = data['maxFilesCount'];
+                var length = data['fileNames'].length;
                 for (var i = 0; i < length; i++) {
-                    files.push({
-                        uid: i,
-                        fileName: data.fileNames[i],
-                        data: {
-                            annotationParameters: {
-                                error: false,
-                                errorMessage: '',
-                                deletions: 1,
-                                insertions: 1,
-                                mismatches: 2,
-                                totalMutations: 2,
-                                jMatch: false,
-                                vMatch: false
-
-                            }
-                        },
-                        loading: false,
-                        loaded: false,
-                        initError: false
-                    })
+                    addFile(data['fileNames'][i]);
                 }
             })
             .error(function() {
@@ -52,12 +39,44 @@
                 })
             });
 
+        function addFile(fileName) {
+            files.push({
+                uid: uid,
+                fileName: fileName,
+                data: {
+                    annotationParameters: {
+                        error: false,
+                        errorMessage: '',
+                        deletions: 1,
+                        insertions: 1,
+                        mismatches: 2,
+                        totalMutations: 2,
+                        jMatch: false,
+                        vMatch: false
+
+                    }
+                },
+                loading: false,
+                loaded: false,
+                initError: false
+            });
+            uid++;
+        }
+
         function getFields() {
             return fields;
         }
 
         function getFiles() {
             return files;
+        }
+
+        function getMaxFileSize() {
+            return maxFileSize;
+        }
+
+        function getMaxFilesCount() {
+            return maxFilesCount;
         }
 
         function isInitialized() {
@@ -80,6 +99,9 @@
         return {
             getFields: getFields,
             getFiles: getFiles,
+            addFile: addFile,
+            getMaxFileSize: getMaxFileSize,
+            getMaxFilesCount: getMaxFilesCount,
             isInitialized: isInitialized,
             isInitializeFailed: isInitializeFailed,
             removeFileFromList: removeFileFromList,
@@ -151,10 +173,6 @@
         return {
             restrict: 'E',
             controller: ['user', 'sidebar', '$scope', '$http', '$log', '$location', '$timeout', '$sce', function (user, sidebar, $scope, $http, $log, $location, $timeout, $sce) {
-
-                //Private variables
-                var initialized = false;
-                var initializeError = false;
 
 
                 //Public variables
@@ -570,403 +588,237 @@
         }
     });
 
-    app.directive('sharedResults', function() {
-        return {
-            restrict: 'E',
-            controller: ['$scope', '$http', '$log', function($scope, $http, $log) {
-                $scope.sharedFileName = '....';
-                $scope.loading = true;
-                $scope.initError = false;
-                $scope.parameters = null;
+    /*
+       Annotations upload page directive and factory
+     */
+    app.factory('upload', ['$http', '$log', 'user', function($http, $log, user) {
 
-                $http.post('/api/annotations/shareddata', { sharedLink: link })
-                    .success(function(data) {
-                        $scope.loading = false;
-                        $scope.sharedFileName = data.message;
-                        setAnnotaionParameters(data.annotationTable);
-                        annotationTable(data.annotationTable)
-                    })
-                    .error(function(data) {
-                        $scope.loading = false;
-                        $scope.sharedFileName = data.message;
-                        $scope.initError = true;
-                    });
+        var uid = 0;
+        var newFiles = [];
+        var files = user.getFiles();
+        var maxFilesCount = user.getMaxFilesCount();
+        var maxFileSize = user.getMaxFileSize();
 
-                function annotationTable(data) {
-                    var d3Place = d3.select(".annotation_table");
-                    d3Place.html("");
-                    var table = d3Place.append("table")
-                        .attr("id", "annotation_table")
-                        .attr("class", "table table-hover");
-                    var thead = table.append("thead").append("tr");
-
-                    thead.append("th").html("Frequency");
-                    thead.append("th").html("Count");
-                    thead.append("th").html("CDR3AA");
-                    thead.append("th").html("V");
-                    thead.append("th").html("J");
-
-                    var column = [
-                        {"data": "freq"},
-                        {"data": "count"},
-                        {"data": "query_cdr3aa"},
-                        {"data": "query_V"},
-                        {"data": "query_J"}
-                    ];
-
-                    var header = data.header;
-
-                    for (var i = 0; i < header.length; i++) {
-                        thead.append("th").html(header[i]);
-                        column.push({
-                            "data": header[i]
-                        })
-                    }
-
-                    var dataTable = $('#annotation_table').dataTable({
-                        "data": data.table,
-                        "columns": column,
-                        dom: '<"pull-left"f>    l<"clear">Trtd<"pull-left"i>p',
-                        responsive: true,
-                        order: [
-                            [0, "desc"]
-                        ],
-                        "scrollY": "600px",
-                        "columnDefs": [
-                            {
-                                "width": "5%",
-                                "render": function (data) {
-                                    return (data * 100).toPrecision(2) + '%';
-                                },
-                                "targets": 0
-                            },
-                            {
-                                "width": "5%",
-                                "targets": 1
-                            },
-                            {
-                                "width": "7%",
-                                "targets": 2,
-                                "render": function (data) {
-                                    var cdr3aa = data["cdr3aa"];
-                                    var vend = Math.floor(data["vend"] / 3);
-                                    var dstart = Math.floor(data["dstart"] / 3);
-                                    var dend = Math.floor(data["dend"] / 3);
-                                    var jstart = Math.floor(data["jstart"] / 3);
-                                    var pos = data["pos"];
-                                    jstart = (jstart < 0) ? 10000 : jstart;
-                                    dstart = (dstart < 0) ? vend + 1 : dstart;
-                                    dend = (dend < 0) ? vend : dend;
-                                    while (vend >= jstart) jstart++;
-                                    while (dstart <= vend) dstart++;
-                                    while (dend >= jstart) dend--;
-                                    var createSubString = function (start, end, color) {
-                                        return {
-                                            start: start,
-                                            end: end,
-                                            color: color,
-                                            substring: cdr3aa.substring(start, end + 1)
-                                        }
-                                    };
-
-                                    var insert = function (index, str, insertString) {
-                                        if (index > 0)
-                                            return str.substring(0, index) + insertString + str.substring(index, str.length);
-                                        else
-                                            return insertString + str;
-                                    };
-
-                                    var arr = [];
-
-                                    if (vend >= 0) {
-                                        arr.push(createSubString(0, vend, "#4daf4a"));
-                                    }
-
-                                    if (dstart - vend > 1) {
-                                        arr.push(createSubString(vend + 1, dstart - 1, "black"));
-                                    }
-
-                                    if (dstart > 0 && dend > 0 && dend >= dstart) {
-                                        arr.push(createSubString(dstart, dend, "#ec7014"));
-                                    }
-
-                                    if (jstart - dend > 1) {
-                                        arr.push(createSubString(dend + 1, jstart - 1, "black"));
-                                    }
-
-                                    if (jstart > 0) {
-                                        arr.push(createSubString(jstart, cdr3aa.length, "#377eb8"));
-                                    }
-
-                                    var result = "";
-                                    for (var i = 0; i < arr.length; i++) {
-                                        var element = arr[i];
-                                        if (pos >= element.start && pos <= element.end) {
-                                            var newPos = pos - element.start;
-                                            element.substring = insert(newPos + 1, element.substring, '</u></b>');
-                                            element.substring = insert(newPos, element.substring, '<b><u>');
-                                        }
-                                        result += '<text style="color: ' + element.color + '">' + element.substring + '</text>';
-                                    }
-                                    result = '<a href="/database#?input=' + cdr3aa +'">' + result + '</a>';
-                                    return result;
-                                }
-
-                            },
-                            {
-                                "targets": 3,
-                                "render": function (data) {
-                                    if (!data.match) {
-                                        return '<text style="color: #dc6767">' + data.v + '</text>';
-                                    }
-                                    return data.v;
-                                }
-                            },
-                            {
-                                "targets": 4,
-                                "render": function (data) {
-                                    if (!data.match) {
-                                        return '<text style="color: #dc6767">' + data.j + '</text>';
-                                    }
-                                    return data.j;
-                                }
-
-                            }
-                        ]
-                    })
-
+        function isContain(fileName) {
+            var contain = false;
+            angular.forEach(files, function (file) {
+                if (file.fileName == fileName) {
+                    contain = true;
                 }
-
-                function setAnnotaionParameters(parameters) {
-                    $scope.parameters = {
-                        deletions: parameters.deletions,
-                        insertions: parameters.insertions,
-                        mismatches: parameters.mismatches,
-                        totalMutations: parameters.totalMutations,
-                        jMatch: parameters.jMatch,
-                        vMatch: parameters.vMatch
+            });
+            if (!contain) {
+                angular.forEach(newFiles, function (file) {
+                    if (isWaitForUpload(file) && file.fileName == fileName || isFileUploaded(file)) {
+                        contain = true;
                     }
-                }
-
-            }]
+                })
+            }
+            return contain;
         }
-    });
+
+        function isSizeExceeded(file) {
+            return maxFileSize > 0 && (file.size / 1024) > maxFileSize;
+        }
+
+        function isFilesCountExcedeed() {
+            return maxFilesCount > 0 && (files.length + newFiles.length) >= maxFilesCount;
+        }
+
+        function isNameValid(file) {
+            var regexp = /^[a-zA-Z0-9_.-]{1,40}$/;
+            return regexp.test(file.fileName);
+        }
+
+        function isRemoved(file) {
+            return file.tooltip === 'Removed';
+        }
+
+        function isWaitForUpload(file) {
+            return file.waitForUpload;
+        }
+
+        function isFileUploaded(file) {
+            return file.uploaded === true;
+        }
+
+        function isNewFilesExists() {
+            return newFiles.length > 0;
+        }
+
+        function getNewFiles() {
+            return newFiles;
+        }
+
+        function updateTooltip(file, tooltip) {
+            file.tooltip = tooltip;
+        }
+
+        function updateErrorTooltip(file, tooltip) {
+            file.result = 'error';
+            file.errorTooltip = tooltip;
+        }
+
+        function updateProgress(file, progress) {
+            file.progress = progress;
+        }
+
+        function uploadFile(file) {
+            if (isWaitForUpload(file) && isNameValid(file)) {
+                updateTooltip(file, "Uploading");
+                file.data.formData = {
+                    softwareTypeName: file.softwareTypeName,
+                    fileName: file.originalFileName,
+                    uid: file.uid
+                };
+                file.waitForUpload = false;
+                file.data.submit();
+            }
+        }
+
+        function uploadAll() {
+            angular.forEach(newFiles, function(file) {
+                uploadFile(file);
+            });
+        }
+
+        function addNewFile(file, data, softwareType) {
+            var originalFileName = file.name;
+            var fileName = originalFileName.substr(0, originalFileName.lastIndexOf('.')) || originalFileName;
+            var fileExtension = originalFileName.substr((~-originalFileName.lastIndexOf(".") >>> 0) + 2);
+            if (fileExtension != 'txt' && fileExtension != 'gz') {
+                fileName += fileExtension;
+                fileExtension = 'txt';
+            }
+            newFiles.push({
+                uid: uid,
+                originalFileName: originalFileName,
+                fileName: fileName,
+                fileExtension: fileExtension,
+                softwareTypeName: softwareType,
+                uploaded: false,
+                removed: false,
+                waitForUpload: (function () {
+                    return !(isFilesCountExcedeed() || isContain(originalFileName) || isSizeExceeded(file));
+                })(),
+                tooltip: '',
+                progress: 0,
+                result: (function () {
+                    if (!(isFilesCountExcedeed() || isContain(originalFileName) || isSizeExceeded(file))) {
+                        return 'ok';
+                    }
+                    return 'error';
+                })(),
+                errorTooltip: (function () {
+                    if (isFilesCountExcedeed()) {
+                        return 'You have exceeded limit of files';
+                    }
+                    if (isContain(originalFileName)) {
+                        return 'You should use unique names for your files';
+                    }
+                    if (isSizeExceeded(file)) {
+                        return 'File is too large';
+                    }
+                    return '';
+                })(),
+                data: data
+            });
+            uid++;
+        }
+
+        function uploaded(file) {
+            file.uploaded = true;
+            file.result = 'success';
+            file.tooltip = 'Uploaded';
+            user.addFile(file.originalFileName);
+        }
+
+        function removeFile(file) {
+            file.tooltip = 'Removed';
+            file.removed = true;
+            file.waitForUpload = false;
+        }
+
+
+
+        return {
+            getNewFiles: getNewFiles,
+            addNewFile: addNewFile,
+            removeFile: removeFile,
+            uploaded: uploaded,
+            updateTooltip: updateTooltip,
+            updateErrorTooltip: updateErrorTooltip,
+            updateProgress: updateProgress,
+            uploadFile: uploadFile,
+            uploadAll: uploadAll,
+            isNewFilesExists: isNewFilesExists,
+            isWaitForUpload: isWaitForUpload,
+            isNameValid: isNameValid
+        }
+    }]);
 
     app.directive('annotationsUpload', function () {
         return {
             restrict: 'E',
-            controller: ['$rootScope', '$scope', '$http', '$location', '$log', function ($rootScope, $scope, $http, $location, $log) {
+            controller: ['$scope', 'upload', function ($scope,  upload) {
 
-                //Private variables
-                var uid = 0;
-                var uploaded = false;
-                var initialized = false;
-                var initialzeError = false;
-                var fileNames;
-                var maxFileSize;
-                var maxFilesCount;
+                var uploadedFilesExists = false;
 
                 //Public variables
-                $scope.newFiles = [];
-                $scope.commonSoftwareType = 'mitcr';
+                $scope.newFiles = upload.getNewFiles();
+                $scope.softwareTypes = Object.freeze([
+                    'mitcr',
+                    'mixcr',
+                    'migec',
+                    'vdjtools',
+                    'higblast',
+                    'immunoseq',
+                    'imgthighvquest'
+
+                ]);
+                $scope.commonSoftwareType = $scope.softwareTypes[0];
+                $scope.changeCommonSoftwareType = changeCommonSoftwareType;
+
 
                 //Public Functions
-                $scope.isNewFilesExists = isNewFilesExists;
+                $scope.removeFile = upload.removeFile;
+                $scope.uploadFile = upload.uploadFile;
+                $scope.isNewFilesExists = upload.isNewFilesExists;
+                $scope.isWaitForUpload = upload.isWaitForUpload;
+                $scope.isNameValid = upload.isNameValid;
+                $scope.uploadAll = upload.uploadAll;
+
                 $scope.addNewButtonClick = addNewButtonClick;
-                $scope.uploadFile = uploadFile;
-                $scope.uploadAll = uploadAll;
-                $scope.isWait = isWait;
                 $scope.isError = isError;
                 $scope.isOk = isOk;
                 $scope.isRemoved = isRemoved;
                 $scope.isSuccess = isSuccess;
-                $scope.changeCommonSoftwareType = changeCommonSoftwareType;
-                $scope.removeFile = removeFile;
-                $scope.isUploaded = isUploaded;
+                $scope.isUploadedFilesExists = isUploadedFilesExists;
                 $scope.showResults = showResults;
                 $scope.isWaitingExists = isWaitingExists;
-                $scope.isInitialized = isInitialized;
-                $scope.isNameValid = isNameValid;
-
-                initialize();
-
-                function initialize() {
-                    fileNames = [];
-                    maxFileSize = 0;
-                    maxFilesCount = 0;
-                    initialized = true;
-                    //TODO
-                    /*
-                     $http.get('/api/annotations/userinfo')
-                     .success(function (data) {
-                     fileNames = data.fileNames;
-                     maxFileSize = data.maxFileSize;
-                     maxFilesCount = data.maxFilesCount;
-                     initialized = true;
-                     })
-                     .error(function () {
-                     initialzeError = true;
-                     })
-                     */
-                }
-
-                function isContain(fileName) {
-                    var contain = false;
-                    angular.forEach(fileNames, function (name) {
-                        if (name == fileName) {
-                            contain = true;
-                        }
-                    });
-                    if (!contain) {
-                        angular.forEach($scope.newFiles, function (file) {
-                            if (isWait(file) && file.fileName == fileName) {
-                                contain = true;
-                            }
-                        })
-                    }
-                    return contain;
-                }
-
-                function isSizeExceeded(file) {
-                    return maxFileSize > 0 && (file.size / 1024 ) > maxFileSize;
-                }
-
-                function isFilesCountExcedeed() {
-                    return maxFilesCount > 0 && (fileNames.length + $scope.newFiles.length) >= maxFilesCount;
-                }
-
-                function isInitialized() {
-                    return initialized;
-                }
 
                 function showResults() {
                     $('.show_results_link')[0].click();
                 }
 
-                function isUploaded() {
-                    return uploaded;
-                }
-
-                function isNameValid(file) {
-                    var regexp = /^[a-zA-Z0-9_.-]{1,40}$/;
-                    return regexp.test(file.fileName);
-                }
-
-                function isRemoved(file) {
-                    return file.tooltip === 'Removed';
-                }
-
-                function isWait(file) {
-                    return file.wait;
-                }
-
                 function isWaitingExists() {
                     var exist = false;
                     angular.forEach($scope.newFiles, function (file) {
-                        if (isWait(file)) {
+                        if (file.waitForUpload) {
                             exist = true;
                         }
                     });
                     return exist;
                 }
 
-                function updateTooltip(file, tooltip) {
-                    file.tooltip = tooltip;
-                }
-
-                function uploadFile(file) {
-                    if (isWait(file) && isNameValid(file)) {
-                        updateTooltip(file, "Uploading");
-                        file.data.formData = {
-                            softwareTypeName: file.softwareTypeName,
-                            fileName: file.fileName + '.' + file.fileExtension,
-                            uid: file.uid
-                        };
-                        file.wait = false;
-                        file.data.submit();
-                    }
-                }
-
                 function changeCommonSoftwareType() {
                     angular.forEach($scope.newFiles, function (file) {
-                        if (isWait(file))
+                        if (file.waitForUpload)
                             file.softwareTypeName = $scope.commonSoftwareType;
                     });
                 }
 
-                function uploadAll() {
-                    var length = $scope.newFiles.length;
-                    for (var i = 0; i < length; i++) {
-                        uploadFile($scope.newFiles[i]);
-                    }
-                }
-
-                function addNewButtonClick() {
-                    $("form input[type=file]").click();
-                }
-
-                function isNewFilesExists() {
-                    return $scope.newFiles.length;
-                }
-
-                function addNew(fileName, fileExtension, data, file) {
-                    $scope.$apply(function () {
-                        $scope.newFiles[uid] = {
-                            uid: uid,
-                            fileName: fileName,
-                            fileExtension: fileExtension,
-                            softwareTypeName: $scope.commonSoftwareType,
-                            wait: (function () {
-                                return !(isFilesCountExcedeed() || isContain(fileName) || isSizeExceeded(file));
-
-                            })(),
-                            tooltip: '',
-                            progress: 0,
-                            result: (function () {
-                                if (!(isFilesCountExcedeed() || isContain(fileName) || isSizeExceeded(file))) {
-                                    return 'ok';
-                                }
-                                return 'error';
-                            })(),
-                            errorTooltip: (function () {
-                                if (isFilesCountExcedeed()) {
-                                    return 'You have exceeded limit of files';
-                                }
-                                if (isContain(fileName)) {
-                                    return 'You should use unique names for your files';
-                                }
-                                if (isSizeExceeded(file)) {
-                                    return 'File is too large';
-                                }
-                                return '';
-                            })(),
-                            data: data
-                        };
-                        uid++;
-                    });
-                }
-
-                function removeFile(file) {
-                    file.wait = false;
-                    file.tooltip = 'Removed';
-                }
-
-                function updateProgress(file, progress) {
-                    $scope.$apply(function () {
-                        file.progress = progress;
-                    })
-                }
-
-                function updateErrorTooltip(file, tooltip) {
-                    $scope.$apply(function () {
-                        file.errorTooltip = tooltip;
-                    })
-                }
-
-                function updateResult(file, result) {
-                    $scope.$apply(function () {
-                        file.result = result;
-                    })
+                function isRemoved(file) {
+                    return file.removed;
                 }
 
                 function isOk(file) {
@@ -981,36 +833,43 @@
                     return file.result === 'success';
                 }
 
+                function addNewButtonClick() {
+                    $("form input[type=file]").click();
+                }
+
+                function isUploadedFilesExists() {
+                    return uploadedFilesExists;
+                }
+
                 $('#fileupload').fileupload({
                     url: '/api/annotations/upload',
                     dataType: 'json',
                     add: function (e, data) {
                         var file = data.files[0];
-                        var originalFileName = file.name;
-                        var fileName = originalFileName.substr(0, originalFileName.lastIndexOf('.')) || originalFileName;
-                        var fileExtension = originalFileName.substr((~-originalFileName.lastIndexOf(".") >>> 0) + 2);
-                        if (fileExtension != 'txt' && fileExtension != 'gz') {
-                            fileName += fileExtension;
-                            fileExtension = 'txt';
-                        }
-                        addNew(fileName, fileExtension, data, file);
+                        $scope.$apply(function() {
+                            upload.addNewFile(file, data, $scope.commonSoftwareType);
+                        });
                     },
                     progress: function (e, data) {
                         var file = $scope.newFiles[data.formData.uid];
-                        updateProgress(file, parseInt(data.loaded / data.total * 100, 10));
+                        $scope.$apply(function() {
+                            upload.updateProgress(file, parseInt(data.loaded / data.total * 100, 10));
+                        })
                     },
                     done: function (e, data) {
                         var file = $scope.newFiles[data.formData.uid];
-                        uploaded = true;
-                        fileNames.push(file.fileName);
-                        updateResult(file, 'success');
-                        $scope.$apply(updateTooltip(file, 'Uploaded'));
+                        uploadedFilesExists = true;
+                        $scope.$apply(function() {
+                            upload.uploaded(file)
+                        });
                     },
                     fail: function(e, data) {
                         var file = $scope.newFiles[data.formData.uid];
-                        updateResult(file, 'error');
                         var errorMessage = data._response.jqXHR.responseJSON.errors[0].message;
-                        updateErrorTooltip(file, errorMessage);
+                        $scope.$apply(function() {
+                            upload.updateErrorTooltip(file, errorMessage);
+                        });
+
                     }
                 });
 
@@ -1018,6 +877,18 @@
         }
     });
 
+    /*
+        Common directives and factories
+     */
+    app.directive('blockPageInitialization', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', 'user', function($scope, user) {
+                $scope.isInitialized = user.isInitialized;
+                $scope.isInitializeFailed = user.isInitializeFailed;
+            }]
+        }
+    });
 
     app.controller('tooltips', function($scope) {
         $scope.deleteButtonTooltip = 'Delete';

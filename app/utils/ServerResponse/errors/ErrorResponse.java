@@ -1,4 +1,4 @@
-package utils.ServerResponse;
+package utils.ServerResponse.errors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +16,13 @@ public class ErrorResponse {
         this.errors = errors;
     }
 
-    public ErrorResponse(String message, ServerErrorCode code) {
+    public ErrorResponse(ServerErrorCode code) {
         this.errorsCount = 1;
         this.errors = new ArrayList<>();
-        errors.add(new ServerError(message, code));
+        errors.add(new ServerError(code));
     }
+
+
 
     public int getErrorsCount() {
         return errorsCount;

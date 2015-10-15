@@ -15,9 +15,9 @@
                         <table class="table table-hover files_sidebar">
                             <thead>
                                 <tr>
-                                    <th><h4 class="pull-left">
-                                        Files</h4><a class="btn btn-red pull-right" href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">
-                                        Upload</a></th>
+                                    <th><h4 class="pull-left">Files</h4>
+                                        <a class="btn pull-right" href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">Upload</a>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -38,7 +38,13 @@
                     </div>
                 </div>
             </div>
-
+            <div class="col-md-10" ng-show="isActiveFile('')">
+                <div class="box" ng-hide="isUserHaveFiles()">
+                    <div class="box-body">
+                        You have no uploaded sample files yet. You can upload your samples on <a href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">this</a> page.
+                    </div>
+                </div>
+            </div>
             <div class="col-md-10" ng-hide="isActiveFile('')">
                 <div class="box">
                     <div class="box-body">
@@ -53,8 +59,8 @@
                             <div class="well well-lg" ng-show="isInitError(file)">
                                 <p class="text-center">No data available</p>
                             </div>
-                            <div>
-                                <table class="table table-responsive">
+                            <div class="table-responsive" style="max-height: 500px">
+                                <table class="table">
                                     <thead style="cursor : pointer ;">
                                         <tr>
                                             <th>Frequency</th>

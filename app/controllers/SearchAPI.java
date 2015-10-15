@@ -15,8 +15,8 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.LogUtil;
-import utils.ServerResponse.ErrorResponse;
-import utils.ServerResponse.ServerErrorCode;
+import utils.ServerResponse.errors.ErrorResponse;
+import utils.ServerResponse.errors.ServerErrorCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,18 +104,18 @@ public class SearchAPI extends Controller {
                     }
                 } catch (Exception ignored) {
                     LogUtil.warnLog("Bad request: " + request, "Empty token");
-                    return badRequest(Json.toJson(new ErrorResponse("Bad request: " + request, ServerErrorCode.INVALID_SEARCH_PARAMETERS)));
+                    return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.INVALID_SEARCH_PARAMETERS)));
                 }
 
                 if (searchParameters.token == null) {
                     LogUtil.warnLog("Unauthorized access: null token from " + request().remoteAddress(), "Null token");
-                    return badRequest(Json.toJson(new ErrorResponse("Unauthorized access: null token", ServerErrorCode.NULL_TOKEN)));
+                    return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.NULL_TOKEN)));
                 }
 
                 Token token = Token.findByUUID(searchParameters.token);
                 if (token == null) {
                     LogUtil.warnLog("Unauthorized access: bad token " + searchParameters.token + " from " + request().remoteAddress(), searchParameters.token);
-                    return badRequest(Json.toJson(new ErrorResponse("Unauthorized access: bad token", ServerErrorCode.BAD_TOKEN)));
+                    return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.BAD_TOKEN)));
                 }
                 token.updateLastUsage();
 
@@ -131,7 +131,7 @@ public class SearchAPI extends Controller {
                 } catch (Exception e) {
                     LogUtil.errorLog("Search error \nFilters used: " + filters.toString(), searchParameters.token);
                     e.printStackTrace();
-                    return badRequest(Json.toJson(new ErrorResponse("Search error", ServerErrorCode.SEARCH_ERROR)));
+                    return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.SEARCH_ERROR)));
                 }
                 for (CdrEntrySetDB searchResult : searchResults) {
                     for (EntryDB entryDB : searchResult.getCdrEntries()) {

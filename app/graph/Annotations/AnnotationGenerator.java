@@ -3,9 +3,9 @@ package graph.Annotations;
 import com.antigenomics.vdjdb.browsing.BrowserResult;
 import com.antigenomics.vdjdb.browsing.DatabaseBrowser;
 import com.antigenomics.vdjdb.core.db.CdrDatabase;
-import com.antigenomics.vdjtools.Software;
+import com.antigenomics.vdjtools.io.SampleFileConnection;
 import com.antigenomics.vdjtools.sample.Sample;
-import com.antigenomics.vdjtools.sample.SampleCollection;
+import com.antigenomics.vdjtools.sample.metadata.MetadataUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.SampleFile;
@@ -13,12 +13,10 @@ import models.Token;
 import play.libs.Json;
 import utils.Configuration;
 import utils.LogUtil;
-import utils.ServerResponse.ErrorResponse;
-import utils.ServerResponse.ServerErrorCode;
+import utils.ServerResponse.errors.ErrorResponse;
+import utils.ServerResponse.errors.ServerErrorCode;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AnnotationGenerator {
     public static final String CACHE_FILE_NAME = "annotation.cache";
@@ -40,15 +38,10 @@ public class AnnotationGenerator {
         this.deletions = parameters.deletions;
         this.mismatches = parameters.mismatches;
         this.totalMutations = parameters.totalMutations;
-        //TODO
-        Software software = sampleFile.getSoftwareType();
-        List<String> sampleFileNames = new ArrayList<>();
-        sampleFileNames.add(sampleFile.getFilePath());
-        SampleCollection sampleCollection = new SampleCollection(sampleFileNames, software, false);
-        Sample sample = sampleCollection.getAt(0);
-        CdrDatabase cdrDatabase = new CdrDatabase();
+        SampleFileConnection sampleFileConnection  = new SampleFileConnection(sampleFile.getFilePath(), sampleFile.getSoftwareType(), MetadataUtil.createSampleMetadata(MetadataUtil.fileName2id(sampleFile.getFileName())), true, false);
+        Sample sample = sampleFileConnection.getSample();
         DatabaseBrowser databaseBrowser = new DatabaseBrowser(parameters.vMatch, parameters.jMatch, parameters.getTreeSearchParameters());
-        BrowserResult browserResult = databaseBrowser.query(sample, cdrDatabase);
+        BrowserResult browserResult = databaseBrowser.query(sample, new CdrDatabase());
         this.table = new Annotations(browserResult);
     }
 
@@ -88,7 +81,7 @@ public class AnnotationGenerator {
             }
             Integer maxTotalMutations = Configuration.maxTotalMutations;
             if (maxTotalMutations > 0 && parameters.totalMutations > maxTotalMutations) {
-                return Json.toJson(new ErrorResponse("Total parameter should be less than " + maxTotalMutations, ServerErrorCode.MAX_TOTAL_MUTATIONS_ERROR));
+                return Json.toJson(new ErrorResponse(ServerErrorCode.MAX_TOTAL_MUTATIONS_ERROR));
             }
             AnnotationGenerator annotationGenerator = new AnnotationGenerator(file, parameters);
             Token user = file.getToken();

@@ -7,6 +7,7 @@ import play.db.ebean.Model;
 import utils.Configuration;
 
 import javax.persistence.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +28,7 @@ public class Token extends Model {
     private int maxFileSize;
     private int maxFilesCount;
     private int maxClonotypesCount;
+    private String uploadDirectory;
     @OneToMany(mappedBy="token")
     private List<SampleFile> files;
 
@@ -36,6 +38,7 @@ public class Token extends Model {
         this.lastUsage = new DateTime();
         this.createdAt = this.lastUsage;
         this.ipAddressList = new ArrayList<>();
+        this.uploadDirectory = Configuration.uploadDirectory + "/" + uuid + "/";
         this.maxFileSize = Configuration.maxFileSize;
         this.maxFilesCount = Configuration.maxFilesCount;
         this.maxClonotypesCount = Configuration.maxClonotypesCount;
@@ -97,6 +100,19 @@ public class Token extends Model {
         return null;
     }
 
+    public Boolean isMaxFilesCountExceeded() {
+        if (getMaxFilesCount() > 0) {
+            if (getFilesCount() > getMaxFilesCount()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getFilesCount() {
+        return files.size();
+    }
+
     public static Token generateNewToken(String tempParameter) {
         boolean temp;
         if (tempParameter == null) {
@@ -113,8 +129,14 @@ public class Token extends Model {
 
     public static Token generateNewToken(Boolean temp) {
         Token token = new Token(temp);
+        token.createDirectory();
         token.save();
         return token;
+    }
+
+    private void createDirectory() {
+        File directory = new File(uploadDirectory);
+        directory.mkdir();
     }
 
     public List<SampleFile> getFiles() {
@@ -127,6 +149,10 @@ public class Token extends Model {
             fileNames.add(file.getFileName());
         }
         return fileNames;
+    }
+
+    public String getUploadDirectory() {
+        return uploadDirectory;
     }
 
     public void setUuid(String uuid) {

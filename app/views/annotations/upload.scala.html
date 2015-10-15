@@ -5,12 +5,25 @@
     <script src="@routes.Assets.at("lib/fileUpload/jquery.iframe-transport.js")"></script>
     <script src="@routes.Assets.at("javascripts/annotations.js")" type="text/javascript"></script>
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/annotations.css")">
-    <div class="col-lg-10 col-lg-offset-1" ng-app="annotations">
+    <div ng-app="annotations">
+        <block-page-initialization>
+            <div class="block_page_body" ng-hide="isInitialized()">
+                <div class="block_page_background"></div>
+                <div class="block_page_loading">
+                    <div class="loader" ng-if="!isInitializeFailed()"></div>
+                    <div class="text-center" ng-if="isInitializeFailed()">
+                        <!--  TODO css styles -->
+                        Server is unavailable now.
+                    </div>
+                </div>
+            </div>
+        </block-page-initialization>
+    <div class="col-lg-10 col-lg-offset-1">
         <annotations-upload>
             <div class="row">
                 <div class="box">
                     <div class="box-header">
-                        Upload your files here
+                        <h3>Upload your files here</h3>
                     </div>
                     <div class="box-body">
                         <div class="tab-content">
@@ -22,8 +35,6 @@
                         <div class="tab-content" ng-hide="isNewFilesExists()">
                             <div class="text-center">
                                 <p>Supported extensions: txt, gz</p>
-                                <br>
-                                <i class="fa fa-4x fa-file-text-o drag-and-drop-icon"></i>
                             </div>
                         </div>
                         <div class="tab-content" ng-show="isNewFilesExists()">
@@ -41,10 +52,7 @@
                                         <td></td>
                                         <td>
                                             <select id="common-software-type" ng-model="commonSoftwareType" ng-click="changeCommonSoftwareType()" class="form-control">
-                                                <option value="mitcr" >MiTcr</option>
-                                                <option value="migec" >MiGec</option>
-                                                <option value="simple" >Simple</option>
-                                                <option value="igblast" >IgBlast</option>
+                                                <option ng-repeat="type in ::softwareTypes" value="{{ ::type }}">{{ ::type }}</option>
                                             </select>
                                         </td>
                                         <td></td>
@@ -52,35 +60,32 @@
                                     </tr>
                                     <tr ng-repeat="file in newFiles" ng-class="{'danger':isError(file), 'success':isSuccess(file), 'warning':isRemoved(file)}">
                                         <td>
-                                            <input ng-model="file.fileName" type="text" value="file.fileName" ng-show="isWait(file)" class="form-control"
+                                            <input ng-model="file.fileName" type="text" value="file.fileName" ng-show="isWaitForUpload(file)" class="form-control"
                                             ng-class="{'input_invalid_name':!isNameValid(file)}" tooltip="Name tooltip" tooltip-placement="top">
-                                            <text ng-hide="isWait(file)">{{ file.fileName }}</text>
+                                            <text ng-hide="isWaitForUpload(file)">{{ file.fileName }}</text>
                                         </td>
                                         <td>
-                                            <select id="new-file-software-type" ng-model="file.softwareTypeName" ng-show="isWait(file)" class="form-control">
-                                                <option value="mitcr" selected>MiTcr</option>
-                                                <option value="migec" >MiGec</option>
-                                                <option value="simple" >Simple</option>
-                                                <option value="igblast" >IgBlast</option>
+                                            <select id="new-file-software-type" ng-model="file.softwareTypeName" ng-show="isWaitForUpload(file)" class="form-control">
+                                                <option ng-repeat="type in ::softwareTypes" value="{{ ::type }}">{{ ::type }}</option>
                                             </select>
-                                            <text ng-hide="isWait(file)">{{ file.softwareTypeName }}</text>
+                                            <text ng-hide="isWaitForUpload(file)">{{ file.softwareTypeName }}</text>
                                         </td>
                                         <td>
                                             <div class="progress progress-sm mbn" ng-show="isOk(file) && !isRemoved(file)">
                                                 <div role="progressbar" style="width: {{ file.progress }}%" class="progress-bar progress-bar-success"></div>
                                             </div>
                                             <text ng-show="isError(file)">{{ file.errorTooltip }}</text>
+                                            <text ng-hide="isWaitForUpload(file) || isError(file)">{{ file.tooltip }}</text>
                                         </td>
                                         <td>
-                                            <button class="btn btn-red pull-right upload_file_button_smaller" ng-click="uploadFile(file)" ng-show="isWait(file) && isNameValid(file)">Upload</button>
-                                            <button class="btn btn-red pull-right remove_file_button" ng-click="removeFile(file)" ng-show="isWait(file)">X</button>
-                                            <text ng-hide="isWait(file) || isError(file)" class="pull-right">{{ file.tooltip }}</text>
+                                            <button class="btn btn-red pull-right upload_file_button_smaller" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file) && isNameValid(file)">Upload</button>
+                                            <button class="btn btn-red pull-right remove_file_button" ng-click="removeFile(file)" ng-show="isWaitForUpload(file)">X</button>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="tab-content show_results_tab" ng-show="isUploaded()">
+                        <div class="tab-content show_results_tab" ng-show="isUploadedFilesExists()">
                             <button class="btn btn-red pull-right" ng-click="showResults()">Show results</button>
                             <a href="@controllers.annotations.routes.AnnotationsPages.annotationsResultPage()" class="show_results_link">asd</a>
                         </div>
@@ -88,5 +93,6 @@
                 </div>
             </div>
         </annotations-upload>
+    </div>
     </div>
 }

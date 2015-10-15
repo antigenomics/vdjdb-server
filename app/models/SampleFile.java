@@ -1,6 +1,9 @@
 package models;
 
+import com.antigenomics.vdjtools.io.SampleFileConnection;
+import com.antigenomics.vdjtools.sample.Sample;
 import com.antigenomics.vdjtools.sample.SampleCollection;
+import com.antigenomics.vdjtools.sample.metadata.MetadataUtil;
 import com.avaje.ebean.Ebean;
 import org.joda.time.DateTime;
 import play.db.ebean.Model;
@@ -45,12 +48,10 @@ public class SampleFile extends Model {
     }
 
     public void setSampleSize(Software softwareType) {
-        //TODO
         this.softwareType = softwareType;
-        List<String> sampleFileNames = new ArrayList<>();
-        sampleFileNames.add(filePath);
-        SampleCollection sampleCollection = new SampleCollection(sampleFileNames, softwareType, false);
-        this.sampleSize = sampleCollection.getAt(0).getDiversity();
+        SampleFileConnection sampleFileConnection  = new SampleFileConnection(filePath, softwareType, MetadataUtil.createSampleMetadata(MetadataUtil.fileName2id(fileName)), true, false);
+        Sample sample = sampleFileConnection.getSample();
+        this.sampleSize = sample.getDiversity();
         Ebean.update(this);
     }
 

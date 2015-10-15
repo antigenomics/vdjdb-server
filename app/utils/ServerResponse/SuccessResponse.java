@@ -10,4 +10,8 @@ public class SuccessResponse {
     public String getResult() {
         return "success";
     }
+
+    public String getMessage() {
+        return message;
+    }
 }
