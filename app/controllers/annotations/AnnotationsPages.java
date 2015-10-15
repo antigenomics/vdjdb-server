@@ -11,11 +11,11 @@ import play.mvc.Result;
 public class AnnotationsPages extends Controller {
     public static Result annotationsUploadFilesPage() {
         Token token = Application.authtorize();
-        return ok(views.html.annotations.upload.render());
+        return ok(views.html.sampleResults.upload.render());
     }
 
-    public static Result annotationsResultPage() {
+    public static Result annotationsMainPage() {
         Token token = Application.authtorize();
-        return ok(views.html.annotations.results.render());
+        return ok(views.html.sampleResults.main.render());
     }
 }

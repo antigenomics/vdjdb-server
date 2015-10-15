@@ -1,0 +1,30 @@
+<results>
+    <div class="col-md-10" ng-show="isStateClear()">
+        <div class="box" ng-hide="isUserHaveFiles()">
+            <div class="box-body">
+                        You have no uploaded sample files yet. You can upload your samples on <a href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">this</a> page.
+                    </div>
+        </div>
+    </div>
+    <div class="col-md-10" ng-hide="isStateClear()">
+        <div class="box">
+            <div class="box-body">
+                <div class="tabs">
+                    <div class="tab" ng-repeat="tab in tabs" ng-click="setActiveTab(tab)" ng-class="{'tab_active':isTabActive(tab)}">
+                        <div class="cell_text">{{ tab.name }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="box" ng-repeat="file in files" ng-show="isFileActive(file)">
+            <div class="box-body">
+                <div id="annotations" ng-show="isAnnotations()">
+                    Annotations for {{ ::file.fileName }}
+                </div>
+                <div id="placeholder" ng-show="isPlaceholder()">
+                    Placeholder for {{ ::file.fileName }}
+                </div>
+            </div>
+        </div>
+    </div>
+</results>

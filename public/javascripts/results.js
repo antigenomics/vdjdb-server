@@ -9,6 +9,7 @@
         var fields = [];
 
         var files = [];
+        var activeFile = '';
         var uid = 0;
         var maxFileSize = 0;
         var maxFilesCount = 0;
@@ -63,6 +64,26 @@
             uid++;
         }
 
+        function getActiveFile() {
+            return activeFile;
+        }
+
+        function setActiveFile(file) {
+            activeFile = file;
+        }
+
+        function isFileActive(file) {
+            return activeFile === file;
+        }
+
+        function clearState() {
+            activeFile = '';
+        }
+
+        function isStateClear() {
+            return activeFile === '';
+        }
+
         function getFields() {
             return fields;
         }
@@ -99,6 +120,11 @@
         return {
             getFields: getFields,
             getFiles: getFiles,
+            getActiveFile: getActiveFile,
+            setActiveFile: setActiveFile,
+            isFileActive: isFileActive,
+            clearState: clearState,
+            isStateClear: isStateClear,
             addFile: addFile,
             getMaxFileSize: getMaxFileSize,
             getMaxFilesCount: getMaxFilesCount,
@@ -109,33 +135,13 @@
         }
     }]);
 
+    /*
+        Sidebar factory and directive
+     */
     app.factory('sidebar', ['user', '$http', function(user, $http) {
-        var activeFile = '';
-
-
-        function getActiveFile() {
-            return activeFile;
-        }
-
-        function isFileActive(file) {
-            return activeFile === file;
-        }
-
-        function setActiveFile(file) {
-            activeFile = file;
-        }
-
-        function isStateClear() {
-            return activeFile === '';
-        }
-
-        function clearState() {
-            activeFile = '';
-        }
-
         function deleteFile(file) {
             //TODO
-            if (isFileActive(file)) clearState();
+            if (user.isFileActive(file)) user.clearState();
             $http.post('/api/annotations/delete', {action: 'delete', fileName: file.fileName})
                 .success(function (data) {
                     //TODO
@@ -147,7 +153,7 @@
         }
 
         function deleteAllFiles() {
-            clearState();
+            user.clearState();
             //TODO
             $http.post('/api/annotations/delete', {action: 'deleteAll'})
                 .success(function(data) {
@@ -159,14 +165,106 @@
         }
 
         return {
-            getActiveFile: getActiveFile,
-            isFileActive: isFileActive,
-            setActiveFile: setActiveFile,
-            isStateClear: isStateClear,
-            clearState: clearState,
             deleteFile: deleteFile,
             deleteAllFiles: deleteAllFiles
         }
+    }]);
+
+    app.directive('sidebar', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', 'sidebar', 'user', function($scope, sidebar, user) {
+                $scope.files = user.getFiles();
+                //TODO update results data
+                $scope.setActiveFile = user.setActiveFile;
+                $scope.isFileActive = user.isFileActive;
+                $scope.deleteFile = sidebar.deleteFile;
+                $scope.deleteAllFiles = sidebar.deleteAllFiles;
+                $scope.isFileActive = user.isFileActive;
+                $scope.isUserHaveFiles = function() {
+                    return $scope.files.length > 0;
+                }
+            }]
+        }
+    });
+
+    /*
+        Results factory and directive
+     */
+    app.factory('results', ['user', '$http', function(user, $http) {
+        var tabs = Object.freeze({
+            annotations: {
+                name: 'Annotations'
+            },
+            placeholder: {
+                name: 'Placeholder'
+            }
+        });
+        var activeTab = tabs.annotations;
+
+        function getTabs() {
+            return tabs;
+        }
+
+        function setActiveTab(tab) {
+            activeTab = tab;
+        }
+
+        function isTabActive(tab) {
+            return tab === activeTab;
+        }
+
+        function getActiveTab() {
+            return activeTab;
+        }
+
+        function isAnnotations() {
+            return activeTab === tabs.annotations;
+        }
+
+        function isPlaceholder() {
+            return activeTab === tabs.placeholder;
+        }
+
+        return {
+            getTabs: getTabs,
+            setActiveTab: setActiveTab,
+            isTabActive: isTabActive,
+            getActiveTab: getActiveTab,
+            isAnnotations: isAnnotations,
+            isPlaceholder: isPlaceholder
+        }
+    }]);
+
+    app.directive('results', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', 'user', 'results', function($scope, user, results) {
+
+                //Results API
+                $scope.tabs = results.getTabs();
+                $scope.setActiveTab = results.setActiveTab;
+                $scope.isTabActive = results.isTabActive;
+                $scope.isAnnotations = results.isAnnotations;
+                $scope.isPlaceholder = results.isPlaceholder;
+
+                //User API
+                $scope.files = user.getFiles();
+                $scope.isFileActive = user.isFileActive;
+                $scope.isStateClear = user.isStateClear;
+
+
+            }]
+        }
+    });
+
+
+    /*
+        Annotation table factory and directive
+     */
+    app.factory('annotations', ['$http', function($http) {
+        var fields = [];
+
     }]);
 
     app.directive('annotationsResults', function () {
@@ -179,20 +277,20 @@
                 //TODO fields
                 $scope.fields = user.getFields();
                 $scope.files = user.getFiles();
-                $scope.activeFile = sidebar.getActiveFile();
+                $scope.activeFile = user.getActiveFile();
                 $scope.errorMessage = '';
 
                 //Public functions
                 $scope.setActiveFile = function(file) {
-                    sidebar.setActiveFile(file);
-                    if (!sidebar.isStateClear() && !file.loaded) {
+                    user.setActiveFile(file);
+                    if (!user.isStateClear() && !file.loaded) {
                         annotationLoad(file)
                     }
 
                 };
-                $scope.isActiveFile = sidebar.isFileActive;
-                $scope.deleteFile = sidebar.deleteFile;
-                $scope.deleteAllFiles = sidebar.deleteAllFiles;
+                $scope.isActiveFile = user.isFileActive;
+                $scope.deleteFile = user.deleteFile;
+                $scope.deleteAllFiles = user.deleteAllFiles;
 
                 $scope.isInitialized = user.isInitialized();
                 $scope.isInitializeFailed = user.isInitializeFailed();
@@ -889,10 +987,6 @@
             }]
         }
     });
-
-    app.controller('tooltips', function($scope) {
-        $scope.deleteButtonTooltip = 'Delete';
-    })
 })();
 
 function testWatchers() {

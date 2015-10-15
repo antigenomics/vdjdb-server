@@ -1,0 +1,27 @@
+<sidebar>
+    <div class="col-md-2">
+        <div class="box">
+            <div class="box-header">
+                <h4 class="pull-left">Files</h4>
+                <a class="btn pull-right" href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">Upload</a>
+            </div>
+            <div class="box-body">
+                <div class="sidebar">
+                    <div class="sidebar_delimiter_top"></div>
+                    <div class="sidebar_sample" ng-if="!isUserHaveFiles()">
+                        <div class="cell_text">You have no files</div>
+                    </div>
+                    <div class="sidebar_sample" ng-repeat="file in files" ng-class="{'sample_active':isFileActive(file)}" ng-click="setActiveFile(file)" ng-mouseenter="hover=true" ng-mouseleave="hover=false">
+                        <div class="cell_text">{{ ::file.fileName }}
+                            <i class="fa fa-trash-o sidebar_sample_delete_icon" ng-show="hover" ng-click="$event.stopPropagation(); deleteFile(file)" tooltip-placement="right" tooltip="Delete"></i>
+                        </div>
+                    </div>
+                    <div class="sidebar_delimiter_bottom"></div>
+                    <div class="sidebar_sample" ng-click="deleteAllFiles()" ng-if="isUserHaveFiles()">
+                        <div class="cell_text">Delete all</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</sidebar>

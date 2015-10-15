@@ -2,6 +2,79 @@ body {
     background-color: #F0F0F0;
 }
 
+/*
+    Sidebar css styles
+*/
+.sidebar {
+    height: 100%;
+    width: 100%;
+}
+.sidebar > .sidebar_sample {
+    height: 40px;
+    width: 100%;
+    cursor: pointer;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.sidebar > .sidebar_sample:hover {
+    background-color: #e7e7e7;
+}
+.sidebar > .sidebar_sample > .cell_text {
+    height: 80%;
+    width: 70%;
+    margin: 0 auto;
+}
+.sample_active {
+    border-left: 4px solid dodgerblue;
+}
+
+.sidebar_sample_delete_icon {
+    right: 20px;
+    margin-top: 2px;
+    position: absolute;
+}
+.sidebar > .sidebar_delimiter_top {
+    height: 20px;
+    width: 100%;
+    border-top: 3px solid #d2d6de;
+}
+.sidebar > .sidebar_delimiter_bottom {
+    height: 20px;
+    width: 100%;
+    border-bottom: 3px solid #d2d6de;
+}
+
+/*
+    Tabs css styls
+*/
+
+.tabs {
+    height: 100%;
+    width: 100%;
+}
+
+.tabs > .tab {
+    float: left;
+    height: 40px;
+    width: 100px;
+    cursor: pointer;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.tabs > .tab .cell_text {
+    height: 80%;
+    width: 70%;
+    margin: 0 auto;
+}
+.tabs > .tab:hover {
+    background-color: #e7e7e7;
+}
+.tab_active {
+    border-bottom: 3px solid dodgerblue;
+}
+
+
+
 .block_page_body {
     left: 0;
     top: 0;
