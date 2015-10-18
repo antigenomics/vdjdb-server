@@ -16,14 +16,9 @@
         };
     });
 
-    app.factory('token', ['$http', '$log', function($http, $log) {
-
-    }]);
-
     app.factory('searching', ['$http', '$log', function($http, $log) {
         var filters = [];
         var availableFields = [];
-        var results = [];
         var noResults = false;
 
         $http.get('/api/getAvailableFields')
@@ -39,12 +34,14 @@
         function search() {
             noResults = false;
             $http.post('/api/search', {
-                filters: filters,
-                token: token
+                filters: filters
             })
                 .success(function(data) {
-                    if (data.length == 0) noResults = true;
-                    angular.copy(data, results);
+                    if (data.length == 0) {
+                        noResults = true;
+                    } else {
+                        searchResultsTable(data, availableFields);
+                    }
                 })
                 .error(function(error) {
                     $log.error(error);
@@ -66,12 +63,8 @@
         // Getters
         // ---------------------------------------------- //
 
-        function getFitlers() {
+        function getFilters() {
             return filters;
-        }
-
-        function getResults() {
-            return results;
         }
 
         function getAvailableFields() {
@@ -87,9 +80,8 @@
         return {
             addFilter: addFilter,
             search: search,
-            getFilters: getFitlers,
+            getFilters: getFilters,
             getAvailableFields: getAvailableFields,
-            getResults: getResults,
             isNoResults: isNoResults
         }
     }]);
@@ -100,7 +92,6 @@
             restrict: 'E',
             controller: ['$scope', 'searching', function($scope, searching) {
                 $scope.filters = searching.getFilters();
-                $scope.results = searching.getResults();
 
                 $scope.availableFields = searching.getAvailableFields();
                 $scope.addFilter = searching.addFilter;
@@ -127,6 +118,50 @@
     })
 
 })();
+
+function searchResultsTable(data, header) {
+    var results = [];
+    data.forEach(function(entry) {
+        entry["cdrEntries"].forEach(function(row) {
+            results.push(row);
+        });
+    });
+    var d3Place = d3.select(".results-table");
+        d3Place.html("");
+    var table = d3Place.append("table")
+        .attr("id", "results-table")
+        .attr("class", "table table-hover compact");
+    var thead = table.append("thead").append("tr");
+    var column = [];
+    for (var i = 0; i < header.length; i++) {
+        thead.append("th").html(header[i].name);
+        column.push({
+            data: header[i].db_name
+        })
+    }
+
+    var dataTable = $('#results-table').dataTable({
+        data: results,
+        columns: column,
+        dom: '<"pull-left"l><"clear">Trtd<"pull-left"i>p',
+        responsive: true,
+        order: [
+            [0, "desc"]
+        ],
+        iDisplayLength: 50,
+        scrollY: "600px",
+        columnDefs: [
+            {
+                targets: 12,
+                render: function(data) {
+                    var id = data.substring(5, data.length);
+                    return 'PBMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                }
+            }
+        ]
+    })
+
+}
 
 function testWatchers() {
     "use strict";

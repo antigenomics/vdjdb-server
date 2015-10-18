@@ -77,13 +77,13 @@ public class SearchAPI extends Controller {
             @Override
             public Result apply() throws Throwable {
                 List<List<String>> fields = new ArrayList<>();
-                for (EntryDB.Fields entryField : EntryDB.Fields.values()) {
-                    if (!entryField.getFieldName().contains("id"))
-                        fields.add(Arrays.asList(entryField.getFieldName(), entryField.getName()));
-                }
                 for (CdrEntrySetDB.Fields setEntryField : CdrEntrySetDB.Fields.values()) {
                     if (!setEntryField.getFieldName().contains("id"))
                         fields.add(Arrays.asList(setEntryField.getFieldName(), setEntryField.getName()));
+                }
+                for (EntryDB.Fields entryField : EntryDB.Fields.values()) {
+                    if (!entryField.getFieldName().contains("id"))
+                        fields.add(Arrays.asList(entryField.getFieldName(), entryField.getName()));
                 }
                 return ok(Json.toJson(fields));
             }
@@ -107,12 +107,20 @@ public class SearchAPI extends Controller {
                     return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.INVALID_SEARCH_PARAMETERS)));
                 }
 
+                Token token;
                 if (searchParameters.token == null) {
-                    LogUtil.warnLog("Unauthorized access: null token from " + request().remoteAddress(), "Null token");
-                    return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.NULL_TOKEN)));
+                    if (!session().containsKey("token")) {
+                        LogUtil.warnLog("Unauthorized access: null token from " + request().remoteAddress(), "Null token");
+                        return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.NULL_TOKEN)));
+                    }
+                    token = Token.findByUUID(session().get("token"));
+                    if (token == null) {
+                        LogUtil.warnLog("Unauthorized access: null token from " + request().remoteAddress(), "Null token");
+                        return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.NULL_TOKEN)));
+                    }
+                } else {
+                    token = Token.findByUUID(searchParameters.token);
                 }
-
-                Token token = Token.findByUUID(searchParameters.token);
                 if (token == null) {
                     LogUtil.warnLog("Unauthorized access: bad token " + searchParameters.token + " from " + request().remoteAddress(), searchParameters.token);
                     return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.BAD_TOKEN)));

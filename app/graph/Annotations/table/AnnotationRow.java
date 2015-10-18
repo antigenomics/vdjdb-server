@@ -39,25 +39,27 @@ public class AnnotationRow {
     }
 
 
-    private AnnotationCDR3aaCell cdr3aaCell;
-    private AnnotationVCell vCell;
-    private AnnotationJCell jCell;
+    private AnnotationCDR3aaCell cdr3;
+    private AnnotationVCell v;
+    private AnnotationJCell j;
     private double freq;
     private String chain;
     private String mhc;
     private String nature;
     private String disease;
     private String origin;
-    private String antigenSeq;
-    private String antigenName;
+    private String antigen_seq;
+    private String antigen_name;
     private String method;
     private String genbank;
     private String reference;
 
+    public AnnotationRow() {}
+
     public AnnotationRow(CdrMatch cdrMatch) {
-        this.cdr3aaCell = new AnnotationCDR3aaCell(cdrMatch);
-        this.vCell = new AnnotationVCell(cdrMatch);
-        this.jCell = new AnnotationJCell(cdrMatch);
+        this.cdr3 = new AnnotationCDR3aaCell(cdrMatch);
+        this.v = new AnnotationVCell(cdrMatch);
+        this.j = new AnnotationJCell(cdrMatch);
         this.freq = cdrMatch.getQuery().getFreq();
         List<String> annotation = cdrMatch.getSubject().getAnnotation();
         this.chain = annotation.get(Columns.CHAIN.getColumn());
@@ -65,24 +67,24 @@ public class AnnotationRow {
         this.nature = annotation.get(Columns.NATURE.getColumn());
         this.disease = annotation.get(Columns.DISEASE.getColumn());
         this.origin = annotation.get(Columns.ORIGIN.getColumn());
-        this.antigenSeq = annotation.get(Columns.ANTIGEN_SEQ.getColumn());
-        this.antigenName = annotation.get(Columns.ANTIGEN_NAME.getColumn());
+        this.antigen_seq = annotation.get(Columns.ANTIGEN_SEQ.getColumn());
+        this.antigen_name = annotation.get(Columns.ANTIGEN_NAME.getColumn());
         this.method = annotation.get(Columns.METHOD.getColumn());
         this.genbank = annotation.get(Columns.GENBANK.getColumn());
         this.reference = annotation.get(Columns.REFERENCE.getColumn());
 
     }
 
-    public AnnotationCDR3aaCell getCdr3aaCell() {
-        return cdr3aaCell;
+    public AnnotationCDR3aaCell getCdr3() {
+        return cdr3;
     }
 
-    public AnnotationVCell getvCell() {
-        return vCell;
+    public AnnotationVCell getV() {
+        return v;
     }
 
-    public AnnotationJCell getjCell() {
-        return jCell;
+    public AnnotationJCell getJ() {
+        return j;
     }
 
     public String getChain() {
@@ -105,12 +107,12 @@ public class AnnotationRow {
         return origin;
     }
 
-    public String getAntigenSeq() {
-        return antigenSeq;
+    public String getAntigen_seq() {
+        return antigen_seq;
     }
 
-    public String getAntigenName() {
-        return antigenName;
+    public String getAntigen_name() {
+        return antigen_name;
     }
 
     public String getMethod() {

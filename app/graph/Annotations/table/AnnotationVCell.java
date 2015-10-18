@@ -9,6 +9,8 @@ public class AnnotationVCell {
     public String v;
     public Boolean match;
 
+    public AnnotationVCell() {}
+
     public AnnotationVCell(CdrMatch cdrMatch) {
         this.v = cdrMatch.getQuery().getV();
         this.match = cdrMatch.isvMatch();

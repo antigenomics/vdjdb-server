@@ -2,8 +2,10 @@ package controllers.annotations;
 
 import com.antigenomics.vdjtools.Software;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.Application;
-import graph.Annotations.AnnotationGenerator;
+import graph.Annotations.CachedAnnotations;
+import graph.Annotations.RequestTreeSearchParameters;
 import models.SampleFile;
 import models.Token;
 import play.libs.Json;
@@ -127,22 +129,30 @@ public class AnnotationsAPI extends Controller {
         }
     }
 
-    public static Result getData() {
+    public static Result annotationsTable() {
         Token user = Application.authtorize();
 
         if (user == null) {
-            return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.INVALID_COOKIE)));
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_COOKIE));
         }
         JsonNode request = request().body().asJson();
         if (!request.has("fileName") || !request.has("parameters")) {
-            return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.INVALID_REQUEST)));
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
         }
-        String fileName = request.findValue("fileName").asText();
-        SampleFile file = user.findFileByName(fileName);
-        if (file == null) {
-            return badRequest(Json.toJson(new ErrorResponse(ServerErrorCode.FILE_DOES_NOT_EXIST)));
+        String fileName = request.get("fileName").asText();
+        RequestTreeSearchParameters parameters;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            parameters = objectMapper.convertValue(request.get("parameters"), RequestTreeSearchParameters.class);
+        } catch (Exception ignored) {
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
         }
-        return ok(Json.toJson(AnnotationGenerator.getCachedData(request, file)));
-    }
 
+        SampleFile sampleFile = user.findFileByName(fileName);
+        if (sampleFile == null) {
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_FILE_NAME));
+        }
+        CachedAnnotations cachedAnnotations = CachedAnnotations.cached(sampleFile, parameters);
+        return ok(Json.toJson(cachedAnnotations));
+    }
 }

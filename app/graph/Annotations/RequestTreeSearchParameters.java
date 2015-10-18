@@ -1,13 +1,15 @@
 package graph.Annotations;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.milaboratory.core.tree.TreeSearchParameters;
 
 /**
  * Created by bvdmitri on 14.10.15.
  */
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RequestTreeSearchParameters {
-    public Boolean parametersIgnore;
+    public Boolean ignore;
     public Boolean jMatch;
     public Boolean vMatch;
     public Integer mismatches;
@@ -20,7 +22,7 @@ public class RequestTreeSearchParameters {
     }
 
     public Boolean isParametersEquals(CachedAnnotations annotationCache) {
-        return parametersIgnore ||
+        return ignore ||
                 annotationCache.jMatch.equals(jMatch) &&
                         annotationCache.vMatch.equals(vMatch) &&
                         annotationCache.deletions.equals(deletions) &&

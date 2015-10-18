@@ -4,10 +4,6 @@
     var app = angular.module('annotations', ['ui.bootstrap']);
 
     app.factory('user', ['$http', '$log', function($http, $log) {
-
-        //TODO!!!!!!!!!!!!!!!!!!
-        var fields = [];
-
         var files = [];
         var activeFile = '';
         var uid = 0;
@@ -20,24 +16,12 @@
                 initialized = true;
                 maxFileSize = data['maxFileSize'];
                 maxFilesCount = data['maxFilesCount'];
-                var length = data['fileNames'].length;
-                for (var i = 0; i < length; i++) {
-                    addFile(data['fileNames'][i]);
-                }
+                angular.forEach(data['fileNames'], function(fileName) {
+                    addFile(fileName);
+                })
             })
             .error(function() {
                 initializeError = true;
-            });
-
-        //TODO!!!!!!!!!!!!!1
-        $http.get('/api/getAvailableFields')
-            .success(function(f) {
-                angular.forEach(f, function(field) {
-                    fields.push({
-                        name: field[1],
-                        db_name: field[0]
-                    })
-                })
             });
 
         function addFile(fileName) {
@@ -45,20 +29,22 @@
                 uid: uid,
                 fileName: fileName,
                 data: {
-                    annotationParameters: {
-                        error: false,
-                        errorMessage: '',
-                        deletions: 1,
-                        insertions: 1,
-                        mismatches: 2,
-                        totalMutations: 2,
-                        jMatch: false,
-                        vMatch: false
+                    annotations: {
+                        parameters: {
+                            ignore: true,
+                            deletions: 1,
+                            insertions: 1,
+                            mismatches: 2,
+                            totalMutations: 2,
+                            jMatch: false,
+                            vMatch: false
+                        },
+                        table: [],
+                        loaded: false,
+                        rendering: false
 
                     }
                 },
-                loading: false,
-                loaded: false,
                 initError: false
             });
             uid++;
@@ -82,10 +68,6 @@
 
         function isStateClear() {
             return activeFile === '';
-        }
-
-        function getFields() {
-            return fields;
         }
 
         function getFiles() {
@@ -118,7 +100,6 @@
         }
 
         return {
-            getFields: getFields,
             getFiles: getFiles,
             getActiveFile: getActiveFile,
             setActiveFile: setActiveFile,
@@ -173,10 +154,12 @@
     app.directive('sidebar', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', 'sidebar', 'user', function($scope, sidebar, user) {
+            controller: ['$scope', 'sidebar', 'user', 'results', function($scope, sidebar, user, results) {
                 $scope.files = user.getFiles();
-                //TODO update results data
-                $scope.setActiveFile = user.setActiveFile;
+                $scope.setActiveFile = function(file) {
+                    user.setActiveFile(file);
+                    results.update();
+                };
                 $scope.isFileActive = user.isFileActive;
                 $scope.deleteFile = sidebar.deleteFile;
                 $scope.deleteAllFiles = sidebar.deleteAllFiles;
@@ -191,7 +174,7 @@
     /*
         Results factory and directive
      */
-    app.factory('results', ['user', '$http', function(user, $http) {
+    app.factory('results', ['user', '$http', 'annotations', function(user, $http, annotations) {
         var tabs = Object.freeze({
             annotations: {
                 name: 'Annotations'
@@ -226,11 +209,22 @@
             return activeTab === tabs.placeholder;
         }
 
+        function update() {
+            var file = user.getActiveFile();
+            if (file === '') return;
+            switch (activeTab) {
+                case tabs.annotations:
+                    annotations.update(file);
+                    break;
+            }
+        }
+
         return {
             getTabs: getTabs,
             setActiveTab: setActiveTab,
             isTabActive: isTabActive,
             getActiveTab: getActiveTab,
+            update: update,
             isAnnotations: isAnnotations,
             isPlaceholder: isPlaceholder
         }
@@ -263,425 +257,40 @@
         Annotation table factory and directive
      */
     app.factory('annotations', ['$http', function($http) {
-        var fields = [];
+
+        function update(file) {
+            if (!file.data.annotations.loaded) {
+                file.data.annotations.rendering = true;
+                $http.post('/api/annotations/data', {
+                    fileName: file.fileName,
+                    parameters: file.data.annotations.parameters
+                })
+                    .success(function (annotations) {
+                        file.data.annotations.table = annotations.table;
+                        file.data.annotations.loaded = true;
+                        annotationTable(file);
+                        file.data.annotations.rendering = false;
+                    })
+                    .error(function (error) {
+                        console.log(error.message);
+                        file.data.annotations.rendering = false;
+                    })
+            }
+        }
+
+        return {
+            update: update
+        }
 
     }]);
 
-    app.directive('annotationsResults', function () {
+    app.directive('annotationsTable', function() {
         return {
             restrict: 'E',
-            controller: ['user', 'sidebar', '$scope', '$http', '$log', '$location', '$timeout', '$sce', function (user, sidebar, $scope, $http, $log, $location, $timeout, $sce) {
-
-
-                //Public variables
-                //TODO fields
-                $scope.fields = user.getFields();
-                $scope.files = user.getFiles();
-                $scope.activeFile = user.getActiveFile();
-                $scope.errorMessage = '';
-
-                //Public functions
-                $scope.setActiveFile = function(file) {
-                    user.setActiveFile(file);
-                    if (!user.isStateClear() && !file.loaded) {
-                        annotationLoad(file)
-                    }
-
-                };
-                $scope.isActiveFile = user.isFileActive;
-                $scope.deleteFile = user.deleteFile;
-                $scope.deleteAllFiles = user.deleteAllFiles;
-
-                $scope.isInitialized = user.isInitialized();
-                $scope.isInitializeFailed = user.isInitializeFailed();
-
-                $scope.isUserHaveFiles = isUserHaveFiles;
-                $scope.isError = isError;
-                $scope.smoothScrollToTop = smoothScrollToTop;
-                $scope.shareFile = shareFile;
-                $scope.isLoading = isLoading;
-                $scope.isLoaded = isLoaded;
-                $scope.isInitError = isInitError;
-
-                $scope.annotationLoad = annotationLoad;
-                $scope.cdr3aaColored = cdr3aaColored;
-
-
-                //Initializing
-
-                function isInitialized() {
-                    return initialized;
+            controller: ['$scope', 'annotations', function($scope, annotations) {
+                $scope.isTableRendering = function(file) {
+                    return file.data.annotations.rendering;
                 }
-
-                function isPageInitError() {
-                    return initializeError;
-                }
-
-                function initializeFile(file) {
-                    if (!file.loaded) {
-                        annotationLoad(file)
-                    }
-                }
-
-                function cdr3aaColored(data) {
-                    var cdr3aa = data["cdr3aa"];
-                    var vend = Math.floor(data["vend"] / 3);
-                    var dstart = Math.floor(data["dstart"] / 3);
-                    var dend = Math.floor(data["dend"] / 3);
-                    var jstart = Math.floor(data["jstart"] / 3);
-                    var pos = data["pos"];
-                    jstart = (jstart < 0) ? 10000 : jstart;
-                    dstart = (dstart < 0) ? vend + 1 : dstart;
-                    dend = (dend < 0) ? vend : dend;
-                    while (vend >= jstart) jstart++;
-                    while (dstart <= vend) dstart++;
-                    while (dend >= jstart) dend--;
-                    var createSubString = function (start, end, color) {
-                        return {
-                            start: start,
-                            end: end,
-                            color: color,
-                            substring: cdr3aa.substring(start, end + 1)
-                        }
-                    };
-
-                    var insert = function (index, str, insertString) {
-                        if (index > 0)
-                            return str.substring(0, index) + insertString + str.substring(index, str.length);
-                        else
-                            return insertString + str;
-                    };
-
-                    var arr = [];
-
-                    if (vend >= 0) {
-                        arr.push(createSubString(0, vend, "#4daf4a"));
-                    }
-
-                    if (dstart - vend > 1) {
-                        arr.push(createSubString(vend + 1, dstart - 1, "black"));
-                    }
-
-                    if (dstart > 0 && dend > 0 && dend >= dstart) {
-                        arr.push(createSubString(dstart, dend, "#ec7014"));
-                    }
-
-                    if (jstart - dend > 1) {
-                        arr.push(createSubString(dend + 1, jstart - 1, "black"));
-                    }
-
-                    if (jstart > 0) {
-                        arr.push(createSubString(jstart, cdr3aa.length, "#377eb8"));
-                    }
-
-                    var result = "";
-                    for (var i = 0; i < arr.length; i++) {
-                        var element = arr[i];
-                        if (pos >= element.start && pos <= element.end) {
-                            var newPos = pos - element.start;
-                            element.substring = insert(newPos + 1, element.substring, '</u></b>');
-                            element.substring = insert(newPos, element.substring, '<b><u>');
-                        }
-                        result += '<text style="color: ' + element.color + '">' + element.substring + '</text>';
-                    }
-                    return $sce.trustAsHtml(result);
-                }
-
-                function annotationLoad(file, parametersIgnore) {
-                    var parameters = file.data.annotationParameters;
-                    var d3Place = d3.select(".annotation_table_" + file.uid);
-                    d3Place.html("");
-                    file.loading = true;
-                    clearErrors(file);
-                    $http.post('/api/annotations/data', {
-                        fileName: file.fileName,
-                        parameters: {
-                            parametersIgnore: (function() {
-                                if (typeof parametersIgnore == 'undefined') {
-                                    return true;
-                                }
-                                return parametersIgnore;
-                            }()),
-                            vMatch: (function() {
-                                if (parameters && parameters.vMatch) return parameters.vMatch;
-                                return false;
-                            }()),
-                            jMatch: (function() {
-                                if (parameters && parameters.jMatch) return parameters.jMatch;
-                                return false;
-                            }()),
-                            mismatches: (function() {
-                                if (parameters && parameters.mismatches) return parameters.mismatches;
-                                return 1;
-                            }()),
-                            deletions: (function() {
-                                if (parameters && parameters.deletions) return parameters.deletions;
-                                return 0;
-                            }()),
-                            insertions: (function() {
-                                if (parameters && parameters.insertions) return parameters.insertions;
-                                return 0;
-                            }()),
-                            totalMutations: (function() {
-                                if (parameters && parameters.totalMutations) return parameters.totalMutations;
-                                return 1;
-                            }())
-                        }
-                    }).success(function(data) {
-                        file.loading = false;
-                        file.loaded = true;
-                        file.data = data;
-                        //TODO
-                        /*
-                         if (data.annotationTable.result != 'error') {
-                         setAnnotaionParameters(file, data.annotationTable);
-                         annotationTable(data.annotationTable, file.uid);
-                         } else {
-                         annotationError(file, data.annotationTable.message);
-                         }
-                         */
-                    }).error(function(data) {
-                        console.log(data);
-                        file.initError = true;
-                        if (data.message) {
-                            showErrorMessage(data.message);
-                        } else {
-                            showErrorMessage('Server is currently unavailable');
-                        }
-                    })
-                }
-
-                function isLoading(file) {
-                    return file.loading;
-                }
-
-                function isLoaded(file) {
-                    return file.loaded;
-                }
-
-                function isInitError(file) {
-                    return file.initError;
-                }
-
-                function shareFile(file) {
-                    $http.post('/api/annotations/share', {fileName: file.fileName })
-                        .success(function (data) {
-                            switch (data.result) {
-                                case 'success':
-                                    window.location.href = '/annotations/shared/' + data.message;
-                                    break;
-                                case 'error':
-                                    showErrorMessage(data.message);
-                                    break;
-                                default:
-                                    showErrorMessage('Server is unavailable');
-                            }
-                        })
-                        .error(function () {
-                            showErrorMessage('Server is unavailable');
-                        })
-                }
-
-                function showErrorMessage(message) {
-                    $scope.errorMessage = message;
-                    $timeout(function () {
-                        $scope.errorMessage = '';
-                    }, 10000)
-
-                }
-
-                function isError() {
-                    return $scope.errorMessage != '';
-                }
-
-                function isUserHaveFiles() {
-                    return $scope.files.length;
-                }
-
-                function removeFileFromList(file) {
-                    var index = $scope.files.indexOf(file);
-                    $scope.files.splice(index, 1);
-                }
-
-                function smoothScrollToTop() {
-                    $('body').animate({
-                        scrollTop: 0
-                    }, 600);
-                }
-
-                function setActiveFile(file) {
-                    $scope.activeFile = file;
-                    if (file != '') {
-                        initializeFile(file);
-                    }
-                }
-
-
-                function setAnnotaionParameters(file, parameters) {
-                    file.data.annotationParameters = {
-                        deletions: parameters.deletions,
-                        insertions: parameters.insertions,
-                        mismatches: parameters.mismatches,
-                        totalMutations: parameters.totalMutations,
-                        jMatch: parameters.jMatch,
-                        vMatch: parameters.vMatch
-                    }
-                }
-
-                function annotationTable(data, id) {
-                    var d3Place = d3.select(".annotation_table_" + id);
-                    d3Place.html("");
-                    var table = d3Place.append("table")
-                        .attr("id", "annotation_table_" + id)
-                        .attr("class", "table table-hover");
-                    var thead = table.append("thead").append("tr");
-
-                    thead.append("th").html("Frequency");
-                    thead.append("th").html("Count");
-                    thead.append("th").html("CDR3AA");
-                    thead.append("th").html("V");
-                    thead.append("th").html("J");
-
-                    var column = [
-                        {"data": "freq"},
-                        {"data": "count"},
-                        {"data": "query_cdr3aa"},
-                        {"data": "query_V"},
-                        {"data": "query_J"}
-                    ];
-
-                    var header = data.header;
-
-                    for (var i = 0; i < header.length; i++) {
-                        thead.append("th").html(header[i]);
-                        column.push({
-                            "data": header[i]
-                        })
-                    }
-
-                    var dataTable = $('#annotation_table_' + id).dataTable({
-                        "data": data.table,
-                        "columns": column,
-                        dom: '<"pull-left"f>    l<"clear">Trtd<"pull-left"i>p',
-                        responsive: true,
-                        order: [
-                            [0, "desc"]
-                        ],
-                        "scrollY": "600px",
-                        "columnDefs": [
-                            {
-                                "width": "5%",
-                                "render": function (data) {
-                                    return (data * 100).toPrecision(2) + '%';
-                                },
-                                "targets": 0
-                            },
-                            {
-                                "width": "5%",
-                                "targets": 1
-                            },
-                            {
-                                "width": "7%",
-                                "targets": 2,
-                                "render": function (data) {
-                                    var cdr3aa = data["cdr3aa"];
-                                    var vend = Math.floor(data["vend"] / 3);
-                                    var dstart = Math.floor(data["dstart"] / 3);
-                                    var dend = Math.floor(data["dend"] / 3);
-                                    var jstart = Math.floor(data["jstart"] / 3);
-                                    var pos = data["pos"];
-                                    jstart = (jstart < 0) ? 10000 : jstart;
-                                    dstart = (dstart < 0) ? vend + 1 : dstart;
-                                    dend = (dend < 0) ? vend : dend;
-                                    while (vend >= jstart) jstart++;
-                                    while (dstart <= vend) dstart++;
-                                    while (dend >= jstart) dend--;
-                                    var createSubString = function (start, end, color) {
-                                        return {
-                                            start: start,
-                                            end: end,
-                                            color: color,
-                                            substring: cdr3aa.substring(start, end + 1)
-                                        }
-                                    };
-
-                                    var insert = function (index, str, insertString) {
-                                        if (index > 0)
-                                            return str.substring(0, index) + insertString + str.substring(index, str.length);
-                                        else
-                                            return insertString + str;
-                                    };
-
-                                    var arr = [];
-
-                                    if (vend >= 0) {
-                                        arr.push(createSubString(0, vend, "#4daf4a"));
-                                    }
-
-                                    if (dstart - vend > 1) {
-                                        arr.push(createSubString(vend + 1, dstart - 1, "black"));
-                                    }
-
-                                    if (dstart > 0 && dend > 0 && dend >= dstart) {
-                                        arr.push(createSubString(dstart, dend, "#ec7014"));
-                                    }
-
-                                    if (jstart - dend > 1) {
-                                        arr.push(createSubString(dend + 1, jstart - 1, "black"));
-                                    }
-
-                                    if (jstart > 0) {
-                                        arr.push(createSubString(jstart, cdr3aa.length, "#377eb8"));
-                                    }
-
-                                    var result = "";
-                                    for (var i = 0; i < arr.length; i++) {
-                                        var element = arr[i];
-                                        if (pos >= element.start && pos <= element.end) {
-                                            var newPos = pos - element.start;
-                                            element.substring = insert(newPos + 1, element.substring, '</u></b>');
-                                            element.substring = insert(newPos, element.substring, '<b><u>');
-                                        }
-                                        result += '<text style="color: ' + element.color + '">' + element.substring + '</text>';
-                                    }
-                                    result = '<a href="/database#?input=' + cdr3aa +'">' + result + '</a>';
-                                    return result;
-                                }
-
-                            },
-                            {
-                                "targets": 3,
-                                "render": function (data) {
-                                    if (!data.match) {
-                                        return '<text style="color: #dc6767">' + data.v + '</text>';
-                                    }
-                                    return data.v;
-                                }
-                            },
-                            {
-                                "targets": 4,
-                                "render": function (data) {
-                                    if (!data.match) {
-                                        return '<text style="color: #dc6767">' + data.j + '</text>';
-                                    }
-                                    return data.j;
-                                }
-
-                            }
-                        ]
-                    })
-
-                }
-
-                function clearErrors(file) {
-                    file.data.annotationParameters.error = false;
-                }
-
-                function annotationError(file, message) {
-                    file.data.annotationParameters.error = true;
-                    file.data.annotationParameters.errorMessage = message;
-                }
-
             }]
         }
     });
@@ -988,6 +597,149 @@
         }
     });
 })();
+
+function annotationTable(file) {
+    var data = file.data.annotations.table;
+    var header = data.header;
+    var rows = data.rows;
+    var uid = file.uid;
+
+    var d3Place = d3.select(".annotation_table_" + uid);
+        d3Place.html("");
+    var table = d3Place.append("table")
+        .attr("id", "annotation_table_" + uid)
+        .attr("class", "table table-hover compact");
+    var thead = table.append("thead").append("tr");
+        thead.append("th").html("Frequency");
+    var column = [{
+        data: 'freq'
+    }];
+    for (var i = 0; i < header.length; i++) {
+        thead.append("th").html(header[i].name);
+        column.push({
+            data: header[i].db_name
+        })
+    }
+
+    var dataTable = $('#annotation_table_' + uid).dataTable({
+        data: data.rows,
+        columns: column,
+        dom: '<"pull-left"f>    l<"clear">Trtd<"pull-left"i>p',
+        responsive: true,
+        order: [
+            [0, "desc"]
+        ],
+        iDisplayLength: 70,
+        scrollY: "600px",
+        columnDefs: [
+            {
+                width: "5%",
+                targets: 0,
+                render: function (data) {
+                    return (data * 100).toPrecision(2) + '%';
+                }
+            },
+            {
+                width: "7%",
+                targets: 1,
+                render: function (data) {
+                    var cdr3aa = data["cdr3aa"];
+                    var vend = Math.floor(data["vend"] / 3);
+                    var dstart = Math.floor(data["dstart"] / 3);
+                    var dend = Math.floor(data["dend"] / 3);
+                    var jstart = Math.floor(data["jstart"] / 3);
+                    var pos = data["pos"];
+                    jstart = (jstart < 0) ? 10000 : jstart;
+                    dstart = (dstart < 0) ? vend + 1 : dstart;
+                    dend = (dend < 0) ? vend : dend;
+                    while (vend >= jstart) jstart++;
+                    while (dstart <= vend) dstart++;
+                    while (dend >= jstart) dend--;
+                    var createSubString = function (start, end, color) {
+                        return {
+                            start: start,
+                            end: end,
+                            color: color,
+                            substring: cdr3aa.substring(start, end + 1)
+                        }
+                    };
+
+                    var insert = function (index, str, insertString) {
+                        if (index > 0)
+                            return str.substring(0, index) + insertString + str.substring(index, str.length);
+                        else
+                            return insertString + str;
+                    };
+
+                    var arr = [];
+
+                    if (vend >= 0) {
+                        arr.push(createSubString(0, vend, "#4daf4a"));
+                    }
+
+                    if (dstart - vend > 1) {
+                        arr.push(createSubString(vend + 1, dstart - 1, "black"));
+                    }
+
+                    if (dstart > 0 && dend > 0 && dend >= dstart) {
+                        arr.push(createSubString(dstart, dend, "#ec7014"));
+                    }
+
+                    if (jstart - dend > 1) {
+                        arr.push(createSubString(dend + 1, jstart - 1, "black"));
+                    }
+
+                    if (jstart > 0) {
+                        arr.push(createSubString(jstart, cdr3aa.length, "#377eb8"));
+                    }
+
+                    var result = "";
+                    for (var i = 0; i < arr.length; i++) {
+                        var element = arr[i];
+                        if (pos >= element.start && pos <= element.end) {
+                            var newPos = pos - element.start;
+                            element.substring = insert(newPos + 1, element.substring, '</u></b>');
+                            element.substring = insert(newPos, element.substring, '<b><u>');
+                        }
+                        result += '<text style="color: ' + element.color + '">' + element.substring + '</text>';
+                    }
+                    result = '<a href="/database#?input=' + cdr3aa +'">' + result + '</a>';
+                    return result;
+                }
+
+            },
+            {
+                width: "5%",
+                targets: 2,
+                render: function (data) {
+                    if (!data.match) {
+                        return '<text style="color: #dc6767">' + data.v + '</text>';
+                    }
+                    return data.v;
+                }
+            },
+            {
+                width: "5%",
+                targets: 3,
+                render: function (data) {
+                    if (!data.match) {
+                        return '<text style="color: #dc6767">' + data.j + '</text>';
+                    }
+                    return data.j;
+                }
+
+            },
+            {
+                targets: 13,
+                render: function(data) {
+                    var id = data.substring(5, data.length);
+                    return 'PBMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                }
+            }
+        ]
+    })
+
+}
 
 function testWatchers() {
     "use strict";

@@ -1,7 +1,7 @@
 @(token: String)
 @main("Search page") {
     <script src="@routes.Assets.at("javascripts/search.js")" type="text/javascript"></script>
-    <div class="container" ng-app="searchPage">
+    <div class="container-fluid" ng-app="searchPage">
         <div class="page-header">
             page header
         </div>
@@ -64,25 +64,15 @@
                     </div>
                     <div class="box-footer">
                         <button class="btn btn-primary" ng-click="addFilter()">Add new filter</button>
-                        <button class="btn btn-primary" ng-click="logFilters()">Log filters</button>
                         <button class="pull-right btn btn-primary" ng-click="search()">Search</button>
                     </div>
                 </div>
                 <div class="box box-solid" ng-if="isNoResults()">
                     <div class="box-header">No results found in our database</div>
                 </div>
-                <div class="box box-solid" ng-repeat="result in results">
-                    <div class="box-header">
-                        {{ ::result.cdr3 }}
-                    </div>
-                    <div class="box-body">
-                        <table class="table table-responsive">
-                            <tbody>
-                                <tr ng-repeat="entry in ::result.cdrEntries">
-                                    <td ng-repeat="field in ::availableFields">{{ ::entry[field.db_name] }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="box box-solid" ng-hide="isNoResults()">
+                    <div class="box-body results-table">
+
                     </div>
                 </div>
             </div>

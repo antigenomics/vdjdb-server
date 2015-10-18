@@ -11,9 +11,9 @@
                     <div class="sidebar_sample" ng-if="!isUserHaveFiles()">
                         <div class="cell_text">You have no files</div>
                     </div>
-                    <div class="sidebar_sample" ng-repeat="file in files" ng-class="{'sample_active':isFileActive(file)}" ng-click="setActiveFile(file)" ng-mouseenter="hover=true" ng-mouseleave="hover=false">
+                    <div class="sidebar_sample" ng-repeat="file in files" ng-class="{'sample_active':isFileActive(file)}" ng-click="setActiveFile(file)">
                         <div class="cell_text">{{ ::file.fileName }}
-                            <i class="fa fa-trash-o sidebar_sample_delete_icon" ng-show="hover" ng-click="$event.stopPropagation(); deleteFile(file)" tooltip-placement="right" tooltip="Delete"></i>
+                            <i class="fa fa-trash-o sidebar_sample_delete_icon" ng-click="$event.stopPropagation(); deleteFile(file)" tooltip-placement="right" tooltip="Delete"></i>
                         </div>
                     </div>
                     <div class="sidebar_delimiter_bottom"></div>

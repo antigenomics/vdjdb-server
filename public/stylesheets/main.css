@@ -27,11 +27,14 @@ body {
 .sample_active {
     border-left: 4px solid dodgerblue;
 }
-
 .sidebar_sample_delete_icon {
     right: 20px;
     margin-top: 2px;
     position: absolute;
+    visibility: hidden;
+}
+.sidebar_sample:hover .sidebar_sample_delete_icon {
+    visibility: visible;
 }
 .sidebar > .sidebar_delimiter_top {
     height: 20px;
@@ -55,6 +58,7 @@ body {
 
 .tabs > .tab {
     float: left;
+    margin-left: 10px;
     height: 40px;
     width: 100px;
     cursor: pointer;
@@ -73,7 +77,9 @@ body {
     border-bottom: 3px solid dodgerblue;
 }
 
-
+/*
+    Block page css styles
+*/
 
 .block_page_body {
     left: 0;
@@ -103,6 +109,8 @@ body {
     background-color: white;
     position: fixed;
 }
+
+
 
 .loader {
     font-size: 10px;

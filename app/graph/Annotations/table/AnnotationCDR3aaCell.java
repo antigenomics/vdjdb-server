@@ -13,6 +13,8 @@ public class AnnotationCDR3aaCell {
     public Integer dstart;
     public Integer dend;
 
+    public AnnotationCDR3aaCell() {}
+
     public AnnotationCDR3aaCell(CdrMatch cdrMatch) {
         this.cdr3aa = cdrMatch.getQuery().getCdr3aa();
         this.pos = cdrMatch.getAlignment().getAbsoluteMutations().firsMutationPosition();

@@ -5,7 +5,7 @@
     <appender name="STDLOG" class="ch.qos.logback.core.FileAppender">
         <file>/tmp/vdjdb-server.log</file>
         <encoder>
-            <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+            <pattern>%date - [%level] - %n%message%n%xException%n</pattern>
         </encoder>
     </appender>
 

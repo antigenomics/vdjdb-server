@@ -1,0 +1,13 @@
+<div ng-repeat="file in files" ng-show="isAnnotations()">
+    <annotations-table id="annotations">
+        <div ng-show="isFileActive(file)">
+            <p>
+                Description placeholder
+            </p>
+            <div class="loader" ng-if="isTableRendering(file)"></div>
+            <div class="annotation_table_{{ file.uid }}">
+
+            </div>
+        </div>
+    </annotations-table>
+</div>
