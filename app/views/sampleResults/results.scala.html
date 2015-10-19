@@ -20,11 +20,7 @@
             <div class="box-body">
                 @views.html.sampleResults.resultsTemplates.annotations()
 
-                <div id="placeholder" ng-show="isPlaceholder()">
-                    <p ng-repeat="file in files" ng-show="isFileActive(file)">
-                        Placeholder for {{ ::file.fileName }}
-                    </p>
-                </div>
+                @views.html.sampleResults.resultsTemplates.sunburst()
             </div>
         </div>
     </div>

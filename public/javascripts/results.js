@@ -42,7 +42,11 @@
                         table: [],
                         loaded: false,
                         rendering: false
-
+                    },
+                    sunburst: {
+                        chart: {},
+                        loaded: false,
+                        rendering: false
                     }
                 },
                 initError: false
@@ -174,13 +178,13 @@
     /*
         Results factory and directive
      */
-    app.factory('results', ['user', '$http', 'annotations', function(user, $http, annotations) {
+    app.factory('results', ['user', '$http', 'annotations', 'sunburst', function(user, $http, annotations, sunburst) {
         var tabs = Object.freeze({
             annotations: {
                 name: 'Annotations'
             },
-            placeholder: {
-                name: 'Placeholder'
+            sunburst: {
+                name: 'Sunburst'
             }
         });
         var activeTab = tabs.annotations;
@@ -190,7 +194,11 @@
         }
 
         function setActiveTab(tab) {
-            activeTab = tab;
+            if (activeTab !== tab) {
+                activeTab = tab;
+                update();
+            }
+
         }
 
         function isTabActive(tab) {
@@ -205,8 +213,8 @@
             return activeTab === tabs.annotations;
         }
 
-        function isPlaceholder() {
-            return activeTab === tabs.placeholder;
+        function isSunburst() {
+            return activeTab === tabs.sunburst;
         }
 
         function update() {
@@ -215,6 +223,9 @@
             switch (activeTab) {
                 case tabs.annotations:
                     annotations.update(file);
+                    break;
+                case tabs.sunburst:
+                    sunburst.update(file);
                     break;
             }
         }
@@ -226,7 +237,7 @@
             getActiveTab: getActiveTab,
             update: update,
             isAnnotations: isAnnotations,
-            isPlaceholder: isPlaceholder
+            isSunburst: isSunburst
         }
     }]);
 
@@ -240,7 +251,7 @@
                 $scope.setActiveTab = results.setActiveTab;
                 $scope.isTabActive = results.isTabActive;
                 $scope.isAnnotations = results.isAnnotations;
-                $scope.isPlaceholder = results.isPlaceholder;
+                $scope.isSunburst = results.isSunburst;
 
                 //User API
                 $scope.files = user.getFiles();
@@ -272,7 +283,7 @@
                         file.data.annotations.rendering = false;
                     })
                     .error(function (error) {
-                        console.log(error.message);
+                        console.log(error);
                         file.data.annotations.rendering = false;
                     })
             }
@@ -287,10 +298,46 @@
     app.directive('annotationsTable', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', 'annotations', function($scope, annotations) {
+            controller: ['$scope', function($scope) {
                 $scope.isTableRendering = function(file) {
                     return file.data.annotations.rendering;
-                }
+                };
+            }]
+        }
+    });
+
+    app.factory('sunburst', ['$http', function($http) {
+        function update(file) {
+            if (!file.data.sunburst.loaded) {
+                file.data.sunburst.rendering = true;
+                $http.post('/api/annotations/sunburst', {
+                    fileName: file.fileName
+                })
+                    .success(function(data) {
+                        file.data.sunburst.chart = data.sunburst;
+                        file.data.sunburst.loaded = true;
+                        file.data.sunburst.rendering = false;
+                        sunburstChart(file);
+                    })
+                    .error(function (error) {
+                        console.log(error);
+                        file.data.sunburst.rendering = false;
+                    })
+            }
+        }
+
+        return {
+            update: update
+        }
+    }]);
+
+    app.directive('sunburst', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', function($scope) {
+                $scope.isSunburstChartRendering = function(file) {
+                    return file.data.sunburst.rendering;
+                };
             }]
         }
     });
@@ -739,6 +786,160 @@ function annotationTable(file) {
         ]
     })
 
+}
+
+function sunburstChart(file) {
+    var data = file.data.sunburst.chart;
+    var uid = file.uid;
+    nv.addGraph(function () {
+        var width = 500,
+            height = 500,
+            radius = Math.min(width, height) / 3,
+            padding = 5;
+
+        var x = d3.scale.linear()
+            .range([0, 2 * Math.PI]);
+
+        var y = d3.scale.sqrt()
+            .range([0, radius]);
+
+        var colors = d3.scale.category20();
+
+        var place = d3.select(".sunburst_chart_" + uid);
+            place.html("");
+        var svg = place.append("svg")
+                .attr("id", "sunburst_chart_" + uid)
+                .attr("class", "sunbirst")
+                .style("display", "block")
+                .style("overflow", "visible")
+                .style("margin", "auto")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+
+        var partition = d3.layout.partition()
+            .sort(null)
+            .value(function (d) {
+                return d.size;
+            });
+
+        var arc = d3.svg.arc()
+            .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+            .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+            .innerRadius(function(d) { return Math.max(0, d.y ? y(d.y) : d.y); })
+            .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)) + 50; });
+
+        var nodes = partition.nodes(data);
+
+        var topCount = 0;
+
+        var path = svg.selectAll("path")
+            .data(nodes)
+            .enter().append("path")
+            .attr("id", function(d, i) { return "path-" + i; })
+            .attr("d", arc)
+            .style("fill", function(d, i) {
+                if (d.name == 'main') return "#ffffff";
+                return colors(i);
+            })
+            .style("cursor", function(d) {
+                if (d.children !== null) {
+                    return "pointer";
+                }
+                return null;
+            })
+            .on("click", click);
+
+        var text = svg.selectAll("text").data(nodes);
+        var textEnter = text.enter().append("text")
+            .style("fill-opacity", 1)
+            .style("fill", function() {
+                return "black";
+                //return brightness(d3.rgb(colour(d))) < 125 ? "#eee" : "#000";
+            })
+            .attr("text-anchor", function(d) {
+                return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
+            })
+            .attr("dy", ".2em")
+            .attr("transform", function(d) {
+                var multiline = (d.name || "").split(" ").length > 1,
+                    angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90,
+                    rotate = angle + (multiline ? -.5 : 0);
+                return "rotate(" + rotate + ")translate(" + (y(d.y) + padding) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
+            })
+            .on("click", click);
+        textEnter.append("tspan")
+            .attr("x", 0)
+            .text(function(d) {
+                if (d.name === "main") return null;
+                var label = d.name;
+                if (d.size !== 0) {
+                    label += "  " + (d.size.toPrecision(2))
+                }
+                return label;
+            });
+
+        function click(d) {
+            if (d.children) {
+                path.transition()
+                    .duration(500)
+                    .attrTween("d", arcTween(d));
+                text.style("visibility", function(e) {
+                    return isParentOf(d, e) ? null : d3.select(this).style("visibility");
+                })
+                    .transition()
+                    .duration(500)
+                    .attrTween("text-anchor", function(d) {
+                        return function() {
+                            return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
+                        };
+                    })
+                    .attrTween("transform", function(d) {
+                        var multiline = (d.name || "").split(" ").length > 1;
+                        return function() {
+                            var angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90,
+                                rotate = angle + (multiline ? -.5 : 0);
+                            return "rotate(" + rotate + ")translate(" + (y(d.y) + padding) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
+                        };
+                    })
+                    .style("fill-opacity", function(e) { return isParentOf(d, e) ? 1 : 1e-6; })
+                    .each("end", function(e) {
+                        d3.select(this).style("visibility", isParentOf(d, e) ? null : "hidden");
+                    });
+            }
+        }
+
+        function isParentOf(p, c) {
+            if (p == c) return true;
+            if (p.children != null) {
+                return p.children.some(function(d) {
+                    return isParentOf(d, c);
+                });
+            }
+            return false;
+        }
+
+        d3.select(self.frameElement).style("height", height + "px");
+
+        // Interpolate the scales!
+        function arcTween(d) {
+            var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+                yd = d3.interpolate(y.domain(), [d.y, 1]),
+                yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+            return function (d, i) {
+                return i ? function (t) {
+                    return arc(d);
+                }
+                    : function (t) {
+                    x.domain(xd(t));
+                    y.domain(yd(t)).range(yr(t));
+                    return arc(d);
+                };
+            };
+        }
+
+    });
 }
 
 function testWatchers() {

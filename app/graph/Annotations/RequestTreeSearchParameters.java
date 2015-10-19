@@ -17,6 +17,18 @@ public class RequestTreeSearchParameters {
     public Integer insertions;
     public Integer totalMutations;
 
+    public RequestTreeSearchParameters() {}
+
+    public RequestTreeSearchParameters(Boolean ignore, Boolean jMatch, Boolean vMatch, Integer mismatches, Integer deletions, Integer insertions, Integer totalMutations) {
+        this.ignore = ignore;
+        this.jMatch = jMatch;
+        this.vMatch = vMatch;
+        this.mismatches = mismatches;
+        this.deletions = deletions;
+        this.insertions = insertions;
+        this.totalMutations = totalMutations;
+    }
+
     public TreeSearchParameters getTreeSearchParameters() {
         return new TreeSearchParameters(mismatches, deletions, insertions, totalMutations);
     }
@@ -29,5 +41,9 @@ public class RequestTreeSearchParameters {
                         annotationCache.insertions.equals(insertions) &&
                         annotationCache.mismatches.equals(mismatches) &&
                         annotationCache.totalMutations.equals(totalMutations);
+    }
+
+    public static RequestTreeSearchParameters getDefaultParameters() {
+        return new RequestTreeSearchParameters(true, false, false, 2, 1, 1, 2);
     }
 }

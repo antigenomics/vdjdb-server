@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.Application;
 import graph.Annotations.CachedAnnotations;
 import graph.Annotations.RequestTreeSearchParameters;
+import graph.Annotations.table.AnnotationRow;
+import graph.Sunburst.CachedSunburst;
 import models.SampleFile;
 import models.Token;
 import play.libs.Json;
@@ -19,6 +21,8 @@ import utils.ServerResponse.errors.ServerErrorCode;
 import utils.ServerResponse.SuccessResponse;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 public class AnnotationsAPI extends Controller {
 
@@ -144,7 +148,8 @@ public class AnnotationsAPI extends Controller {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             parameters = objectMapper.convertValue(request.get("parameters"), RequestTreeSearchParameters.class);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
         }
 
@@ -155,4 +160,25 @@ public class AnnotationsAPI extends Controller {
         CachedAnnotations cachedAnnotations = CachedAnnotations.cached(sampleFile, parameters);
         return ok(Json.toJson(cachedAnnotations));
     }
+
+    public static Result sunbirstData() {
+        Token user = Application.authtorize();
+
+        if (user == null) {
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_COOKIE));
+        }
+        JsonNode request = request().body().asJson();
+        if (!request.has("fileName")) {
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
+        }
+        String fileName = request.get("fileName").asText();
+
+        SampleFile sampleFile = user.findFileByName(fileName);
+        if (sampleFile == null) {
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_FILE_NAME));
+        }
+        CachedSunburst cachedSunburst = CachedSunburst.cached(sampleFile);
+        return ok(Json.toJson(cachedSunburst));
+    }
+
 }

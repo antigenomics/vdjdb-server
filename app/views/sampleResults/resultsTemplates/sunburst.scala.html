@@ -1,0 +1,13 @@
+<div ng-repeat="file in files" ng-show="isSunburst()">
+    <annotations-table id="annotations">
+        <div ng-show="isFileActive(file)">
+            <p>
+                Description placeholder
+            </p>
+            <div class="loader" ng-if="isSunburstChartRendering(file)"></div>
+            <div class="sunburst_chart_{{ file.uid }}">
+
+            </div>
+        </div>
+    </annotations-table>
+</div>
