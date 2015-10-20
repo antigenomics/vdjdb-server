@@ -26,6 +26,7 @@ body {
 }
 .sample_active {
     border-left: 4px solid dodgerblue;
+    background-color: #EBFAFF;
 }
 .sidebar_sample_delete_icon {
     right: 20px;

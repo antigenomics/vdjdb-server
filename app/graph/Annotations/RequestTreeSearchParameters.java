@@ -33,17 +33,17 @@ public class RequestTreeSearchParameters {
         return new TreeSearchParameters(mismatches, deletions, insertions, totalMutations);
     }
 
-    public Boolean isParametersEquals(CachedAnnotations annotationCache) {
+    public Boolean isParametersEquals(RequestTreeSearchParameters parameters) {
         return ignore ||
-                annotationCache.jMatch.equals(jMatch) &&
-                        annotationCache.vMatch.equals(vMatch) &&
-                        annotationCache.deletions.equals(deletions) &&
-                        annotationCache.insertions.equals(insertions) &&
-                        annotationCache.mismatches.equals(mismatches) &&
-                        annotationCache.totalMutations.equals(totalMutations);
+                parameters.jMatch.equals(jMatch) &&
+                        parameters.vMatch.equals(vMatch) &&
+                        parameters.deletions.equals(deletions) &&
+                        parameters.insertions.equals(insertions) &&
+                        parameters.mismatches.equals(mismatches) &&
+                        parameters.totalMutations.equals(totalMutations);
     }
 
-    public static RequestTreeSearchParameters getDefaultParameters() {
+    public static RequestTreeSearchParameters defaultParameters() {
         return new RequestTreeSearchParameters(true, false, false, 2, 1, 1, 2);
     }
 }

@@ -9,6 +9,5 @@ public class Configuration {
     public static Integer maxClonotypesCount = Play.application().configuration().getInt("maxClonotypesCount");
     public static Integer maxFilesCount = Play.application().configuration().getInt("maxFilesCount");
     public static Integer maxFileSize = Play.application().configuration().getInt("maxFileSize");
-    //TODO
-    public static Integer maxTotalMutations = 2;
+    public static Integer maxTotalMutations = Play.application().configuration().getInt("maxTotalMutations");;
 }

@@ -1,27 +1,20 @@
-<results>
-    <div class="col-md-10" ng-show="isStateClear()">
-        <div class="box" ng-hide="isUserHaveFiles()">
-            <div class="box-body">
-                        You have no uploaded sample files yet. You can upload your samples on <a href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">this</a> page.
-                    </div>
+<div class="col-md-10" ng-show="isStateClear()">
+    <div class="box" ng-hide="isUserHaveFiles()">
+        <div class="box-body">
+                You have no uploaded sample files yet. You can upload your samples on <a href="@controllers.annotations.routes.AnnotationsPages.annotationsUploadFilesPage()">this</a> page.
+            </div>
+    </div>
+</div>
+<div class="col-md-10" ng-hide="isStateClear()">
+    <div ng-repeat="file in files" ng-show="isFileActive(file)">
+        <div class="col-md-12">
+            @views.html.sampleResults.resultsTemplates.parameters()
+        </div>
+        <div class="col-md-12">
+            @views.html.sampleResults.resultsTemplates.annotations()
+        </div>
+        <div class="col-md-4">
+            @views.html.sampleResults.resultsTemplates.sunburst()
         </div>
     </div>
-    <div class="col-md-10" ng-hide="isStateClear()">
-        <div class="box">
-            <div class="box-body">
-                <div class="tabs">
-                    <div class="tab" ng-repeat="tab in tabs" ng-click="setActiveTab(tab)" ng-class="{'tab_active':isTabActive(tab)}">
-                        <div class="cell_text">{{ tab.name }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="box">
-            <div class="box-body">
-                @views.html.sampleResults.resultsTemplates.annotations()
-
-                @views.html.sampleResults.resultsTemplates.sunburst()
-            </div>
-        </div>
-    </div>
-</results>
+</div>

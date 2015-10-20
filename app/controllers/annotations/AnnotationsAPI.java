@@ -168,16 +168,24 @@ public class AnnotationsAPI extends Controller {
             return badRequest(Json.toJson(ServerErrorCode.INVALID_COOKIE));
         }
         JsonNode request = request().body().asJson();
-        if (!request.has("fileName")) {
+        if (!request.has("fileName") || !request.has("parameters")) {
             return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
         }
         String fileName = request.get("fileName").asText();
+        RequestTreeSearchParameters parameters;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            parameters = objectMapper.convertValue(request.get("parameters"), RequestTreeSearchParameters.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
+        }
 
         SampleFile sampleFile = user.findFileByName(fileName);
         if (sampleFile == null) {
             return badRequest(Json.toJson(ServerErrorCode.INVALID_FILE_NAME));
         }
-        CachedSunburst cachedSunburst = CachedSunburst.cached(sampleFile);
+        CachedSunburst cachedSunburst = CachedSunburst.cached(sampleFile, parameters);
         return ok(Json.toJson(cachedSunburst));
     }
 

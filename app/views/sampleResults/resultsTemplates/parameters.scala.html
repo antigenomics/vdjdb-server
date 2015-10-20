@@ -1,0 +1,46 @@
+<div class="box box-widget" ng-hide="isTableRendering(file)">
+    <div class="box-header with-border">
+        <h2 class="box-title">Parameters</h2>
+    </div>
+    <div class="box-body">
+        <div class="parameters">
+            <div class="col-md-1">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="file.data.annotations.parameters.vMatch">
+                        V Match
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="file.data.annotations.parameters.jMatch">
+                        J Match
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label class="control-label">Mismatches</label>
+                    <input class="form-control" type="number" max="6" min="0" ng-model="file.data.annotations.parameters.mismatches">
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label class="control-label">Insertions</label>
+                    <input class="form-control" type="number" max="6" min="0" ng-model="file.data.annotations.parameters.insertions">
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label class="control-label">Deletions</label>
+                    <input class="form-control" type="number" max="6" min="0" ng-model="file.data.annotations.parameters.deletions">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="box-footer">
+        <button class="btn btn-default" ng-click="rerender(file)">Re-render</button>
+    </div>
+</div>

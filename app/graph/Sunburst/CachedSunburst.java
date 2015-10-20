@@ -21,30 +21,35 @@ public class CachedSunburst {
     public static final String CACHE_FILE_NAME = "sunburst.cache";
 
     public Sunburst sunburst;
+    public RequestTreeSearchParameters parameters;
 
     public CachedSunburst() {}
 
-    public CachedSunburst(Sunburst sunburst) {
+    public CachedSunburst(Sunburst sunburst, RequestTreeSearchParameters parameters) {
         this.sunburst = sunburst;
+        this.parameters = parameters;
     }
 
-    public static CachedSunburst cached(SampleFile sampleFile) {
+    public static CachedSunburst cached(SampleFile sampleFile, RequestTreeSearchParameters parameters) {
         File cache = new File(sampleFile.getDirectoryPath() + CACHE_FILE_NAME);
         if (cache.exists()) {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
-                return objectMapper.readValue(cache, CachedSunburst.class);
+                CachedSunburst cachedSunburst = objectMapper.readValue(cache, CachedSunburst.class);
+                if (parameters.isParametersEquals(cachedSunburst.parameters)) {
+                    return cachedSunburst;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 LogUtil.warnLog("Warn: unable to open cached annotations for file " + sampleFile.getFileName(), sampleFile.getToken().getUuid());
-                return generate(sampleFile);
+                return generate(sampleFile, parameters);
             }
         }
-        return generate(sampleFile);
+        return generate(sampleFile, parameters);
     }
 
-    private static CachedSunburst generate(SampleFile sampleFile) {
-        CachedAnnotations annotations = CachedAnnotations.cached(sampleFile, RequestTreeSearchParameters.getDefaultParameters());
+    private static CachedSunburst generate(SampleFile sampleFile, RequestTreeSearchParameters parameters) {
+        CachedAnnotations annotations = CachedAnnotations.cached(sampleFile, parameters);
         Map<String, List<AnnotationRow>> map = new HashMap<>();
         Map<String, Sunburst> sunburstMap = new HashMap<>();
         for (AnnotationRow annotationRow : annotations.table.getRows()) {
@@ -108,7 +113,7 @@ public class CachedSunburst {
         for (Sunburst sunburst : sunburstMap.values()) {
             main.addElement(sunburst);
         }
-        CachedSunburst cachedSunburst = new CachedSunburst(main);
+        CachedSunburst cachedSunburst = new CachedSunburst(main, parameters);
         cachedSunburst.save(sampleFile);
         return cachedSunburst;
     }

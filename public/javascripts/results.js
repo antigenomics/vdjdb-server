@@ -39,12 +39,10 @@
                             jMatch: false,
                             vMatch: false
                         },
-                        table: [],
                         loaded: false,
                         rendering: false
                     },
                     sunburst: {
-                        chart: {},
                         loaded: false,
                         rendering: false
                     }
@@ -158,11 +156,11 @@
     app.directive('sidebar', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', 'sidebar', 'user', 'results', function($scope, sidebar, user, results) {
+            controller: ['$scope', 'sidebar', 'user', 'annotations', function($scope, sidebar, user, annotations) {
                 $scope.files = user.getFiles();
                 $scope.setActiveFile = function(file) {
                     user.setActiveFile(file);
-                    results.update();
+                    annotations.update(file);
                 };
                 $scope.isFileActive = user.isFileActive;
                 $scope.deleteFile = sidebar.deleteFile;
@@ -175,122 +173,63 @@
         }
     });
 
-    /*
-        Results factory and directive
-     */
-    app.factory('results', ['user', '$http', 'annotations', 'sunburst', function(user, $http, annotations, sunburst) {
-        var tabs = Object.freeze({
-            annotations: {
-                name: 'Annotations'
-            },
-            sunburst: {
-                name: 'Sunburst'
-            }
-        });
-        var activeTab = tabs.annotations;
-
-        function getTabs() {
-            return tabs;
-        }
-
-        function setActiveTab(tab) {
-            if (activeTab !== tab) {
-                activeTab = tab;
-                update();
-            }
-
-        }
-
-        function isTabActive(tab) {
-            return tab === activeTab;
-        }
-
-        function getActiveTab() {
-            return activeTab;
-        }
-
-        function isAnnotations() {
-            return activeTab === tabs.annotations;
-        }
-
-        function isSunburst() {
-            return activeTab === tabs.sunburst;
-        }
-
-        function update() {
-            var file = user.getActiveFile();
-            if (file === '') return;
-            switch (activeTab) {
-                case tabs.annotations:
-                    annotations.update(file);
-                    break;
-                case tabs.sunburst:
-                    sunburst.update(file);
-                    break;
-            }
-        }
-
-        return {
-            getTabs: getTabs,
-            setActiveTab: setActiveTab,
-            isTabActive: isTabActive,
-            getActiveTab: getActiveTab,
-            update: update,
-            isAnnotations: isAnnotations,
-            isSunburst: isSunburst
-        }
-    }]);
-
-    app.directive('results', function() {
-        return {
-            restrict: 'E',
-            controller: ['$scope', 'user', 'results', function($scope, user, results) {
-
-                //Results API
-                $scope.tabs = results.getTabs();
-                $scope.setActiveTab = results.setActiveTab;
-                $scope.isTabActive = results.isTabActive;
-                $scope.isAnnotations = results.isAnnotations;
-                $scope.isSunburst = results.isSunburst;
-
-                //User API
-                $scope.files = user.getFiles();
-                $scope.isFileActive = user.isFileActive;
-                $scope.isStateClear = user.isStateClear;
-
-
-            }]
-        }
-    });
-
 
     /*
         Annotation table factory and directive
      */
-    app.factory('annotations', ['$http', function($http) {
+    app.factory('annotations', ['$http', 'sunburst', function($http, sunburst) {
+
+        function copyParameters(data, file) {
+            file.data.annotations.parameters.insertions = data.parameters.insertions;
+            file.data.annotations.parameters.deletions = data.parameters.deletions;
+            file.data.annotations.parameters.mismatches = data.parameters.mismatches;
+            file.data.annotations.parameters.totalMutations = data.parameters.totalMutations;
+            file.data.annotations.parameters.vMatch = data.parameters.vMatch;
+            file.data.annotations.parameters.jMatch = data.parameters.jMatch;
+        }
+
+        function updateParameters(file) {
+            file.data.annotations.parameters.ignore = false;
+            file.data.annotations.parameters.totalMutations =
+                file.data.annotations.parameters.deletions +
+                file.data.annotations.parameters.insertions +
+                file.data.annotations.parameters.mismatches;
+            file.data.annotations.loaded = false;
+            file.data.sunburst.loaded = false;
+        }
 
         function update(file) {
             if (!file.data.annotations.loaded) {
+                sunburst.rendering(file);
                 file.data.annotations.rendering = true;
                 $http.post('/api/annotations/data', {
                     fileName: file.fileName,
                     parameters: file.data.annotations.parameters
                 })
                     .success(function (annotations) {
-                        file.data.annotations.table = annotations.table;
                         file.data.annotations.loaded = true;
-                        annotationTable(file);
+                        copyParameters(annotations, file);
+                        annotationTable(annotations.table, file.uid);
                         file.data.annotations.rendering = false;
+                        sunburst.update(file);
                     })
                     .error(function (error) {
                         console.log(error);
+
                         file.data.annotations.rendering = false;
                     })
             }
         }
 
+        function rerender(file) {
+            updateParameters(file);
+            clearAnnotationTable(file);
+            update(file);
+        }
+
         return {
-            update: update
+            update: update,
+            rerender: rerender
         }
 
     }]);
@@ -298,10 +237,27 @@
     app.directive('annotationsTable', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', function($scope) {
+            controller: ['$scope', 'annotations', function($scope, annotations) {
                 $scope.isTableRendering = function(file) {
                     return file.data.annotations.rendering;
                 };
+
+                $scope.collapse = function(file, $event) {
+                    var self = $($event.currentTarget);
+                    var box = self.parents(".box").first();
+                    //Find the body and the footer
+                    var bf = box.find(".box-body, .box-footer");
+                    if (!self.children().hasClass("fa-plus")) {
+                        self.children(".fa-minus").removeClass("fa-minus").addClass("fa-plus");
+                        bf.slideUp();
+                    } else {
+                        //Convert plus into minus
+                        self.children(".fa-plus").removeClass("fa-plus").addClass("fa-minus");
+                        bf.slideDown();
+                    }
+                };
+
+                $scope.rerender = annotations.rerender;
             }]
         }
     });
@@ -311,13 +267,13 @@
             if (!file.data.sunburst.loaded) {
                 file.data.sunburst.rendering = true;
                 $http.post('/api/annotations/sunburst', {
-                    fileName: file.fileName
+                    fileName: file.fileName,
+                    parameters: file.data.annotations.parameters
                 })
                     .success(function(data) {
-                        file.data.sunburst.chart = data.sunburst;
                         file.data.sunburst.loaded = true;
                         file.data.sunburst.rendering = false;
-                        sunburstChart(file);
+                        sunburstChart(data.sunburst, file.uid);
                     })
                     .error(function (error) {
                         console.log(error);
@@ -326,8 +282,19 @@
             }
         }
 
+        function rendering(file) {
+             clearSunburstChat(file);
+             file.data.sunburst.rendering = true;
+        }
+
+        function rendered(file) {
+            file.data.sunburst.rendering = false;
+        }
+
         return {
-            update: update
+            update: update,
+            rendering: rendering,
+            rendered: rendered
         }
     }]);
 
@@ -645,11 +612,13 @@
     });
 })();
 
-function annotationTable(file) {
-    var data = file.data.annotations.table;
+/*
+    Annotation table functions
+ */
+
+function annotationTable(data, uid) {
     var header = data.header;
     var rows = data.rows;
-    var uid = file.uid;
 
     var d3Place = d3.select(".annotation_table_" + uid);
         d3Place.html("");
@@ -671,13 +640,13 @@ function annotationTable(file) {
     var dataTable = $('#annotation_table_' + uid).dataTable({
         data: data.rows,
         columns: column,
-        dom: '<"pull-left"f>    l<"clear">Trtd<"pull-left"i>p',
+        dom: '<"pull-left"f><"pull-right"l><"clear">Trtd<"pull-left"i>p',
         responsive: true,
         order: [
             [0, "desc"]
         ],
-        iDisplayLength: 70,
-        scrollY: "600px",
+        iDisplayLength: 50,
+        scrollY: "400px",
         columnDefs: [
             {
                 width: "5%",
@@ -788,12 +757,22 @@ function annotationTable(file) {
 
 }
 
-function sunburstChart(file) {
-    var data = file.data.sunburst.chart;
+function clearAnnotationTable(file) {
     var uid = file.uid;
+    var place = d3.select(".annotation_table_" + uid);
+        place.html("");
+}
+
+/*
+    Sunburst chart functions
+ */
+function sunburstChart(data, uid) {
     nv.addGraph(function () {
-        var width = 500,
-            height = 500,
+        var place = d3.select(".sunburst_chart_" + uid);
+            place.html("");
+
+        var width = place.node().getBoundingClientRect().width,
+            height = width,
             radius = Math.min(width, height) / 3,
             padding = 5;
 
@@ -805,8 +784,6 @@ function sunburstChart(file) {
 
         var colors = d3.scale.category20();
 
-        var place = d3.select(".sunburst_chart_" + uid);
-            place.html("");
         var svg = place.append("svg")
                 .attr("id", "sunburst_chart_" + uid)
                 .attr("class", "sunbirst")
@@ -940,6 +917,12 @@ function sunburstChart(file) {
         }
 
     });
+}
+
+function clearSunburstChat(file) {
+    var uid = file.uid;
+    var place = d3.select(".sunburst_chart_" + uid);
+    place.html("");
 }
 
 function testWatchers() {

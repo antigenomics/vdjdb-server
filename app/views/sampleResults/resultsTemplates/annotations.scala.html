@@ -1,13 +1,16 @@
-<div ng-repeat="file in files" ng-show="isAnnotations()">
-    <annotations-table id="annotations">
-        <div ng-show="isFileActive(file)">
-            <p>
-                Description placeholder
-            </p>
-            <div class="loader" ng-if="isTableRendering(file)"></div>
-            <div class="annotation_table_{{ file.uid }}">
-
+<annotations-table id="annotations">
+    <div class="box box-widget">
+        <div class="box-header with-border">
+            <h3 class="box-title">Annotations table</h3>
+            <div class="box-tools pull-right">
+                <button class="btn btn-box-tool" data-widget="collapse" ng-click="collapse(file, $event)">
+                    <i class="fa fa-minus"></i>
+                </button>
             </div>
         </div>
-    </annotations-table>
-</div>
+        <div class="box-body">
+            <div class="loader" ng-if="isTableRendering(file)"></div>
+            <div class="annotation_table_{{ file.uid }}"></div>
+        </div>
+    </div>
+</annotations-table>

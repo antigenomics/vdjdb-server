@@ -21,23 +21,13 @@ import java.io.PrintWriter;
 public class CachedAnnotations {
     public static final String CACHE_FILE_NAME = "annotation.cache";
 
-    public Boolean vMatch;
-    public Boolean jMatch;
-    public Integer mismatches;
-    public Integer deletions;
-    public Integer insertions;
-    public Integer totalMutations;
     public Annotations table;
+    public RequestTreeSearchParameters parameters;
 
     public CachedAnnotations() {}
 
     public CachedAnnotations(Annotations annotations, RequestTreeSearchParameters parameters) {
-        this.vMatch = parameters.vMatch;
-        this.jMatch = parameters.jMatch;
-        this.mismatches = parameters.mismatches;
-        this.deletions = parameters.deletions;
-        this.insertions = parameters.insertions;
-        this.totalMutations = parameters.totalMutations;
+        this.parameters = parameters;
         this.table = annotations;
     }
 
@@ -47,7 +37,7 @@ public class CachedAnnotations {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 CachedAnnotations cachedAnnotations = objectMapper.readValue(cache, CachedAnnotations.class);
-                if (parameters.isParametersEquals(cachedAnnotations)) {
+                if (parameters.isParametersEquals(cachedAnnotations.parameters)) {
                     return cachedAnnotations;
                 }
             } catch (Exception e) {
