@@ -7,9 +7,11 @@ import controllers.Application;
 import graph.Annotations.CachedAnnotations;
 import graph.Annotations.RequestTreeSearchParameters;
 import graph.Annotations.table.AnnotationRow;
+import graph.CountPiechart.CachedCountPiechart;
 import graph.Sunburst.CachedSunburst;
 import models.SampleFile;
 import models.Token;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -133,60 +135,49 @@ public class AnnotationsAPI extends Controller {
         }
     }
 
-    public static Result annotationsTable() {
-        Token user = Application.authtorize();
+    public static F.Promise<Result> data() {
+        return F.Promise.promise(new F.Function0<Result>() {
+            @Override
+            public Result apply() throws Throwable {
+                Token user = Application.authtorize();
 
-        if (user == null) {
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_COOKIE));
-        }
-        JsonNode request = request().body().asJson();
-        if (!request.has("fileName") || !request.has("parameters")) {
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
-        }
-        String fileName = request.get("fileName").asText();
-        RequestTreeSearchParameters parameters;
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            parameters = objectMapper.convertValue(request.get("parameters"), RequestTreeSearchParameters.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
-        }
+                if (user == null) {
+                    return badRequest(Json.toJson(ServerErrorCode.INVALID_COOKIE));
+                }
+                JsonNode request = request().body().asJson();
+                if (!request.has("fileName") || !request.has("parameters") || !request.has("type")) {
+                    return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
+                }
+                String fileName = request.get("fileName").asText();
+                RequestTreeSearchParameters parameters;
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    parameters = objectMapper.convertValue(request.get("parameters"), RequestTreeSearchParameters.class);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
+                }
 
-        SampleFile sampleFile = user.findFileByName(fileName);
-        if (sampleFile == null) {
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_FILE_NAME));
-        }
-        CachedAnnotations cachedAnnotations = CachedAnnotations.cached(sampleFile, parameters);
-        return ok(Json.toJson(cachedAnnotations));
+                SampleFile sampleFile = user.findFileByName(fileName);
+                if (sampleFile == null) {
+                    return badRequest(Json.toJson(ServerErrorCode.INVALID_FILE_NAME));
+                }
+
+                switch (request.get("type").asText()) {
+                    case "annotations":
+                        CachedAnnotations cachedAnnotations = CachedAnnotations.cached(sampleFile, parameters);
+                        return ok(Json.toJson(cachedAnnotations));
+                    case "sunburst":
+                        CachedSunburst cachedSunburst = CachedSunburst.cached(sampleFile, parameters);
+                        return ok(Json.toJson(cachedSunburst));
+                    case "countpie":
+                        CachedCountPiechart cachedCountPiechart = CachedCountPiechart.cached(sampleFile, parameters);
+                        return ok(Json.toJson(cachedCountPiechart));
+                    default:
+                        return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
+                }
+
+            }
+        });
     }
-
-    public static Result sunbirstData() {
-        Token user = Application.authtorize();
-
-        if (user == null) {
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_COOKIE));
-        }
-        JsonNode request = request().body().asJson();
-        if (!request.has("fileName") || !request.has("parameters")) {
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
-        }
-        String fileName = request.get("fileName").asText();
-        RequestTreeSearchParameters parameters;
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            parameters = objectMapper.convertValue(request.get("parameters"), RequestTreeSearchParameters.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_REQUEST));
-        }
-
-        SampleFile sampleFile = user.findFileByName(fileName);
-        if (sampleFile == null) {
-            return badRequest(Json.toJson(ServerErrorCode.INVALID_FILE_NAME));
-        }
-        CachedSunburst cachedSunburst = CachedSunburst.cached(sampleFile, parameters);
-        return ok(Json.toJson(cachedSunburst));
-    }
-
 }

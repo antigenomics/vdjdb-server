@@ -45,6 +45,15 @@
                     sunburst: {
                         loaded: false,
                         rendering: false
+                    },
+                    countpiechart: {
+                        loaded: false,
+                        rendering: false
+                    },
+                    recordscount: {
+                        loaded: false,
+                        rendering: false
+
                     }
                 },
                 initError: false
@@ -177,7 +186,7 @@
     /*
         Annotation table factory and directive
      */
-    app.factory('annotations', ['$http', 'sunburst', function($http, sunburst) {
+    app.factory('annotations', ['$http', 'sunburst', 'countpiechart', function($http, sunburst, countpie) {
 
         function copyParameters(data, file) {
             file.data.annotations.parameters.insertions = data.parameters.insertions;
@@ -195,16 +204,17 @@
                 file.data.annotations.parameters.insertions +
                 file.data.annotations.parameters.mismatches;
             file.data.annotations.loaded = false;
-            file.data.sunburst.loaded = false;
         }
 
         function update(file) {
             if (!file.data.annotations.loaded) {
                 sunburst.rendering(file);
+                countpie.rendering(file);
                 file.data.annotations.rendering = true;
                 $http.post('/api/annotations/data', {
                     fileName: file.fileName,
-                    parameters: file.data.annotations.parameters
+                    parameters: file.data.annotations.parameters,
+                    type: 'annotations'
                 })
                     .success(function (annotations) {
                         file.data.annotations.loaded = true;
@@ -212,6 +222,7 @@
                         annotationTable(annotations.table, file.uid);
                         file.data.annotations.rendering = false;
                         sunburst.update(file);
+                        countpie.update(file);
                     })
                     .error(function (error) {
                         console.log(error);
@@ -266,9 +277,10 @@
         function update(file) {
             if (!file.data.sunburst.loaded) {
                 file.data.sunburst.rendering = true;
-                $http.post('/api/annotations/sunburst', {
+                $http.post('/api/annotations/data', {
                     fileName: file.fileName,
-                    parameters: file.data.annotations.parameters
+                    parameters: file.data.annotations.parameters,
+                    type: 'sunburst'
                 })
                     .success(function(data) {
                         file.data.sunburst.loaded = true;
@@ -283,8 +295,9 @@
         }
 
         function rendering(file) {
-             clearSunburstChat(file);
-             file.data.sunburst.rendering = true;
+            clearSunburstChat(file);
+            file.data.sunburst.rendering = true;
+            file.data.sunburst.loaded = false;
         }
 
         function rendered(file) {
@@ -305,6 +318,79 @@
                 $scope.isSunburstChartRendering = function(file) {
                     return file.data.sunburst.rendering;
                 };
+            }]
+        }
+    });
+
+    /*
+        Count pie chart factory and directive
+     */
+
+    app.factory('countpiechart', ['$http', function($http) {
+        function update(file) {
+            if (!file.data.countpiechart.loaded) {
+                rendering(file);
+                $http.post('/api/annotations/data', {
+                    fileName: file.fileName,
+                    parameters: file.data.annotations.parameters,
+                    type: 'countpie'
+                })
+                    .success(function(data) {
+                        rendered(file);
+                        countpiechart(data, file.uid);
+                        recordsCount(data, file.uid, 1);
+                        file.data.recordscount.cache = data;
+                    })
+                    .error(function (error) {
+                        console.log(error);
+                        rendered(file);
+                    })
+            }
+        }
+
+        function rendering(file) {
+            clearCountpiechart(file);
+            clearRecordsCount(file);
+            file.data.countpiechart.rendering = true;
+            file.data.recordscount.rendering = true;
+            file.data.countpiechart.loaded = false;
+            file.data.recordscount.loaded = false;
+        }
+
+        function rendered(file) {
+            file.data.countpiechart.rendering = false;
+            file.data.recordscount.rendering = false;
+        }
+
+        return {
+            update: update,
+            rendering: rendering,
+            rendered: rendered
+        }
+    }]);
+
+    app.directive('countpiechart', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', function($scope) {
+                $scope.isCountPieChartRendering = function(file) {
+                    return file.data.countpiechart.rendering;
+                }
+            }]
+        }
+    });
+
+    app.directive('recordscount', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', function($scope) {
+                $scope.isRecordsCountPieChartRendering = function(file) {
+                    return file.data.recordscount.rendering;
+                };
+
+                $scope.rerenderRecordsCount = function(file, hits) {
+                    recordsCount(file.data.recordscount.cache, file.uid, hits);
+                }
             }]
         }
     });
@@ -923,6 +1009,133 @@ function clearSunburstChat(file) {
     var uid = file.uid;
     var place = d3.select(".sunburst_chart_" + uid);
     place.html("");
+}
+
+function clearCountpiechart(file) {
+    var uid = file.uid;
+    var place = d3.select(".count_pie_chart_" + uid);
+    place.html("");
+}
+
+function countpiechart(data, uid) {
+    var sectors = data["piechart"]["sectors"];
+    nv.addGraph(function() {
+        var place = d3.select(".count_pie_chart_" + uid);
+        place.html("");
+
+        var width = place.node().getBoundingClientRect().width,
+            height = width;
+
+        var svg = place.append("svg")
+            .attr("id", "count_pie_chart_" + uid)
+            .attr("class", "count_pie")
+            .style("display", "block")
+            .style("overflow", "visible")
+            .style("margin", "auto")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+
+        var chart = nv.models.pieChart()
+            .x(function(d) {
+                switch (d.count) {
+                    case 0: return "Not found";
+                    case 1: return "Encountered one time";
+                    case 2: return "Encountered two or more times";
+                }
+                return "";
+            })
+            .y(function(d) { return d.size })
+            .width(width)
+            .height(height)
+            .color(["#377eb8", "#ec7014", "#dcdcdc"])
+            .noData("There is no data to display");
+        d3.select("#count_pie_chart_" + uid)
+            .datum(sectors)
+            .transition().duration(1200)
+            .attr('width', width)
+            .attr('height', height)
+            .call(chart)
+            .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+        return chart;
+    });
+
+}
+
+function clearRecordsCount(file) {
+    var uid = file.uid;
+    var place = d3.select(".records_count_" + uid);
+    place.html("");
+}
+
+function recordsCount(data, uid, hits) {
+    var sampleCount = data["piechart"]["sampleCount"];
+    var records = data["records"];
+    var sectors = [{
+        hits: 0,
+        count: sampleCount
+    }, {
+        hits: hits,
+        count: 0
+    }];
+    console.log(sectors);
+    records.forEach(function(record) {
+        if (hits === 1) {
+            if (record.hits === 1) {
+                sectors[0].count -= record.count;
+                sectors[1].count += record.count;
+            }
+        } else {
+            if (record.hits >= 2) {
+                sectors[0].count -= record.count;
+                sectors[1].count += record.count;
+            }
+        }
+    });
+
+    nv.addGraph(function() {
+        var place = d3.select(".records_count_" + uid);
+        place.html("");
+
+        var width = place.node().getBoundingClientRect().width,
+            height = width;
+
+        var svg = place.append("svg")
+            .attr("id", "records_count_" + uid)
+            .attr("class", "count_pie")
+            .style("display", "block")
+            .style("overflow", "visible")
+            .style("margin", "auto")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+
+        var chart = nv.models.pieChart()
+            .x(function(d) {
+                switch (d.hits) {
+                    case 0: return "Count of other records";
+                    case 1: return "Count of records founded in db one time";
+                    case 2: return "Count of records founded in db two or more times";
+                }
+                return "";
+            })
+            .y(function(d) { return d.count })
+            .width(width)
+            .height(height)
+            .color(["#377eb8", "#ec7014", "#dcdcdc"])
+            .noData("There is no data to display");
+        d3.select("#records_count_" + uid)
+            .datum(sectors)
+            .transition().duration(1200)
+            .attr('width', width)
+            .attr('height', height)
+            .call(chart)
+            .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+        return chart;
+    });
+
 }
 
 function testWatchers() {

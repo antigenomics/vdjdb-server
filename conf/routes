@@ -14,8 +14,7 @@ GET     /annotations                      controllers.annotations.AnnotationsPag
 
 
 GET     /api/annotations/filesinfo        controllers.annotations.AnnotationsAPI.getFilesInfo()
-POST    /api/annotations/data             controllers.annotations.AnnotationsAPI.annotationsTable()
-POST    /api/annotations/sunburst         controllers.annotations.AnnotationsAPI.sunbirstData()
+POST    /api/annotations/data             controllers.annotations.AnnotationsAPI.data()
 POST    /api/annotations/upload           controllers.annotations.AnnotationsAPI.upload()
 POST    /api/annotations/delete           controllers.annotations.AnnotationsAPI.delete()
 GET     /api/getAvailableFields           controllers.SearchAPI.getAvailableFields()

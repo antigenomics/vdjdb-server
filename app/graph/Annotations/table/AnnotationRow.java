@@ -43,6 +43,7 @@ public class AnnotationRow {
     private AnnotationVCell v;
     private AnnotationJCell j;
     private double freq;
+    private int count;
     private String chain;
     private String mhc;
     private String nature;
@@ -61,6 +62,7 @@ public class AnnotationRow {
         this.v = new AnnotationVCell(cdrMatch);
         this.j = new AnnotationJCell(cdrMatch);
         this.freq = cdrMatch.getQuery().getFreq();
+        this.count = cdrMatch.getQuery().getCount();
         List<String> annotation = cdrMatch.getSubject().getAnnotation();
         this.chain = annotation.get(Columns.CHAIN.getColumn());
         this.mhc = annotation.get(Columns.MHC.getColumn());
@@ -129,5 +131,55 @@ public class AnnotationRow {
 
     public double getFreq() {
         return freq;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public boolean recordEquals(AnnotationRow record) {
+        return (cdr3.cdr3recordEquals(record.cdr3)) && (v.recordEquals(record.v) && (j.recordEquals(record.j)));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AnnotationRow)) return false;
+
+        AnnotationRow that = (AnnotationRow) o;
+
+        if (cdr3 != null ? !cdr3.equals(that.cdr3) : that.cdr3 != null) return false;
+        if (v != null ? !v.equals(that.v) : that.v != null) return false;
+        if (j != null ? !j.equals(that.j) : that.j != null) return false;
+        if (chain != null ? !chain.equals(that.chain) : that.chain != null) return false;
+        if (mhc != null ? !mhc.equals(that.mhc) : that.mhc != null) return false;
+        if (nature != null ? !nature.equals(that.nature) : that.nature != null) return false;
+        if (disease != null ? !disease.equals(that.disease) : that.disease != null) return false;
+        if (origin != null ? !origin.equals(that.origin) : that.origin != null) return false;
+        if (antigen_seq != null ? !antigen_seq.equals(that.antigen_seq) : that.antigen_seq != null) return false;
+        if (antigen_name != null ? !antigen_name.equals(that.antigen_name) : that.antigen_name != null) return false;
+        if (method != null ? !method.equals(that.method) : that.method != null) return false;
+        if (genbank != null ? !genbank.equals(that.genbank) : that.genbank != null) return false;
+        return !(reference != null ? !reference.equals(that.reference) : that.reference != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        result = cdr3 != null ? cdr3.hashCode() : 0;
+        result = 31 * result + (v != null ? v.hashCode() : 0);
+        result = 31 * result + (j != null ? j.hashCode() : 0);
+        result = 31 * result + (chain != null ? chain.hashCode() : 0);
+        result = 31 * result + (mhc != null ? mhc.hashCode() : 0);
+        result = 31 * result + (nature != null ? nature.hashCode() : 0);
+        result = 31 * result + (disease != null ? disease.hashCode() : 0);
+        result = 31 * result + (origin != null ? origin.hashCode() : 0);
+        result = 31 * result + (antigen_seq != null ? antigen_seq.hashCode() : 0);
+        result = 31 * result + (antigen_name != null ? antigen_name.hashCode() : 0);
+        result = 31 * result + (method != null ? method.hashCode() : 0);
+        result = 31 * result + (genbank != null ? genbank.hashCode() : 0);
+        result = 31 * result + (reference != null ? reference.hashCode() : 0);
+        return result;
     }
 }
