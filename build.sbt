@@ -1,4 +1,4 @@
-name := "vdjdb-server"
+name := "ref-vdjdb"
 
 version := "1.0-SNAPSHOT"
 
@@ -13,12 +13,13 @@ resolvers += (
   )
 
 libraryDependencies ++= Seq(
-  "org.postgresql" % "postgresql" % "9.3-1100-jdbc41",
-  "com.antigenomics" % "vdjdb" % "1.0-SNAPSHOT",
+  "ws.securesocial" %% "securesocial" % "2.1.4",
+  "com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.0",
+  "com.antigenomics" % "vdjdb" % "1.0.2-SNAPSHOT",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.7.1",
   javaJdbc,
-  javaEbean,
   cache,
-  filters
+  javaEbean
 )     
 
-play.Project.playJavaSettings
+play.Project.playScalaSettings

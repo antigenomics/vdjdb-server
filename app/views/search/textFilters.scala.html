@@ -1,0 +1,47 @@
+<div class="box box-solid">
+    <div class="box-header with-border">
+        Text filters
+    </div>
+    <div class="box-body text-center">
+        <p ng-if="!isTextFiltersExist()">No text filters added</p>
+        <table class="table table-responsive" ng-if="isTextFiltersExist()">
+            <thead>
+                <tr>
+                    <th>Column name</th>
+                    <th>Value</th>
+                    <th>Filter type</th>
+                    <th>Negative</th>
+                    <th width="5%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="filter in textFilters" on-last-repeat>
+                    <td width="30%">
+                        <select class="dropdown" id="{{ filter.filterId }}" name="columnId">
+                            <option>Please select column name:</option>
+                            <option ng-repeat="column in textFiltersColumns" value="{{ column.dbName }}">{{ column.clientName }}</option>
+                        </select>
+                    </td>
+                    <td width="30%">
+                        <input class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
+                    </td>
+                    <td width="30%">
+                        <select class="dropdown" id="{{ filter.filterId }}" name="filterType">
+                            <option>Please select filter type:</option>
+                            <option ng-repeat="type in textFiltersTypes" value="{{ type.dbName }}">{{ type.clientName }}</option>
+                        </select>
+                    </td>
+                    <td width="5%">
+                        <input type="checkbox" ng-model="filter.negative">
+                    </td>
+                    <td width="5%">
+                        <i class="fa fa-trash" ng-click="deleteTextFilter(filter)" style="cursor: pointer ;"></i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="box-footer">
+        <button class="btn bg-purple btn-flat" ng-click="addTextFilter()">Add text filter</button>
+    </div>
+</div>

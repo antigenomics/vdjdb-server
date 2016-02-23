@@ -1,0 +1,44 @@
+@(providerId: String, loginForm: Option[play.api.data.Form[(String, String)]] = None)(implicit request: play.api.mvc.RequestHeader)
+@import play.api.Logger
+@import securesocial.core.AuthenticationMethod._
+@import securesocial.core.{IdentityProvider, Registry}
+@import securesocial.core.providers.utils.RoutesHelper
+@import views.html.helper._
+@implicitFieldConstructor = @{
+    FieldConstructor(securesocial.views.html.inputFieldConstructor.f)
+}
+
+@Registry.providers.get(providerId).map { provider =>
+    @if(provider.authMethod == OAuth1 || provider.authMethod == OAuth2) {
+        @defining("securesocial/images/providers/%s.png".format(provider.id)) { imageUrl =>
+            <a href="@provider.authenticationUrl"> <img src="@RoutesHelper.at(imageUrl)"/></a>
+        }
+    }
+
+    @if(provider.authMethod == UserPassword) {
+        <form action = "@securesocial.core.providers.utils.RoutesHelper.authenticateByPost("userpass").absoluteURL(IdentityProvider.sslEnabled)(request)" method="POST" role="form">
+            <fieldset>
+                <div class="form-group">
+                    <input class="form-control" placeholder="E-mail" name="username" type="email" autofocus>
+                </div>
+                <div class="form-group">
+                    <input class="form-control" placeholder="Password" name="password" type="password" value>
+                </div>
+                <div>
+                    <a href="@securesocial.core.providers.utils.RoutesHelper.startResetPassword()"><p>
+                        Forgot password?</a>
+                </div>
+                <button class="btn btn-block btn-flat bg-purple">Sign in<i class="fa fa-fw fa-sign-in"></i></button>
+            </fieldset>
+        </form>
+    }
+    <hr class="wide">
+    <p>Don't have an account? <a href="@securesocial.core.providers.utils.RoutesHelper.startSignUp()">Sign up </a> now!</p>
+    <p>Back to <a href="@routes.Application.index()"> home</a>.</p>
+}.getOrElse {
+    @*****************************************
+    * Todo: throw a runtime exception? this might need improvement
+    *****************************************@
+    @Logger.error("[securesocial] unknown provider '%s'. Can't render it.".format(providerId))
+    { throw new RuntimeException("Unknown provider '%s') }
+}

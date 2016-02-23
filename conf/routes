@@ -3,22 +3,28 @@
 # ~~~~
 
 # Home page
-GET     /                                 controllers.Application.index()
-GET     /search                           controllers.Application.searchPage()
+GET     /                           controllers.Application.index
 
-# API
-GET     /api/generateToken                controllers.Application.generateToken()
-GET     /api/testtoken/:tokenUUID/        controllers.Application.tokenTest(tokenUUID : String)
-GET     /annotations/upload               controllers.annotations.AnnotationsPages.annotationsUploadFilesPage()
-GET     /annotations                      controllers.annotations.AnnotationsPages.annotationsMainPage()
+# Search Page
+GET     /search                     controllers.SearchAPI.index
+POST    /search                     controllers.SearchAPI.search
 
-
-GET     /api/annotations/filesinfo        controllers.annotations.AnnotationsAPI.getFilesInfo()
-POST    /api/annotations/data             controllers.annotations.AnnotationsAPI.data()
-POST    /api/annotations/upload           controllers.annotations.AnnotationsAPI.upload()
-POST    /api/annotations/delete           controllers.annotations.AnnotationsAPI.delete()
-GET     /api/getAvailableFields           controllers.SearchAPI.getAvailableFields()
-POST    /api/search                       controllers.SearchAPI.search()
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                     controllers.Assets.at(path="/public", file)
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+# Auth routes
+GET         /signin                                           securesocial.controllers.LoginPage.login
+GET         /logout                                           securesocial.controllers.LoginPage.logout
+GET         /authenticate/:provider                           securesocial.controllers.ProviderController.authenticate(provider)
+POST        /authenticate/:provider                           securesocial.controllers.ProviderController.authenticateByPost(provider)
+GET         /signup                                           securesocial.controllers.Registration.startSignUp
+POST        /signup                                           securesocial.controllers.Registration.handleStartSignUp
+GET         /signup/:token                                    securesocial.controllers.Registration.signUp(token)
+POST        /signup/:token                                    securesocial.controllers.Registration.handleSignUp(token)
+GET         /password                                         securesocial.controllers.PasswordChange.page
+POST        /password                                         securesocial.controllers.PasswordChange.handlePasswordChange
+GET         /reset                                            securesocial.controllers.Registration.startResetPassword
+POST        /reset                                            securesocial.controllers.Registration.handleStartResetPassword
+GET         /reset/:token                                     securesocial.controllers.Registration.resetPassword(token)
+POST        /reset/:token                                     securesocial.controllers.Registration.handleResetPassword(token)
