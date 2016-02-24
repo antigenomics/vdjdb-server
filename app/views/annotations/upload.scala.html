@@ -14,7 +14,7 @@
         <upload>
             <div class="container">
                 <div class="row">
-                    <div class="box box-solid">
+                    <div class="box box-solid flat">
                         <div class="box-header with-border">
                             Upload your files here
                         </div>
@@ -56,6 +56,11 @@
                             <form id="fileupload" method="POST" action="" enctype="multipart/form-data" class="hidden_fileupload_form">
                                 <input type="file" name="file" multiple/>
                             </form>
+                        </div>
+                    </div>
+                    <div class="box box-solid flat">
+                        <div class="box-body">
+                            <a href="@routes.AnnotationAPI.index()">Go to annotations page</a>
                         </div>
                     </div>
                 </div>

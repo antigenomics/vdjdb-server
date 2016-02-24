@@ -18,7 +18,7 @@
                             <table class="table" ng-if="isFilesExist()">
                                 <tbody>
                                     <tr ng-repeat="file in files()">
-                                        <td width="90%">{{ file.fileName }}</td>
+                                        <td width="90%" ng-click="select(file)">{{ file.fileName }}</td>
                                         <td><i class="fa fa-trash" ng-click="deleteFile(file)" style="cursor: pointer ;"></i></td>
                                     </tr>
                                 </tbody>
@@ -29,13 +29,14 @@
                         </div>
                     </div>
                 </sidebar>
-                <div class="col-md-10 col-lg-10">
+                <annotations class="col-md-10 col-lg-10">
                     <div class="box box-solid">
                         <div class="box-body">
-                            asd
+                            <p ng-if="!isFileSelected()">No file selected</p>
+                            <p ng-if="isFileSelected()">Selected: {{ selectedFile().fileName }}</p>
                         </div>
                     </div>
-                </div>
+                </annotations>
 
             </div>
         </div>

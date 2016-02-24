@@ -9,7 +9,8 @@
 
         function isContain(fileName) {
             var contain = false;
-            angular.forEach(user.files, function(file) {
+            console.log(userInfo.getFiles());
+            angular.forEach(userInfo.getFiles(), function(file) {
                 if (file.fileName === fileName) {
                     contain = true;
                 }
@@ -30,7 +31,7 @@
         }
 
         function isFilesCountExcedeed() {
-            return user.maxFilesCount > 0 && (user.files.length + newFiles.length) >= user.maxFilesCount;
+            return user.maxFilesCount > 0 && (userInfo.getFiles().length + newFiles.length) >= user.maxFilesCount;
         }
 
         function isNameValid(file) {
@@ -59,7 +60,7 @@
         }
 
         function getUserFiles() {
-            return user.files;
+            return userInfo.getFiles();
         }
 
         function updateTooltip(file, tooltip) {
