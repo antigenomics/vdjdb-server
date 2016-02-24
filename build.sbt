@@ -1,4 +1,4 @@
-name := "ref-vdjdb"
+name := "vdjdb-server"
 
 version := "1.0-SNAPSHOT"
 

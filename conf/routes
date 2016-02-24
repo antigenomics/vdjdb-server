@@ -15,6 +15,7 @@ GET     /annotations/upload         controllers.AnnotationAPI.uploadPage
 
 GET     /api/userinfo               controllers.AnnotationAPI.userInformation
 POST    /api/upload                 controllers.AnnotationAPI.upload
+POST    /api/delete                 controllers.AnnotationAPI.delete
 
 
 # Map static resources from the /public folder to the /assets URL path

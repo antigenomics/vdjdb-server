@@ -1,7 +1,9 @@
 package models;
 
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.auth.User;
+import org.apache.commons.io.FileDeleteStrategy;
 import org.joda.time.DateTime;
 import play.db.ebean.Model;
 import utils.CommonUtils;
@@ -65,6 +67,33 @@ public class ServerFile extends Model {
 
     public String getFilePath() {
         return filePath;
+    }
+
+    public static void deleteFile(ServerFile file) {
+        File fileDir = new File(file.directoryPath);
+        File[] files = fileDir.listFiles();
+        if (files == null) {
+            fileDir.delete();
+            Ebean.delete(file);
+            return;
+        }
+        for (File cache : files) {
+            try {
+                FileDeleteStrategy.FORCE.delete(cache);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        fileDir.delete();
+        Ebean.delete(file);
+    }
+
+    public static ServerFile fyndByNameAndUser(User user, String fileName) {
+        return find().where().eq("user", user).eq("fileName", fileName).findUnique();
+    }
+
+    public static Model.Finder<Long, ServerFile> find() {
+        return new Model.Finder<>(Long.class, ServerFile.class);
     }
 
 }

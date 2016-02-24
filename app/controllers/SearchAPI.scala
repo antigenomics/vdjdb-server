@@ -39,7 +39,7 @@ object SearchAPI extends Controller {
 
   def search = Action(parse.json) { request =>
     request.body.validate[SearchRequest].map {
-      case SearchRequest(requestTextFilters, requestSequenceFilters) => {
+      case SearchRequest(requestTextFilters, requestSequenceFilters) =>
         val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
         requestTextFilters.foreach(filter => {
           filter.filterType match {
@@ -56,7 +56,6 @@ object SearchAPI extends Controller {
           sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
         })
         sendJson(DatabaseAPI.getDatabase(textFilters, sequenceFilters))
-      }
     }.recoverTotal {
         e => print(e)
         BadRequest("")

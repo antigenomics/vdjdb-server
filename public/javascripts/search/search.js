@@ -56,7 +56,14 @@
             {dbName: 'gene', clientName: 'Gene'},
             {dbName: 'species', clientName: 'Species'},
             {dbName: 'mhc.a', clientName: 'mhc.a'},
-            {dbName: 'mhc.b', clientName: 'mhc.b'}
+            {dbName: 'mhc.b', clientName: 'mhc.b'},
+            {dbName: 'mhc.type', clientName: 'mhc.type'},
+            {dbName: 'antigen', clientName: 'Antigen'},
+            {dbName: 'antigen.gene', clientName: 'Antigen.Gene'},
+            {dbName: 'antigen.species', clientName: 'Antigen.Species'},
+            {dbName: 'method', clientName: 'Method'},
+            {dbName: 'reference', clientName: 'Reference'},
+            {dbName: 'reference.id', clientName: 'Reference.Id'}
         ]);
 
         var textFiltersTypes = Object.freeze([

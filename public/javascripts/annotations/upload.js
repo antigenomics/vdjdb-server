@@ -140,7 +140,6 @@
             file.uploaded = true;
             file.result = 'success';
             file.tooltip = 'Uploaded';
-            userInfo.addFile(file);
         }
 
         function removeFile(file) {

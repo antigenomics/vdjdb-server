@@ -24,7 +24,7 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
     Ok(views.html.annotations.upload())
   }
 
-  def userInformation = SecuredAction { implicit request =>
+  def userInformation = SecuredAction(ajaxCall = true) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     sendJson(user)
   }
@@ -71,6 +71,32 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
             Ok(toJson(ServerResponse("Success")))
           }
       }
+    }.getOrElse {
+      BadRequest(toJson(ServerResponse("Server is currently not available")))
+    }
+  }
+
+  case class DeleteRequest(fileName: String, action: String)
+  implicit val deleteRequestRead = Json.reads[DeleteRequest]
+
+  def delete = SecuredAction(parse.json) { implicit request =>
+    val user = User.findByUUID(request.user.identityId.userId)
+    request.body.validate[DeleteRequest].map {
+      case DeleteRequest(fileName, action) =>
+        action match {
+          case "delete" =>
+            val file = ServerFile.fyndByNameAndUser(user, fileName)
+            if (file == null) {
+              BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
+            } else {
+              ServerFile.deleteFile(file)
+              Ok(toJson(ServerResponse("File " + fileName + " have been deleted")))
+            }
+          case "deleteAll" =>
+            user.getFiles.toList.foreach(file => ServerFile.deleteFile(file))
+            Ok(toJson(ServerResponse("All files have been deleted")))
+          case _ => BadRequest(toJson(ServerResponse("Unknown delete action")))
+        }
     }.getOrElse {
       BadRequest(toJson(ServerResponse("Server is currently not available")))
     }

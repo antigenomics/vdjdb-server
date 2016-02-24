@@ -15,3 +15,7 @@ server.pid
 .cache
 .idea
 .settings
+
+.idea_modules/ref-vdjdb-build.iml
+
+.idea_modules/ref-vdjdb.iml
