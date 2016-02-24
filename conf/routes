@@ -5,9 +5,16 @@
 # Home page
 GET     /                           controllers.Application.index
 
-# Search Page
+# Search api
 GET     /search                     controllers.SearchAPI.index
 POST    /search                     controllers.SearchAPI.search
+
+# Annotations api
+GET     /annotations                controllers.AnnotationAPI.index
+GET     /annotations/upload         controllers.AnnotationAPI.uploadPage
+
+GET     /api/userinfo               controllers.AnnotationAPI.userInformation
+POST    /api/upload                 controllers.AnnotationAPI.upload
 
 
 # Map static resources from the /public folder to the /assets URL path

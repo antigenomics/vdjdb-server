@@ -1,0 +1,65 @@
+@main("VDJdb: annotations: upload") {
+
+    <script src="@routes.Assets.at("lib/FileUpload/jquery.ui.widget.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/FileUpload/jquery.iframe-transport.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/FileUpload/jquery.fileupload.js")" type="text/javascript"></script>
+
+
+
+    <script src="@routes.Assets.at("javascripts/user.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/annotations/upload.js")" type="text/javascript"></script>
+
+    @navbar()
+    <div class="wrapper" ng-app="uploadPage">
+        <upload>
+            <div class="container">
+                <div class="row">
+                    <div class="box box-solid">
+                        <div class="box-header with-border">
+                            Upload your files here
+                        </div>
+                        <div class="box-body text-center">
+                            <p ng-if="!isNewFilesExists()">Click 'Add file' button</p>
+                            <table class="table" ng-if="isNewFilesExists()">
+                                <thead>
+                                    <tr>
+                                        <th class="file_name_th">File name</th>
+                                        <th class="progress_th">Progress</th>
+                                        <th class="tooltip_th"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="file in newFiles" ng-class="{'danger':isError(file), 'success':isSuccess(file), 'warning':isRemoved(file)}">
+                                        <td width="30%">
+                                            <input ng-model="file.fileName" type="text" value="file.fileName" ng-show="isWaitForUpload(file)" class="form-control"
+                                            ng-class="{'input_invalid_name':!isNameValid(file)}" tooltip="Name tooltip" tooltip-placement="top">
+                                            <text ng-hide="isWaitForUpload(file)">{{ file.fileName }}</text>
+                                        </td>
+                                        <td width="60%">
+                                            <div class="progress progress-sm mbn" ng-show="isOk(file) && !isRemoved(file)">
+                                                <div role="progressbar" style="width: {{ file.progress }}%" class="progress-bar progress-bar-success"></div>
+                                            </div>
+                                            <text ng-show="isError(file)">{{ file.errorTooltip }}</text>
+                                            <text ng-hide="isWaitForUpload(file) || isError(file)">{{ file.tooltip }}</text>
+                                        </td>
+                                        <td width="10%">
+                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file) && isNameValid(file)">Upload</button>
+                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="removeFile(file)" ng-show="isWaitForUpload(file)">X</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="box-footer">
+                            <button class="btn btn-flat bg-purple btn-sm" ng-click="addNewButtonClick()">Add file</button>
+                            <button class="btn btn-red pull-right bg-purple btn-sm" ng-click="uploadAll()" ng-show="isWaitingExists()">Upload all</button>
+                            <form id="fileupload" method="POST" action="" enctype="multipart/form-data" class="hidden_fileupload_form">
+                                <input type="file" name="file" multiple/>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </upload>
+    </div>
+}

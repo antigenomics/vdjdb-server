@@ -11,6 +11,7 @@ import com.milaboratory.core.tree.TreeSearchParameters
 import play.api.libs.json.{Json, JsValue, Reads}
 import play.api.mvc._
 import utils.JsonUtil.sendJson
+import utils.ServerLogger
 
 /**
   * Created by bvdmitri on 16.02.16.
@@ -40,13 +41,15 @@ object SearchAPI extends Controller {
     request.body.validate[SearchRequest].map {
       case SearchRequest(requestTextFilters, requestSequenceFilters) => {
         val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
-        requestTextFilters.map {
-          case DatabaseTextFilter(columnId, value, "exact", negative) => textFilters.add(new ExactTextFilter(columnId, value, negative))
-          case DatabaseTextFilter(columnId, value, "pattern", negative) => textFilters.add(new PatternTextFilter(columnId, value, negative))
-          case DatabaseTextFilter(columnId, value, "substring", negative) => textFilters.add(new SubstringTextFilter(columnId, value, negative))
-          case DatabaseTextFilter(columnId, value, "level", negative) => textFilters.add(new LevelFilter(columnId, value, negative))
-          case _ => ;
-        }
+        requestTextFilters.foreach(filter => {
+          filter.filterType match {
+            case "exact" => textFilters.add(new ExactTextFilter(filter.columnId, filter.value, filter.negative))
+            case "pattern" => textFilters.add(new PatternTextFilter(filter.columnId, filter.value, filter.negative))
+            case "substring" => textFilters.add(new SubstringTextFilter(filter.columnId, filter.value, filter.negative))
+            case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
+            case _ => ServerLogger.error("Unknown search type: " + filter.filterType);
+          }
+        })
         val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
         requestSequenceFilters.foreach(filter => {
           val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations);
@@ -55,7 +58,8 @@ object SearchAPI extends Controller {
         sendJson(DatabaseAPI.getDatabase(textFilters, sequenceFilters))
       }
     }.recoverTotal {
-      e => print(e); BadRequest("")
+        e => print(e)
+        BadRequest("")
     }
   }
 

@@ -31,6 +31,10 @@ object JsonUtil {
     sendJson(o, 200)
   }
 
+  def sendJson400(o : AnyRef) : SimpleResult = {
+    sendJson(o, 400)
+  }
+
   /**
     * Returns a SimpleResult (as JSON) wrapper.
     *

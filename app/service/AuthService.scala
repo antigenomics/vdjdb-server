@@ -40,7 +40,7 @@ class AuthService(application: Application) extends UserServicePlugin(applicatio
     var user = User.findByUUID(identity.identityId.userId)
     if (user == null) {
       user = new User(identity.identityId.userId, identity.identityId.providerId, identity.email.get, identity.passwordInfo.get.password)
-      user.save()
+      user.saveUser()
     }
     identity
   }
