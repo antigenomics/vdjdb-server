@@ -187,3 +187,27 @@ body {
     font-family: monospace;
     letter-spacing: 2em;
 }
+
+td.details-control {
+    cursor: pointer;
+}
+
+td.details-control:before {
+    content: "\f063";
+    color: #377eb8;
+    font-family: FontAwesome;
+    padding-left: 10px;
+    position:absolute;
+}
+tr.shown td.details-control {
+    cursor: pointer;
+}
+
+tr.shown td.details-control:before {
+    content: "\f062";
+    color: #377eb8;
+    font-family: FontAwesome;
+    padding-left: 10px;
+    position:absolute;
+}
+
