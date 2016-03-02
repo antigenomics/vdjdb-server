@@ -111,7 +111,7 @@ function intersectResultsTable(data) {
         //TODO code must be simple, maybe push clonotype itself
         var cdr = cdr3Transform(result.clonotype.cdr);
         clonotypes.push({
-            freq: result.clonotype.freq,
+            freq: (result.clonotype.freq * 100).toPrecision(2) + '%',
             count: result.clonotype.count,
             cdr3aa: cdr.cdr3aa,
             cdr3nt: cdr.cdr3nt,
