@@ -176,3 +176,14 @@ body {
 .sidebar_file_td:hover .sidebar_file_delete {
     visibility: visible;
 }
+
+.alignment_block {
+    width: 100%;
+    text-align: center;
+}
+
+.alignment_text {
+    white-space: pre;
+    font-family: monospace;
+    letter-spacing: 2em;
+}
