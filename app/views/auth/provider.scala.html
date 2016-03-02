@@ -19,10 +19,10 @@
         <form action = "@securesocial.core.providers.utils.RoutesHelper.authenticateByPost("userpass").absoluteURL(IdentityProvider.sslEnabled)(request)" method="POST" role="form">
             <fieldset>
                 <div class="form-group">
-                    <input class="form-control" placeholder="E-mail" name="username" type="email" autofocus>
+                    <input class="form-control" placeholder="E-mail" name="username" type="email" autofocus value="default@@gmail.com">
                 </div>
                 <div class="form-group">
-                    <input class="form-control" placeholder="Password" name="password" type="password" value>
+                    <input class="form-control" placeholder="Password" name="password" type="password" value="default0">
                 </div>
                 <div>
                     <a href="@securesocial.core.providers.utils.RoutesHelper.startResetPassword()"><p>

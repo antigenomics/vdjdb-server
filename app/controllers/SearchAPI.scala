@@ -10,8 +10,10 @@ import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
 import play.api.libs.json.{Json, JsValue, Reads}
 import play.api.mvc._
+import server.ServerResponse
 import utils.JsonUtil.sendJson
 import utils.ServerLogger
+import play.api.libs.json.Json.toJson
 
 /**
   * Created by bvdmitri on 16.02.16.
@@ -58,7 +60,7 @@ object SearchAPI extends Controller {
         sendJson(DatabaseAPI.getDatabase(textFilters, sequenceFilters))
     }.recoverTotal {
         e => print(e)
-        BadRequest("")
+        BadRequest(toJson(ServerResponse("Invalid search request")))
     }
   }
 

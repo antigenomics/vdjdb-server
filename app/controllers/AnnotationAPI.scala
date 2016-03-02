@@ -2,17 +2,27 @@ package controllers
 
 import java.io.File
 
+import com.antigenomics.vdjdb.DatabaseAPI
+import com.antigenomics.vdjdb.impl.ClonotypeDatabase
+import com.antigenomics.vdjtools.io.SampleFileConnection
+import com.antigenomics.vdjtools.misc.Software
+import com.antigenomics.vdjtools.sample.Clonotype
+import com.milaboratory.core.alignment.AlignmentHelper
+import controllers.SearchAPI._
 import models.ServerFile
 import models.auth.User
 import org.apache.commons.io.FilenameUtils
 import play.api.libs.json.Json
 import securesocial.core.java.SecureSocial.SecuredAction
+import server.wrappers.IntersectResult
 import scala.collection.JavaConversions._
 import play.api.mvc._
 import server.ServerResponse
 import utils.CommonUtils
 import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
+import java.util.HashMap
+import java.util.ArrayList
 
 object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
 
@@ -27,6 +37,40 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
   def userInformation = SecuredAction(ajaxCall = true) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     sendJson(user)
+  }
+
+  case class IntersectRequest(fileName: String)
+  implicit val intersectRequestRead = Json.reads[IntersectRequest]
+
+  def intersect = SecuredAction(parse.json) { implicit request =>
+    val user = User.findByUUID(request.user.identityId.userId)
+    request.body.validate[IntersectRequest].map {
+      case IntersectRequest(fileName) =>
+        val file = ServerFile.fyndByNameAndUser(user, fileName)
+        if (file == null) {
+          BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
+        } else {
+          try {
+            val sampleFileConnection = new SampleFileConnection(file.getFilePath, Software.VDJtools)
+            val sample = sampleFileConnection.getSample
+            val database = DatabaseAPI.getDatabase
+            val clonotypeDatabase = DatabaseAPI.asClonotypeDatabase(database)
+            val results = clonotypeDatabase.search(sample)
+            val convertedResults : ArrayList[IntersectResult] = new ArrayList[IntersectResult]()
+            results.keySet().toList.foreach(clonotype => {
+              convertedResults.add(new IntersectResult(clonotype, results.get(clonotype)))
+            })
+            sendJson(convertedResults)
+          } catch {
+            case e: Exception =>
+              print(e)
+              BadRequest(toJson(ServerResponse("Error while intersecting")))
+          }
+        }
+    }.recoverTotal {
+        e => print(e)
+        BadRequest(toJson(ServerResponse("Invalid intersect request")))
+    }
   }
 
   def upload = SecuredAction(parse.multipartFormData) { implicit request =>

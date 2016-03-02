@@ -9,7 +9,6 @@
 
         function isContain(fileName) {
             var contain = false;
-            console.log(userInfo.getFiles());
             angular.forEach(userInfo.getFiles(), function(file) {
                 if (file.fileName === fileName) {
                     contain = true;

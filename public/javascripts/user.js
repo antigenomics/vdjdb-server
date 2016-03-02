@@ -1,7 +1,7 @@
 (function() {
-    var application = angular.module('user', ['notifications']);
+    var application = angular.module('user', ['notifications', 'blockPage']);
 
-    application.factory('user', ['$http', 'notify', function($http, notify) {
+    application.factory('user', ['$http', 'notify', 'blockPageFactory', function($http, notify, block) {
         var user = {
             files: []
         };
@@ -9,9 +9,14 @@
         $http.get('/api/userinfo')
             .success(function(userInfo) {
                 angular.extend(user, userInfo);
+                angular.forEach(user.files, function(file) {
+                    file.nameWithoutExt =  file.fileName.substr(0, file.fileName.lastIndexOf('.')) || file.fileName;
+                });
+                block.unblock();
             })
             .error(function(error) {
-                //TODO
+                block.setMessage("Error in initializing");
+                block.block();
                 console.log(error);
             });
 
@@ -30,7 +35,7 @@
         function deleteAllFiles() {
             $http.post('/api/delete', { fileName: '', action: 'deleteAll'})
                 .success(function(response) {
-                    user.files.splice(0, user.files.length)
+                    user.files.splice(0, user.files.length);
                     notify.success('Delete', response.message)
                 })
                 .error(function(response) {

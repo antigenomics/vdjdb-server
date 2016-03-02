@@ -12,6 +12,7 @@ POST    /search                     controllers.SearchAPI.search
 # Annotations api
 GET     /annotations                controllers.AnnotationAPI.index
 GET     /annotations/upload         controllers.AnnotationAPI.uploadPage
+POST    /annotations/intersect      controllers.AnnotationAPI.intersect
 
 GET     /api/userinfo               controllers.AnnotationAPI.userInformation
 POST    /api/upload                 controllers.AnnotationAPI.upload

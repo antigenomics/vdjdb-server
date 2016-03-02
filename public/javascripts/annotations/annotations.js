@@ -62,12 +62,31 @@
         }
     });
 
+    application.factory('annotations', ['$http', 'sidebar', function($http, sidebar) {
+
+        function intersect() {
+            var file = sidebar.getSelectedFile();
+            $http.post('/annotations/intersect', { fileName: file.fileName })
+                .success(function(response) {
+                    console.log(response);
+                })
+                .error(function(response) {
+                    console.log(response);
+                })
+        }
+
+        return {
+            intersect: intersect
+        }
+    }]);
+
     application.directive('annotations', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', 'sidebar', function($scope, sidebar) {
+            controller: ['$scope', 'sidebar', 'annotations', function($scope, sidebar, annotations) {
                 $scope.isFileSelected = sidebar.isFileSelected;
                 $scope.selectedFile = sidebar.getSelectedFile;
+                $scope.intersect = annotations.intersect;
             }]
         }
     })

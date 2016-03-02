@@ -1,10 +1,12 @@
 @main("VDJdb: annotations") {
 
+    <script src="@routes.Assets.at("javascripts/blockpage.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/user.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/annotations/annotations.js")" type="text/javascript"></script>
 
     @navbar()
     <div class="wrapper" ng-app="annotationsPage">
+        <block></block>
         <div class="container-fluid">
             <div class="row">
                 <sidebar class="col-md-2 col-lg-2">
@@ -17,9 +19,9 @@
                             <p ng-if="!isFilesExist()">You have no files</p>
                             <table class="table" ng-if="isFilesExist()">
                                 <tbody>
-                                    <tr ng-repeat="file in files()">
-                                        <td width="90%" ng-click="select(file)">{{ file.fileName }}</td>
-                                        <td><i class="fa fa-trash" ng-click="deleteFile(file)" style="cursor: pointer ;"></i></td>
+                                    <tr ng-repeat="file in files()" class="sidebar_file_td">
+                                        <td width="90%" ng-click="select(file)">{{ file.nameWithoutExt }}</td>
+                                        <td><i class="fa fa-trash sidebar_file_delete" ng-click="deleteFile(file)"></i></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -33,7 +35,10 @@
                     <div class="box box-solid">
                         <div class="box-body">
                             <p ng-if="!isFileSelected()">No file selected</p>
-                            <p ng-if="isFileSelected()">Selected: {{ selectedFile().fileName }}</p>
+                            <div ng-if="isFileSelected()">
+                                <p>File: {{ selectedFile().nameWithoutExt }}</p>
+                                <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect()">Intersect</button>
+                            </div>
                         </div>
                     </div>
                 </annotations>
