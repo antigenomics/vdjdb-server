@@ -78,9 +78,11 @@
         function uploadFile(file) {
             if (isWaitForUpload(file) && isNameValid(file)) {
                 updateTooltip(file, "Uploading");
+                var softwareNode = document.getElementById('software_file_' + file.uid);
                 file.data.formData = {
                     fileName: file.fileName + '.' + file.fileExtension,
-                    uid: file.uid
+                    uid: file.uid,
+                    softwareType: softwareNode.value
                 };
                 file.waitForUpload = false;
                 file.data.submit();
@@ -173,6 +175,16 @@
 
                 $scope.newFiles = upload.getNewFiles();
 
+                $scope.softwareTypes = Object.freeze([
+                    { dbName: 'vdjtools', clientName: 'VDJtools'},
+                    { dbName: 'migec', clientName: 'MiGec' },
+                    { dbName: 'mitcr', clientName: 'MiTcr' },
+                    { dbName: 'mixcr', clientName: 'MiXcr' },
+                    { dbName: 'migmap', clientName: 'MigMap' },
+                    { dbName: 'immunoseq', clientName: 'ImmunoSeq' },
+                    { dbName: 'imgthighvquest', clientName: 'ImgtHighVQuest' }
+                ]);
+
                 //Public Functions
                 $scope.removeFile = upload.removeFile;
                 $scope.uploadFile = upload.uploadFile;
@@ -243,7 +255,6 @@
                         })
                     },
                     done: function (e, data) {
-                        console.log('success')
                         var file = $scope.newFiles[data.formData.uid];
                         uploadedFilesExists = true;
                         $scope.$apply(function() {
@@ -260,8 +271,20 @@
 
                     }
                 });
+
+                $scope.$on('onRepeatLast', function () {
+                    applySelectTheme();
+                });
             }]
         }
-    })
+    });
+
+    application.directive('onLastRepeat', function () {
+        return function (scope, element, attrs) {
+            if (scope.$last) setTimeout(function () {
+                scope.$emit('onRepeatLast', element, attrs);
+            }, 1);
+        };
+    });
 
 }());

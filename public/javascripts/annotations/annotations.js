@@ -35,6 +35,10 @@
             return selectedFile !== '';
         }
 
+        function isFile(file) {
+            return selectedFile === file;
+        }
+
         return {
             files: files,
             isFilesExist: isFilesExist,
@@ -42,7 +46,8 @@
             deleteAllFiles: deleteAllFiles,
             select: select,
             getSelectedFile: getSelectedFile,
-            isFileSelected: isFileSelected
+            isFileSelected: isFileSelected,
+            isFile: isFile
         }
     }]);
 
@@ -65,20 +70,28 @@
     application.factory('annotations', ['$http', 'sidebar', 'notify', function($http, sidebar, notify) {
 
         var loading = false;
+        var loaded = [];
 
         function intersect() {
             var file = sidebar.getSelectedFile();
-            loading = true;
-            $http.post('/annotations/intersect', { fileName: file.fileName })
-                .success(function(data) {
-                    intersectResultsTable(data);
-                    loading = false;
-                    //angular.copy(data, intersectData);
-                })
-                .error(function(response) {
-                    notify.error(response.message);
-                    loading = false;
-                })
+            if (!isLoaded(file)) {
+                loading = true;
+                $http.post('/annotations/intersect', { fileName: file.fileName })
+                    .success(function(data) {
+                        intersectResultsTable(data, file.uid);
+                        loaded.push(file.uid);
+                        loading = false;
+                        //angular.copy(data, intersectData);
+                    })
+                    .error(function(response) {
+                        notify.error(response.message);
+                        loading = false;
+                    })
+            }
+        }
+
+        function isLoaded(file) {
+            return loaded.indexOf(file.uid) >= 0;
         }
 
         function isLoading() {
@@ -87,7 +100,8 @@
 
         return {
             intersect: intersect,
-            isLoading: isLoading
+            isLoading: isLoading,
+            isLoaded: isLoaded
         }
     }]);
 
@@ -95,17 +109,24 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'sidebar', 'annotations', function($scope, sidebar, annotations) {
+                $scope.files = sidebar.files;
                 $scope.isFileSelected = sidebar.isFileSelected;
+                $scope.isFile = sidebar.isFile;
                 $scope.selectedFile = sidebar.getSelectedFile;
                 $scope.intersect = annotations.intersect;
                 $scope.isLoading = annotations.isLoading;
+                $scope.isLoaded = annotations.isLoaded;
             }]
         }
     })
 }());
 
+function pubmed_wrap(data) {
+    var id = data.substring(5, data.length);
+    return 'PBMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+}
 
-function intersectResultsTable(data) {
+function intersectResultsTable(data, uid) {
     var clonotypes = [];
     angular.forEach(data, function (result) {
         //TODO code must be simple, maybe push clonotype itself
@@ -137,9 +158,11 @@ function intersectResultsTable(data) {
         { data: 'cdr3nt'}
     ];
 
-    var dataTable = $('#intersect_report_table').DataTable({
+
+    var dataTable = $('#intersect_report_table_' + uid).DataTable({
         data: clonotypes,
         columns: columns,
+        iDisplayLength: 25,
         order: [
             [1, 'desc']
         ]
@@ -147,9 +170,25 @@ function intersectResultsTable(data) {
 
     function format(d) {
         var helpers = d.helpers;
-        var addInfo = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px; background-color: #DCDCDC">';
-        addInfo += '<tr><td>Matches: </td></tr>';
+        var addInfo = '<h4>Database matches: ' + helpers.length  + '</h4>';
         angular.forEach(helpers, function(helper) {
+            addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
+            var tdRow = '<tr>';
+            var thRow = '<tr>';
+            angular.forEach(helper.row.entries, function(entry, index) {
+                if (entry.column.name === 'reference.id') entry.value = pubmed_wrap(entry.value);
+                if (index != 0 && index != 1) {
+                    thRow += '<th>' + entry.column.name + '</th>';
+                    tdRow += '<td>' + entry.value + '</td>'
+                }
+            });
+            thRow += '</tr>';
+            tdRow += '</tr>';
+            addInfo += thRow;
+            addInfo += tdRow;
+            addInfo += '</table>';
+
+            addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
             addInfo += '<tr>' +
                     '<td class="alignment_block">' +
                         '<p class="alignment_text">' +
@@ -169,7 +208,7 @@ function intersectResultsTable(data) {
         return addInfo;
     }
 
-    $('#intersect_report_table tbody').on('click', 'td.details-control', function () {
+    $('#intersect_report_table_' + uid + ' tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
         var row = dataTable.row( tr );
 
@@ -180,8 +219,7 @@ function intersectResultsTable(data) {
         }
         else {
             // Open this row
-            console.log(row.data());
-            row.child( format(row.data()) ).show();
+            row.child( format(row.data())).show();
             tr.addClass('shown');
         }
     } );

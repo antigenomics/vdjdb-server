@@ -1,5 +1,6 @@
 package models;
 
+import com.antigenomics.vdjtools.misc.Software;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.auth.User;
@@ -24,6 +25,7 @@ public class ServerFile extends Model {
     private User user;
 
     private String fileName;
+    private Software software;
 
     @JsonIgnore
     private String uniqueName;
@@ -36,9 +38,10 @@ public class ServerFile extends Model {
     @JsonIgnore
     private String filePath;
 
-    public ServerFile(User user, String fileName, String uniqueName, String directoryPath, String filePath) {
+    public ServerFile(User user, String fileName, Software software, String uniqueName, String directoryPath, String filePath) {
         this.user = user;
         this.fileName = fileName;
+        this.software = software;
         this.uniqueName = uniqueName;
         this.createdAt = new DateTime();
         this.directoryPath = directoryPath;
@@ -51,6 +54,10 @@ public class ServerFile extends Model {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public Software getSoftware() {
+        return software;
     }
 
     public String getUniqueName() {

@@ -51,7 +51,7 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
         } else {
           try {
-            val sampleFileConnection = new SampleFileConnection(file.getFilePath, Software.VDJtools)
+            val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
             val database = DatabaseAPI.getDatabase
             val clonotypeDatabase = DatabaseAPI.asClonotypeDatabase(database)
@@ -76,6 +76,7 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
   def upload = SecuredAction(parse.multipartFormData) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     val defFileName = request.body.asFormUrlEncoded.get("fileName").get.head
+    val defSoftwareType = request.body.asFormUrlEncoded.get("softwareType").get.head
     request.body.file("file").map { file =>
       val fileName = defFileName match {
         case "" => CommonUtils.randomAlphaString(10)
@@ -110,7 +111,8 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
             user.logError("Error while uploading new file")
             BadRequest(toJson(ServerResponse("Server is currently not available")))
           } else {
-            val newFile = new ServerFile(user, fileName, uniqueName, fileDirectoryPath, filePath)
+            val software = Software.byName(defSoftwareType)
+            val newFile = new ServerFile(user, fileName, software, uniqueName, fileDirectoryPath, filePath)
             newFile.save()
             Ok(toJson(ServerResponse("Success")))
           }

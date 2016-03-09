@@ -16,10 +16,12 @@ create table server_file (
   id                        bigint not null,
   user_uuid                 varchar(255),
   file_name                 varchar(255),
+  software                  integer,
   unique_name               varchar(255),
   created_at                timestamp,
   directory_path            varchar(255),
   file_path                 varchar(255),
+  constraint ck_server_file_software check (software in (0,1,2,3,4,5,6,7)),
   constraint pk_server_file primary key (id))
 ;
 
