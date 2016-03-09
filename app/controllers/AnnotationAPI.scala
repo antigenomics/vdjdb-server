@@ -57,7 +57,10 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
           } catch {
             case e: Exception =>
               print(e)
-              BadRequest(toJson(ServerResponse("Error while intersecting")))
+              if (e.getMessage.contains("Unable to parse"))
+                BadRequest(toJson(ServerResponse("Wrong file format, unable to parse, " + file.getSoftware.name() + " format expected")))
+              else
+                BadRequest(toJson(ServerResponse("Error while intersecting")))
           }
         }
     }.recoverTotal {

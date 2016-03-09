@@ -89,7 +89,7 @@
                             //angular.copy(data, intersectData);
                         })
                         .error(function(response) {
-                            notify.error(response.message);
+                            notify.error('Intersect', response.message);
                             loading = false;
                         })
                 }
