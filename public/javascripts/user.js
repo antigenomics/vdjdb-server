@@ -10,11 +10,11 @@
 
         $http.get('/api/userinfo')
             .success(function(userInfo) {
-                angular.extend(user, userInfo);
-                angular.forEach(user.files, function(file) {
+                angular.forEach(userInfo.files, function(file) {
                     file.nameWithoutExt =  file.fileName.substr(0, file.fileName.lastIndexOf('.')) || file.fileName;
                     file.uid = uid++;
                 });
+                angular.extend(user, userInfo);
                 block.unblock();
             })
             .error(function(error) {

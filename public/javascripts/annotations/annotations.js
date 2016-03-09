@@ -72,26 +72,28 @@
         var loading = false;
         var loaded = [];
 
-        function intersect() {
-            var file = sidebar.getSelectedFile();
-            if (!isLoaded(file)) {
-                loading = true;
-                $http.post('/annotations/intersect', { fileName: file.fileName })
-                    .success(function(data) {
-                        intersectResultsTable(data, file.uid);
-                        loaded.push(file.uid);
-                        loading = false;
-                        //angular.copy(data, intersectData);
-                    })
-                    .error(function(response) {
-                        notify.error(response.message);
-                        loading = false;
-                    })
-            }
-        }
-
         function isLoaded(file) {
             return loaded.indexOf(file.uid) >= 0;
+        }
+
+        function intersect() {
+            if (sidebar.isFileSelected()) {
+                var file = sidebar.getSelectedFile();
+                if (!isLoaded(file)) {
+                    loading = true;
+                    $http.post('/annotations/intersect', { fileName: file.fileName })
+                        .success(function(data) {
+                            intersectResultsTable(data, file.uid);
+                            loaded.push(file.uid);
+                            loading = false;
+                            //angular.copy(data, intersectData);
+                        })
+                        .error(function(response) {
+                            notify.error(response.message);
+                            loading = false;
+                        })
+                }
+            }
         }
 
         function isLoading() {
@@ -176,10 +178,11 @@ function intersectResultsTable(data, uid) {
             var tdRow = '<tr>';
             var thRow = '<tr>';
             angular.forEach(helper.row.entries, function(entry, index) {
-                if (entry.column.name === 'reference.id') entry.value = pubmed_wrap(entry.value);
+                var value = entry.value;
+                if (entry.column.name === 'reference.id') value = pubmed_wrap(entry.value);
                 if (index != 0 && index != 1) {
                     thRow += '<th>' + entry.column.name + '</th>';
-                    tdRow += '<td>' + entry.value + '</td>'
+                    tdRow += '<td>' + value + '</td>'
                 }
             });
             thRow += '</tr>';

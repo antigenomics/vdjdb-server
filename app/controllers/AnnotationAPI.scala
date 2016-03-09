@@ -3,17 +3,11 @@ package controllers
 import java.io.File
 
 import com.antigenomics.vdjdb.DatabaseAPI
-import com.antigenomics.vdjdb.impl.ClonotypeDatabase
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
-import com.antigenomics.vdjtools.sample.Clonotype
-import com.milaboratory.core.alignment.AlignmentHelper
-import controllers.SearchAPI._
 import models.ServerFile
 import models.auth.User
-import org.apache.commons.io.FilenameUtils
 import play.api.libs.json.Json
-import securesocial.core.java.SecureSocial.SecuredAction
 import server.wrappers.IntersectResult
 import scala.collection.JavaConversions._
 import play.api.mvc._
@@ -21,7 +15,6 @@ import server.ServerResponse
 import utils.CommonUtils
 import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
-import java.util.HashMap
 import java.util.ArrayList
 
 object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
