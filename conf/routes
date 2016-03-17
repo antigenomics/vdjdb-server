@@ -10,13 +10,13 @@ GET     /search                     controllers.SearchAPI.index
 POST    /search                     controllers.SearchAPI.search
 
 # Annotations api
-GET     /annotations                controllers.AnnotationAPI.index
-GET     /annotations/upload         controllers.AnnotationAPI.uploadPage
-POST    /annotations/intersect      controllers.AnnotationAPI.intersect
+GET     /intersection                controllers.IntersectionAPI.index
+POST    /intersection                controllers.IntersectionAPI.intersect
+GET     /intersection/upload         controllers.IntersectionAPI.uploadPage
 
-GET     /api/userinfo               controllers.AnnotationAPI.userInformation
-POST    /api/upload                 controllers.AnnotationAPI.upload
-POST    /api/delete                 controllers.AnnotationAPI.delete
+GET     /api/userinfo               controllers.IntersectionAPI.userInformation
+POST    /api/upload                 controllers.IntersectionAPI.upload
+POST    /api/delete                 controllers.IntersectionAPI.delete
 
 
 # Map static resources from the /public folder to the /assets URL path

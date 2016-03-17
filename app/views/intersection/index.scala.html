@@ -2,10 +2,10 @@
 
     <script src="@routes.Assets.at("javascripts/blockpage.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/user.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/annotations/annotations.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/intersection/intersection.js")" type="text/javascript"></script>
 
     @navbar()
-    <div class="wrapper" ng-app="annotationsPage">
+    <div class="wrapper" ng-app="intersectionPage">
         <block></block>
         <div class="container-fluid">
             <div class="row">
@@ -13,7 +13,7 @@
                     <div class="box box-solid">
                         <div class="box-header">
                             Files
-                            <a class="pull-right" href="@routes.AnnotationAPI.uploadPage()">Upload new</a>
+                            <a class="pull-right" href="@routes.IntersectionAPI.uploadPage()">Upload new</a>
                         </div>
                         <div class="box-body">
                             <p ng-if="!isFilesExist()">You have no files</p>
@@ -31,7 +31,7 @@
                         </div>
                     </div>
                 </sidebar>
-                <annotations class="col-md-10 col-lg-10">
+                <intersection class="col-md-10 col-lg-10">
                     <div class="box box-solid">
                         <div class="box-body">
                             <p ng-if="!isFileSelected()">No file selected</p>
@@ -80,7 +80,7 @@
                             </div>
                         </div>
                     </div>
-                </annotations>
+                </intersection>
 
             </div>
         </div>

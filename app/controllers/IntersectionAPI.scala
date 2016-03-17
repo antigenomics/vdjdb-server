@@ -17,14 +17,14 @@ import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
 import java.util.ArrayList
 
-object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
+object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
   def index = SecuredAction {
-    Ok(views.html.annotations.index())
+    Ok(views.html.intersection.index())
   }
 
   def uploadPage = SecuredAction {
-    Ok(views.html.annotations.upload())
+    Ok(views.html.intersection.upload())
   }
 
   def userInformation = SecuredAction(ajaxCall = true) { implicit request =>

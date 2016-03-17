@@ -1,5 +1,5 @@
 (function() {
-    var application = angular.module('annotationsPage', ['user', 'notifications']);
+    var application = angular.module('intersectionPage', ['user', 'notifications']);
 
     application.factory('sidebar', ['user', function(userInfo) {
         var user = userInfo.getUser();
@@ -67,7 +67,7 @@
         }
     });
 
-    application.factory('annotations', ['$http', 'sidebar', 'notify', function($http, sidebar, notify) {
+    application.factory('intersection', ['$http', 'sidebar', 'notify', function($http, sidebar, notify) {
 
         var loading = false;
         var loaded = [];
@@ -81,7 +81,7 @@
                 var file = sidebar.getSelectedFile();
                 if (!isLoaded(file)) {
                     loading = true;
-                    $http.post('/annotations/intersect', { fileName: file.fileName })
+                    $http.post('/intersection', { fileName: file.fileName })
                         .success(function(data) {
                             intersectResultsTable(data, file.uid);
                             loaded.push(file.uid);
@@ -107,17 +107,17 @@
         }
     }]);
 
-    application.directive('annotations', function() {
+    application.directive('intersection', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', 'sidebar', 'annotations', function($scope, sidebar, annotations) {
+            controller: ['$scope', 'sidebar', 'intersection', function($scope, sidebar, intersection) {
                 $scope.files = sidebar.files;
                 $scope.isFileSelected = sidebar.isFileSelected;
                 $scope.isFile = sidebar.isFile;
                 $scope.selectedFile = sidebar.getSelectedFile;
-                $scope.intersect = annotations.intersect;
-                $scope.isLoading = annotations.isLoading;
-                $scope.isLoaded = annotations.isLoaded;
+                $scope.intersect = intersection.intersect;
+                $scope.isLoading = intersection.isLoading;
+                $scope.isLoaded = intersection.isLoaded;
             }]
         }
     })
@@ -175,6 +175,7 @@ function intersectResultsTable(data, uid) {
     function format(d) {
         var helpers = d.helpers;
         var addInfo = "";
+        var skipColumn = []
         angular.forEach(helpers, function(helper) {
             addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
             var tdRow = '<tr>';

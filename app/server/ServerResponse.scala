@@ -8,6 +8,7 @@ import play.api.libs.json.Json
 
 
 case class ServerResponse(message: String)
+
 object ServerResponse {
   implicit val serverResponseWrites = Json.writes[ServerResponse]
   implicit val serverResponseReads = Json.reads[ServerResponse]
