@@ -140,7 +140,8 @@ function intersectResultsTable(data, uid) {
             cdr3nt: cdr.cdr3nt,
             v: result.clonotype.v,
             j: result.clonotype.j,
-            helpers: result.alignmentHelperList
+            helpers: result.alignmentHelperList,
+            matches: result.alignmentHelperList.length
         });
     });
 
@@ -148,10 +149,11 @@ function intersectResultsTable(data, uid) {
         {
             className:      'details-control',
             orderable:      false,
-            data:           null,
+            data:           '',
             defaultContent: '',
-            width: '5%'
+            width: '15px'
         },
+        { data: 'matches'},
         { data: 'freq', width: '5%' },
         { data: 'count', width: '5%' },
         { data: 'cdr3aa' },
@@ -166,13 +168,13 @@ function intersectResultsTable(data, uid) {
         columns: columns,
         iDisplayLength: 25,
         order: [
-            [1, 'desc']
+            [2, 'desc']
         ]
     });
 
     function format(d) {
         var helpers = d.helpers;
-        var addInfo = '<h4>Database matches: ' + helpers.length  + '</h4>';
+        var addInfo = "";
         angular.forEach(helpers, function(helper) {
             addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
             var tdRow = '<tr>';

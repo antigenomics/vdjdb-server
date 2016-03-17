@@ -4,13 +4,13 @@ package controllers
 import java.util
 
 
-import com.antigenomics.vdjdb.DatabaseAPI
+import com.antigenomics.vdjdb.{VdjdbInstance}
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
 import play.api.libs.json.{Json, JsValue, Reads}
 import play.api.mvc._
-import server.ServerResponse
+import server.{GlobalDatabase, ServerResponse}
 import utils.JsonUtil.sendJson
 import utils.ServerLogger
 import play.api.libs.json.Json.toJson
@@ -26,8 +26,7 @@ object SearchAPI extends Controller {
   }
 
   def database = Action {
-    val database = DatabaseAPI.getDatabase
-    sendJson(database)
+    sendJson(GlobalDatabase.db.getDbInstance)
   }
 
   case class DatabaseTextFilter(columnId: String, value: String, filterType: String, negative: Boolean)
@@ -57,7 +56,7 @@ object SearchAPI extends Controller {
           val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations);
           sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
         })
-        sendJson(DatabaseAPI.getDatabase(textFilters, sequenceFilters))
+        sendJson(GlobalDatabase.db.getDbInstance.search(textFilters, sequenceFilters))
     }.recoverTotal {
         e => print(e)
         BadRequest(toJson(ServerResponse("Invalid search request")))

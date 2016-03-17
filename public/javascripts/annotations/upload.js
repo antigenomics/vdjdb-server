@@ -79,6 +79,7 @@
             if (isWaitForUpload(file) && isNameValid(file)) {
                 updateTooltip(file, "Uploading");
                 var softwareNode = document.getElementById('software_file_' + file.uid);
+                file.softwareType = softwareNode.value;
                 file.data.formData = {
                     fileName: file.fileName + '.' + file.fileExtension,
                     uid: file.uid,

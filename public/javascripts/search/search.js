@@ -198,7 +198,6 @@
             restrict: 'E',
             controller: ['$scope', '$sce', 'AnnotationsServerAPI', 'LoggerService', function ($scope, $sce, AnnotationsServerAPI, LoggerService) {
 
-                var skipColumns = ['record.id', 'complex.id'];
                 var loading = false;
                 var search = false;
                 var found = false;
@@ -216,10 +215,10 @@
                     loading = true;
                     found = true;
                     var searchPromise = AnnotationsServerAPI.search();
-                    searchPromise.then(function (result) {
-                        LoggerService.log(result);
-                        if (result.data.rows.length > 0) {
-                            searchResultsTable(result.data);
+                    searchPromise.then(function (searchResults) {
+                        LoggerService.log(searchResults);
+                        if (searchResults.data.length > 0) {
+                            searchResultsTable(searchResults.data);
                         } else {
                             found = false;
                         }
@@ -229,7 +228,7 @@
 
                 $scope.isFound = function() {
                     return found;
-                }
+                };
 
                 $scope.isLoading = function () {
                     return loading;
@@ -239,22 +238,12 @@
                     return search;
                 };
 
-                function isColumnSkip(column) {
-                    return skipColumns.indexOf(column.name) >= 0;
-                }
-
-                function isEntrySkip(entry) {
-                    return skipColumns.indexOf(entry.column.name) >= 0;
-                }
-
                 function searchResultsTable(data) {
                     var results = [];
-                    angular.forEach(data.rows, function (row) {
+                    angular.forEach(data, function (searchResult) {
                         var entries = [];
-                        angular.forEach(row.entries, function (entry) {
-                            if (!isEntrySkip(entry)) {
-                                entries.push(entry.value);
-                            }
+                        angular.forEach(searchResult.row.entries, function (entry) {
+                            entries.push(entry.value)
                         });
                         results.push(entries);
                     });
@@ -266,18 +255,87 @@
                         .attr("id", "results-table")
                         .attr("class", "table table-hover compact");
                     var thead = table.append("thead").append("tr");
-                    var columns = [];
+                    var columns = [{
+                        data: 0,
+                        title: 'record.id',
+                        visible: false
+                    }, {
+                        data: 1,
+                        title: 'complex.id',
+                        visible: false
+                    }, {
+                        data: 2,
+                        title: 'CDR3',
+                        visible: true
+                    }, {
+                        data: 3,
+                        title: 'V.Segm',
+                        visible: true
+                    }, {
+                        data: 4,
+                        title: 'J.Segm',
+                        visible: true
+                    }, {
+                        data: 5,
+                        title: 'Gene',
+                        visible: true
 
-                    angular.forEach(data.columns, function (column) {
-                        if (!isColumnSkip(column)) {
-                            thead.append("th").html(column.name);
-                            columns.push({
-                                title: column.name
-                            })
-                        }
-                    });
+                    }, {
+                        data: 6,
+                        title: 'Species',
+                        visible: true
 
-                    var dataTable = $('#results-table').dataTable({
+                    }, {
+                        data: 7,
+                        title: 'MHC.A',
+                        visible: true
+
+                    }, {
+                        data: 8,
+                        title: 'MHC.B',
+                        visible: true
+
+                    }, {
+                        data: 9,
+                        title: 'MHC.Type',
+                        visible: true
+
+                    }, {
+                        data: 10,
+                        title: 'Antigen',
+                        visible: true
+
+                    }, {
+                        data: 11,
+                        title: 'Antigen.Gene',
+                        visible: true
+
+                    }, {
+                        data: 12,
+                        title: 'Antigen.Species',
+                        visible: true
+
+                    }, {
+                        data: 13,
+                        title: 'vdjdb.conf',
+                        visible: false
+
+                    }, {
+                        data: 14,
+                        title: 'Reference',
+                        visible: true
+
+                    }, {
+                        data: null,
+                        title: '',
+                        visible: true,
+                        orderable: false,
+                        defaultContent: '',
+                        className: 'comments-control'
+
+                    }];
+
+                    var dataTable = $('#results-table').DataTable({
                         data: results,
                         columns: columns,
                         dom: '<"pull-left"l><"clear">Trtd<"pull-left"i>p',
@@ -289,13 +347,45 @@
                         scrollY: "600px",
                         columnDefs: [
                             {
-                                targets: 13,
+                                targets: 14,
                                 render: function (data) {
-                                    var id = data.substring(5, data.length);
-                                    return 'PBMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                                    if (data.indexOf('PMID') >= 0) {
+                                        var id = data.substring(5, data.length);
+                                        return 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                                    }
+                                    if (data.indexOf('http') >= 0) {
+                                        var domain;
+                                        //find & remove protocol (http, ftp, etc.) and get domain
+                                        if (data.indexOf("://") > -1) {
+                                            domain = data.split('/')[2];
+                                        } else {
+                                            domain = data.split('/')[0];
+                                        }
+                                        //find & remove port number
+                                        domain = domain.split(':')[0];
+                                        return '<a href="' + data  + '">' + domain + '</a>'
+                                    }
+                                    return data;
+                                }
+                            },
+                            {
+                                targets: 15,
+                                render: function(data, type, row) {
+                                    var comment = JSON.parse(data[15]);
+                                    var text = "";
+                                    angular.forEach(comment, function(value, key) {
+                                        text += '<p>' + key + ' : ' + value + '</p>';
+                                    });
+                                    return '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
                                 }
                             }
-                        ]
+                        ],
+                        drawCallback: function() {
+                            $('[data-toggle="popover"]').popover({
+                                container: 'body',
+                                html: true
+                            });
+                        }
                     })
                 }
 

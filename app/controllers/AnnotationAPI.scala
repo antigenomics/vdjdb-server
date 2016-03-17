@@ -2,7 +2,7 @@ package controllers
 
 import java.io.File
 
-import com.antigenomics.vdjdb.DatabaseAPI
+import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
 import models.ServerFile
@@ -11,7 +11,7 @@ import play.api.libs.json.Json
 import server.wrappers.IntersectResult
 import scala.collection.JavaConversions._
 import play.api.mvc._
-import server.ServerResponse
+import server.{GlobalDatabase, ServerResponse}
 import utils.CommonUtils
 import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
@@ -46,8 +46,7 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
           try {
             val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
-            val database = DatabaseAPI.getDatabase
-            val clonotypeDatabase = DatabaseAPI.asClonotypeDatabase(database)
+            val clonotypeDatabase = VdjdbInstance.asClonotypeDatabase(GlobalDatabase.db.getDbInstance)
             val results = clonotypeDatabase.search(sample)
             val convertedResults : ArrayList[IntersectResult] = new ArrayList[IntersectResult]()
             results.keySet().toList.foreach(clonotype => {
@@ -56,7 +55,6 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
             sendJson(convertedResults)
           } catch {
             case e: Exception =>
-              print(e)
               if (e.getMessage.contains("Unable to parse"))
                 BadRequest(toJson(ServerResponse("Wrong file format, unable to parse, " + file.getSoftware.name() + " format expected")))
               else
@@ -64,7 +62,7 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
           }
         }
     }.recoverTotal {
-        e => print(e)
+        e =>
         BadRequest(toJson(ServerResponse("Invalid intersect request")))
     }
   }
