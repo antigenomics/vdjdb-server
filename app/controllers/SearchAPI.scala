@@ -53,8 +53,12 @@ object SearchAPI extends Controller {
         })
         val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
         requestSequenceFilters.foreach(filter => {
-          val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations);
-          sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
+          filter.columnId match {
+            case "cdr3" | "antigen" =>
+              val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations)
+              sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
+            case _ => ServerLogger.error("Invalid column id for sequence filter: " + filter.columnId);
+          }
         })
         sendJson(GlobalDatabase.db.getDbInstance.search(textFilters, sequenceFilters))
     }.recoverTotal {

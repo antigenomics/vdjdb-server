@@ -1,4 +1,4 @@
-function applySelectTheme()
+function applySelectTheme(onChangeCallback)
 {
 	if(!document.getElementById && !document.createTextNode){return;}
 	
@@ -47,7 +47,8 @@ function applySelectTheme()
 				newa.href='#';
 				newa.appendChild(document.createTextNode(
 				sels[i].getElementsByTagName('option')[j].text));
-				newli.onclick=function(){ 
+				newli.onclick=function(){
+					if (onChangeCallback) onChangeCallback(this.elm.id, this.v, this.firstChild.firstChild.nodeValue);
 					this.elm.value=this.v;
 					ts_swapclass(this.istrigger,ts_triggeron,ts_triggeroff);
 					ts_swapclass(this.parentNode,ts_dropdownopen,ts_dropdownclosed);

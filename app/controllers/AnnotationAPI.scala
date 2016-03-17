@@ -105,10 +105,14 @@ object AnnotationAPI extends Controller with securesocial.core.SecureSocial {
             user.logError("Error while uploading new file")
             BadRequest(toJson(ServerResponse("Server is currently not available")))
           } else {
-            val software = Software.byName(defSoftwareType)
-            val newFile = new ServerFile(user, fileName, software, uniqueName, fileDirectoryPath, filePath)
-            newFile.save()
-            Ok(toJson(ServerResponse("Success")))
+            if (!Software.getAllowedNames.contains(defSoftwareType)) {
+              BadRequest(toJson(ServerResponse("Invalid software type")))
+            } else {
+              val software = Software.byName(defSoftwareType)
+              val newFile = new ServerFile(user, fileName, software, uniqueName, fileDirectoryPath, filePath)
+              newFile.save()
+              Ok(toJson(ServerResponse("Success")))
+            }
           }
       }
     }.getOrElse {

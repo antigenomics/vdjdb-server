@@ -19,7 +19,7 @@
         }
     }]);
 
-    application.factory('AnnotationsServerAPI', ['$http', 'LoggerService', 'filters', 'notify', function ($http, LoggerService, filters, notify) {
+    application.factory('SearchDatabaseAPI', ['$http', 'LoggerService', 'filters', 'notify', function ($http, LoggerService, filters, notify) {
 
         function getDatabase() {
             return $http.get('/annotations/db').then(function (response) {
@@ -61,8 +61,6 @@
             {dbName: 'antigen', clientName: 'Antigen'},
             {dbName: 'antigen.gene', clientName: 'Antigen.Gene'},
             {dbName: 'antigen.species', clientName: 'Antigen.Species'},
-            {dbName: 'method', clientName: 'Method'},
-            {dbName: 'reference', clientName: 'Reference'},
             {dbName: 'reference.id', clientName: 'Reference.Id'}
         ]);
 
@@ -186,6 +184,9 @@
                 };
 
                 $scope.$on('onRepeatLast', function () {
+                    $('[data-toggle="tooltip"]').tooltip({
+                        container: 'body'
+                    });
                     applySelectTheme();
                 });
             }]
@@ -193,36 +194,30 @@
     });
 
 
-    application.directive('annotations', function () {
+    application.directive('search', function () {
         return {
             restrict: 'E',
-            controller: ['$scope', '$sce', 'AnnotationsServerAPI', 'LoggerService', function ($scope, $sce, AnnotationsServerAPI, LoggerService) {
+            controller: ['$scope', '$sce', 'SearchDatabaseAPI', 'LoggerService', function ($scope, $sce, SearchDatabaseAPI, LoggerService) {
 
                 var loading = false;
                 var search = false;
                 var found = false;
 
 
-                $scope.database = function () {
-                    var databasePromise = AnnotationsServerAPI.getDatabase();
-                    databasePromise.then(function (result) {
-                        LoggerService.log(result);
-                    })
-                };
-
                 $scope.search = function () {
                     search = true;
                     loading = true;
                     found = true;
-                    var searchPromise = AnnotationsServerAPI.search();
+                    var searchPromise = SearchDatabaseAPI.search();
                     searchPromise.then(function (searchResults) {
-                        LoggerService.log(searchResults);
                         if (searchResults.data.length > 0) {
                             searchResultsTable(searchResults.data);
                         } else {
                             found = false;
                         }
                         loading = false;
+                    }, function(error) {
+                        console.log(error);
                     })
                 };
 

@@ -1,7 +1,7 @@
 (function() {
-    var application = angular.module('uploadPage', ['user']);
+    var application = angular.module('uploadPage', ['user', 'notifications']);
 
-    application.factory('upload', ['user', function(userInfo) {
+    application.factory('upload', ['user', 'notify', function(userInfo, notify) {
 
         var uid = 0;
         var newFiles = [];
@@ -76,7 +76,7 @@
         }
 
         function uploadFile(file) {
-            if (isWaitForUpload(file) && isNameValid(file)) {
+            if (isWaitForUpload(file) && isNameValid(file) && isReady(file)) {
                 updateTooltip(file, "Uploading");
                 var softwareNode = document.getElementById('software_file_' + file.uid);
                 file.softwareType = softwareNode.value;
@@ -87,7 +87,15 @@
                 };
                 file.waitForUpload = false;
                 file.data.submit();
+            } else if (isWaitForUpload(file) && !isNameValid(file)) {
+                notify.notice('Invalid name', file.fileName);
+            } else if (isWaitForUpload(file) && !isReady(file)) {
+                notify.notice('Software type', 'Please select software type for file ' + file.fileName);
             }
+        }
+
+        function isReady(file) {
+            return file.ready;
         }
 
         function uploadAll() {
@@ -111,6 +119,7 @@
                 fileExtension: fileExtension,
                 uploaded: false,
                 removed: false,
+                ready: false,
                 waitForUpload: (function () {
                     return !(isFilesCountExcedeed() || isContain(originalFileName) || isSizeExceeded(file));
                 })(),
@@ -163,7 +172,8 @@
             uploadAll: uploadAll,
             isNewFilesExists: isNewFilesExists,
             isWaitForUpload: isWaitForUpload,
-            isNameValid: isNameValid
+            isNameValid: isNameValid,
+            isReady: isReady
         }
     }]);
 
@@ -172,6 +182,7 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'upload', function($scope, upload) {
+
                 var uploadedFilesExists = false;
 
                 $scope.newFiles = upload.getNewFiles();
@@ -201,6 +212,7 @@
                 $scope.isSuccess = isSuccess;
                 $scope.isUploadedFilesExists = isUploadedFilesExists;
                 $scope.isWaitingExists = isWaitingExists;
+                $scope.isUploadValid = isUploadValid;
 
                 function isWaitingExists() {
                     var exist = false;
@@ -210,6 +222,10 @@
                         }
                     });
                     return exist;
+                }
+
+                function isUploadValid(file) {
+                    return upload.isNameValid(file) && upload.isReady(file);
                 }
 
                 function isRemoved(file) {
@@ -274,7 +290,21 @@
                 });
 
                 $scope.$on('onRepeatLast', function () {
-                    applySelectTheme();
+                    applySelectTheme(function(elementId, newValue, nodeValue) {
+                        $scope.$apply(function() {
+                            if (elementId === 'commonSoftwareType') {
+                                angular.forEach($scope.newFiles, function (file) {
+                                    var softwareNode = document.getElementById('software_file_' + file.uid);
+                                    softwareNode.value = newValue;
+                                    softwareNode.nextElementSibling.text = nodeValue;
+                                    file.ready = true;
+                                })
+                            } else {
+                                var fileId = elementId.substring(14, elementId.length);
+                                $scope.newFiles[fileId].ready = true;
+                            }
+                        });
+                    });
                 });
             }]
         }

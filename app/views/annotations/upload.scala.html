@@ -36,6 +36,17 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td></td>
+                                        <td ng-click="commonSoftwareType()">
+                                            <select class="dropdown" id="commonSoftwareType" name="commonSoftwareId">
+                                                <option>Please select software type:</option>
+                                                <option ng-repeat="software in softwareTypes" value="{{ software.dbName }}">{{ software.clientName }}</option>
+                                            </select>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
                                     <tr ng-repeat="file in newFiles" ng-class="{'danger':isError(file), 'success':isSuccess(file), 'warning':isRemoved(file)}" on-last-repeat>
                                         <td width="30%">
                                             <input ng-model="file.fileName" type="text" value="file.fileName" ng-show="isWaitForUpload(file)" class="form-control"
@@ -59,7 +70,7 @@
                                             <text ng-hide="isWaitForUpload(file) || isError(file)">{{ file.tooltip }}</text>
                                         </td>
                                         <td width="10%">
-                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file) && isNameValid(file)">Upload</button>
+                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file) && isUploadValid(file)">Upload</button>
                                             <button class="btn btn-flat btn-sm bg-purple" ng-click="removeFile(file)" ng-show="isWaitForUpload(file)">X</button>
                                         </td>
                                     </tr>
