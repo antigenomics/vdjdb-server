@@ -19,13 +19,7 @@
         }
     }]);
 
-    application.factory('SearchDatabaseAPI', ['$http', 'LoggerService', 'filters', 'notify', function ($http, LoggerService, filters, notify) {
-
-        function getDatabase() {
-            return $http.get('/annotations/db').then(function (response) {
-                return response
-            })
-        }
+    application.factory('SearchDatabaseAPI', ['$http', 'filters', function ($http, filters) {
 
         function search() {
             filters.pickFiltersSelectData();
@@ -38,7 +32,6 @@
         }
 
         return {
-            getDatabase: getDatabase,
             search: search
         }
     }]);
@@ -197,7 +190,7 @@
     application.directive('search', function () {
         return {
             restrict: 'E',
-            controller: ['$scope', '$sce', 'SearchDatabaseAPI', 'LoggerService', function ($scope, $sce, SearchDatabaseAPI, LoggerService) {
+            controller: ['$scope', '$sce', '$log', 'SearchDatabaseAPI', 'notify', function ($scope, $sce, $log, SearchDatabaseAPI, notify) {
 
                 var loading = false;
                 var search = false;
@@ -210,14 +203,18 @@
                     found = true;
                     var searchPromise = SearchDatabaseAPI.search();
                     searchPromise.then(function (searchResults) {
-                        if (searchResults.data.length > 0) {
+                        if (searchResults.data.results.length > 0) {
                             searchResultsTable(searchResults.data);
+                            angular.forEach(searchResults.data.warnings, function(warning) {
+                                notify.info('Search', warning);
+                            })
                         } else {
                             found = false;
                         }
                         loading = false;
                     }, function(error) {
-                        console.log(error);
+                        $log.error(error);
+                        notify.error('Search', error.data.message);
                     })
                 };
 
@@ -235,7 +232,7 @@
 
                 function searchResultsTable(data) {
                     var results = [];
-                    angular.forEach(data, function (searchResult) {
+                    angular.forEach(data.results, function (searchResult) {
                         var entries = [];
                         angular.forEach(searchResult.row.entries, function (entry) {
                             entries.push(entry.value)
@@ -243,92 +240,37 @@
                         results.push(entries);
                     });
 
-
                     var d3Place = d3.select(".results-table");
-                    d3Place.html("");
+                        d3Place.html("");
                     var table = d3Place.append("table")
                         .attr("id", "results-table")
                         .attr("class", "table table-hover compact");
-                    var thead = table.append("thead").append("tr");
-                    var columns = [{
-                        data: 0,
-                        title: 'record.id',
-                        visible: false
-                    }, {
-                        data: 1,
-                        title: 'complex.id',
-                        visible: false
-                    }, {
-                        data: 2,
-                        title: 'CDR3',
-                        visible: true
-                    }, {
-                        data: 3,
-                        title: 'V.Segm',
-                        visible: true
-                    }, {
-                        data: 4,
-                        title: 'J.Segm',
-                        visible: true
-                    }, {
-                        data: 5,
-                        title: 'Gene',
-                        visible: true
 
-                    }, {
-                        data: 6,
-                        title: 'Species',
-                        visible: true
+                    var columns = [];
+                    var referenceIdTarget = 0;
 
-                    }, {
-                        data: 7,
-                        title: 'MHC.A',
-                        visible: true
+                    angular.forEach(data.columns, function(column, index) {
+                        if (column.name === 'comment') {
+                            referenceIdTarget = index;
+                            columns.push({
+                                data: null,
+                                title: column.metadata.title,
+                                visible: true,
+                                orderable: false,
+                                defaultContent: '',
+                                className: 'comments-control'
 
-                    }, {
-                        data: 8,
-                        title: 'MHC.B',
-                        visible: true
-
-                    }, {
-                        data: 9,
-                        title: 'MHC.Type',
-                        visible: true
-
-                    }, {
-                        data: 10,
-                        title: 'Antigen',
-                        visible: true
-
-                    }, {
-                        data: 11,
-                        title: 'Antigen.Gene',
-                        visible: true
-
-                    }, {
-                        data: 12,
-                        title: 'Antigen.Species',
-                        visible: true
-
-                    }, {
-                        data: 13,
-                        title: 'vdjdb.conf',
-                        visible: false
-
-                    }, {
-                        data: 14,
-                        title: 'Reference',
-                        visible: true
-
-                    }, {
-                        data: null,
-                        title: '',
-                        visible: true,
-                        orderable: false,
-                        defaultContent: '',
-                        className: 'comments-control'
-
-                    }];
+                            })
+                        } else {
+                            columns.push({
+                                data: index,
+                                title: column.metadata.title,
+                                visible: (function () {
+                                    return column.metadata.implicit == -0
+                                }())
+                            })
+                        }
+                    });
 
                     var dataTable = $('#results-table').DataTable({
                         data: results,
@@ -342,13 +284,12 @@
                         scrollY: "600px",
                         columnDefs: [
                             {
-                                targets: 14,
+                                targets: -2,
                                 render: function (data) {
                                     if (data.indexOf('PMID') >= 0) {
                                         var id = data.substring(5, data.length);
                                         return 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
-                                    }
-                                    if (data.indexOf('http') >= 0) {
+                                    } else if (data.indexOf('http') >= 0) {
                                         var domain;
                                         //find & remove protocol (http, ftp, etc.) and get domain
                                         if (data.indexOf("://") > -1) {
@@ -359,19 +300,24 @@
                                         //find & remove port number
                                         domain = domain.split(':')[0];
                                         return '<a href="' + data  + '">' + domain + '</a>'
+                                    } else {
+                                        return data;
                                     }
-                                    return data;
                                 }
                             },
                             {
-                                targets: 15,
+                                targets: -1,
                                 render: function(data, type, row) {
-                                    var comment = JSON.parse(data[15]);
-                                    var text = "";
-                                    angular.forEach(comment, function(value, key) {
-                                        text += '<p>' + key + ' : ' + value + '</p>';
-                                    });
-                                    return '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
+                                    try {
+                                        var comment = JSON.parse(data[referenceIdTarget]);
+                                        var text = "";
+                                        angular.forEach(comment, function (value, key) {
+                                            text += '<p>' + key + ' : ' + value + '</p>';
+                                        });
+                                        return '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
+                                    } catch (e) {
+                                        return ''
+                                    }
                                 }
                             }
                         ],

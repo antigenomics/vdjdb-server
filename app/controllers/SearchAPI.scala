@@ -3,16 +3,15 @@ package controllers
 
 import java.util
 
-
-import com.antigenomics.vdjdb.{VdjdbInstance}
+import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
-import play.api.libs.json.{Json, JsValue, Reads}
+import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.mvc._
-import server.{GlobalDatabase, ServerResponse}
+import server.wrappers.SearchResult
+import server.{GlobalDatabase, ServerLogger, ServerResponse}
 import utils.JsonUtil.sendJson
-import utils.ServerLogger
 import play.api.libs.json.Json.toJson
 
 /**
@@ -26,7 +25,7 @@ object SearchAPI extends Controller {
   }
 
   def database = Action {
-    sendJson(GlobalDatabase.db.getDbInstance)
+    sendJson(GlobalDatabase.getDatabase())
   }
 
   case class DatabaseTextFilter(columnId: String, value: String, filterType: String, negative: Boolean)
@@ -41,14 +40,21 @@ object SearchAPI extends Controller {
   def search = Action(parse.json) { request =>
     request.body.validate[SearchRequest].map {
       case SearchRequest(requestTextFilters, requestSequenceFilters) =>
+        val warnings : util.ArrayList[String] = new util.ArrayList[String]()
         val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
+        val columns = GlobalDatabase.getDatabase().getHeader
         requestTextFilters.foreach(filter => {
-          filter.filterType match {
-            case "exact" => textFilters.add(new ExactTextFilter(filter.columnId, filter.value, filter.negative))
-            case "pattern" => textFilters.add(new PatternTextFilter(filter.columnId, filter.value, filter.negative))
-            case "substring" => textFilters.add(new SubstringTextFilter(filter.columnId, filter.value, filter.negative))
-            case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
-            case _ => ServerLogger.error("Unknown search type: " + filter.filterType);
+          if (columns.indexOf(filter.columnId) >= 0) {
+            filter.filterType match {
+              case "exact" => textFilters.add(new ExactTextFilter(filter.columnId, filter.value, filter.negative))
+              case "pattern" => textFilters.add(new PatternTextFilter(filter.columnId, filter.value, filter.negative))
+              case "substring" => textFilters.add(new SubstringTextFilter(filter.columnId, filter.value, filter.negative))
+              case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
+              case _ =>
+                warnings.add("Text filter ignored : please select filter type")
+            }
+          } else {
+            warnings.add("Text filter ignored : please select column name")
           }
         })
         val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
@@ -57,10 +63,11 @@ object SearchAPI extends Controller {
             case "cdr3" | "antigen" =>
               val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations)
               sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
-            case _ => ServerLogger.error("Invalid column id for sequence filter: " + filter.columnId);
+            case _ =>
+              warnings.add("Sequence filter ignored : please select column name")
           }
         })
-        sendJson(GlobalDatabase.db.getDbInstance.search(textFilters, sequenceFilters))
+        sendJson(new SearchResult(textFilters, sequenceFilters, warnings))
     }.recoverTotal {
         e => print(e)
         BadRequest(toJson(ServerResponse("Invalid search request")))

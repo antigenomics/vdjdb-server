@@ -6,7 +6,7 @@ import models.ServerFile;
 import play.db.ebean.Model;
 import server.Configuration;
 import utils.CommonUtils;
-import utils.ServerLogger;
+import server.ServerLogger;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -91,7 +91,7 @@ public class User extends Model {
         return maxFilesSize;
     }
 
-    public List<ServerFile> getFiles() {
+    public  List<ServerFile> getFiles() {
         return files;
     }
 
@@ -122,7 +122,7 @@ public class User extends Model {
         return true;
     }
 
-    public void saveUser() {
+    public synchronized void saveUser() {
         File userDir = new File(directoryPath);
         if (!userDir.exists()) {
             Boolean created = userDir.mkdir();
@@ -142,11 +142,11 @@ public class User extends Model {
         ServerLogger.userError(this, message);
     }
 
-    static public Model.Finder<String, User> find() {
+    static public synchronized Model.Finder<String, User> find() {
         return new Model.Finder<>(String.class, User.class);
     }
 
-    static public User findByUUID(String uuid) {
+    static public synchronized User findByUUID(String uuid) {
         return find().where().eq("uuid", uuid).findUnique();
     }
 

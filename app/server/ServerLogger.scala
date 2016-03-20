@@ -1,4 +1,4 @@
-package utils
+package server
 
 import models.auth.User
 import play.api.Logger
@@ -17,6 +17,10 @@ object ServerLogger {
 
   def error(message: String) = {
     Logger.error(message)
+  }
+
+  def warn(message: String): Unit = {
+    Logger.warn(message)
   }
 
   def userInfo(user: User, message: String) = {

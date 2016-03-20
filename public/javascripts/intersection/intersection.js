@@ -123,9 +123,24 @@
     })
 }());
 
-function pubmed_wrap(data) {
-    var id = data.substring(5, data.length);
-    return 'PBMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+function reference_wrap(data) {
+    if (data.indexOf('PMID') >= 0) {
+        var id = data.substring(5, data.length);
+        return 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+    } else if (data.indexOf('http') >= 0) {
+        var domain;
+        //find & remove protocol (http, ftp, etc.) and get domain
+        if (data.indexOf("://") > -1) {
+            domain = data.split('/')[2];
+        } else {
+            domain = data.split('/')[0];
+        }
+        //find & remove port number
+        domain = domain.split(':')[0];
+        return '<a href="' + data  + '">' + domain + '</a>'
+    } else {
+        return data;
+    }
 }
 
 function intersectResultsTable(data, uid) {
@@ -175,17 +190,20 @@ function intersectResultsTable(data, uid) {
     function format(d) {
         var helpers = d.helpers;
         var addInfo = "";
-        var skipColumn = []
+        var skipColumn = [];
         angular.forEach(helpers, function(helper) {
             addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
             var tdRow = '<tr>';
             var thRow = '<tr>';
             angular.forEach(helper.row.entries, function(entry, index) {
-                var value = entry.value;
-                if (entry.column.name === 'reference.id') value = pubmed_wrap(entry.value);
-                if (index != 0 && index != 1) {
-                    thRow += '<th>' + entry.column.name + '</th>';
-                    tdRow += '<td>' + value + '</td>'
+                if (entry.column.metadata.implicit == 0) {
+                    var value = entry.value;
+                    if (entry.column.name === 'reference.id') value = reference_wrap(entry.value);
+                    if (entry.column.name === 'comment') value = 'comment wrap to do';
+                    if (index != 0 && index != 1) {
+                        thRow += '<th>' + entry.column.name + '</th>';
+                        tdRow += '<td>' + value + '</td>'
+                    }
                 }
             });
             thRow += '</tr>';

@@ -86,11 +86,11 @@ public class AuthToken extends Model {
         this.signUp = signUp;
     }
 
-    public static Model.Finder<String, AuthToken> find() {
+    public static synchronized Model.Finder<String, AuthToken> find() {
         return new Model.Finder<>(String.class, AuthToken.class);
     }
 
-    public static AuthToken findByUUID(String uuid) {
+    public static synchronized AuthToken findByUUID(String uuid) {
         return find().where().eq("uuid", uuid).findUnique();
     }
 }

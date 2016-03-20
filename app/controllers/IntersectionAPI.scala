@@ -46,8 +46,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           try {
             val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
-            val clonotypeDatabase = VdjdbInstance.asClonotypeDatabase(GlobalDatabase.db.getDbInstance)
-            val results = clonotypeDatabase.search(sample)
+            val results = GlobalDatabase.intersect(sample)
             val convertedResults : ArrayList[IntersectResult] = new ArrayList[IntersectResult]()
             results.keySet().toList.foreach(clonotype => {
               convertedResults.add(new IntersectResult(clonotype, results.get(clonotype)))
