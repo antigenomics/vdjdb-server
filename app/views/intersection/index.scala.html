@@ -20,7 +20,7 @@
                             <table class="table" ng-if="isFilesExist()">
                                 <tbody>
                                     <tr ng-repeat="file in files()" class="sidebar_file_td">
-                                        <td width="90%" ng-click="select(file)">{{ file.nameWithoutExt }}</td>
+                                        <td width="90%" ng-click="select(file)">{{ ::file.nameWithoutExt }}</td>
                                         <td><i class="fa fa-trash sidebar_file_delete" ng-click="deleteFile(file)"></i></td>
                                     </tr>
                                 </tbody>
@@ -28,6 +28,11 @@
                         </div>
                         <div class="box-footer">
                             <button class="btn btn-sm btn-flat bg-purple" ng-click="deleteAllFiles()">Delete all</button>
+                        </div>
+                    </div>
+                    <div class="box box-solid">
+                        <div class="box-body">
+                            <a href="@routes.IntersectionAPI.pushDBPage()" class="btn btn-sm btn-flat bg-purple">Add file to database</a>
                         </div>
                     </div>
                 </sidebar>
@@ -41,7 +46,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="box box-solid">
+                    <div class="box box-solid" ng-show="isFileSelected()">
                         <div class="box-header" ng-if="isLoading()">
                             <div class="spinner">
                                 <div class="cube1"></div>

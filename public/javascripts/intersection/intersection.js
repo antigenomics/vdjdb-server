@@ -183,7 +183,7 @@ function intersectResultsTable(data, uid) {
         columns: columns,
         iDisplayLength: 25,
         order: [
-            [2, 'desc']
+            [1, 'desc']
         ]
     });
 
@@ -195,13 +195,17 @@ function intersectResultsTable(data, uid) {
             addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
             var tdRow = '<tr>';
             var thRow = '<tr>';
+
+            thRow += '<th>Score</th>';
+            tdRow += '<td>' + helper.score + '</td>';
+
             angular.forEach(helper.row.entries, function(entry, index) {
                 if (entry.column.metadata.implicit == 0) {
                     var value = entry.value;
                     if (entry.column.name === 'reference.id') value = reference_wrap(entry.value);
                     if (entry.column.name === 'comment') value = 'comment wrap to do';
                     if (index != 0 && index != 1) {
-                        thRow += '<th>' + entry.column.name + '</th>';
+                        thRow += '<th>' + entry.column.metadata.title + '</th>';
                         tdRow += '<td>' + value + '</td>'
                     }
                 }

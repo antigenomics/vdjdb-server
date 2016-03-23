@@ -16,9 +16,11 @@ public class IntersectResult {
     public class AlignmentHelperResult {
         public AlignmentHelper alignmentHelper;
         public Row row;
+        public Float score;
 
         public AlignmentHelperResult(ClonotypeSearchResult clonotypeSearchResult) {
             alignmentHelper = clonotypeSearchResult.getResult().getAlignment().getAlignmentHelper();
+            score = clonotypeSearchResult.getResult().getAlignment().getScore();
             row = clonotypeSearchResult.getRow();
         }
     }

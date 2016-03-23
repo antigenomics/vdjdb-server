@@ -1,10 +1,14 @@
 
 import play.api._
+import play.api.mvc._
+import play.api.mvc.Results._
 import play.api.libs.concurrent.Akka
 import server.{GlobalDatabase, ServerLogger}
 
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits._
+
+import scala.concurrent.Future
 
 /**
   * Created by bvdmitri on 20.03.16.
@@ -13,14 +17,18 @@ import play.api.libs.concurrent.Execution.Implicits._
 object Global extends GlobalSettings {
   override def onStart(app: Application) : Unit = {
     ServerLogger.info("Application has started : trying to update the database")
-    GlobalDatabase.update()
-    updateDaemon(app)
+    //GlobalDatabase.update()
+    //updateDaemon(app)
   }
 
   override def onStop(app: Application) : Unit = {
     ServerLogger.info("Application has stopped")
   }
 
+
+  override def onHandlerNotFound(request: RequestHeader) : Future[SimpleResult] = {
+    Future(NotFound(views.html.common.notFound()))
+  }
 
   def updateDaemon(app: Application) : Unit = {
     Akka.system(app).scheduler.schedule(30 minutes, 1 day, new Runnable {
@@ -29,6 +37,5 @@ object Global extends GlobalSettings {
         GlobalDatabase.update()
       }
     })
-
   }
 }

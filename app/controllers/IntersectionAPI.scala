@@ -27,6 +27,10 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     Ok(views.html.intersection.upload())
   }
 
+  def pushDBPage = SecuredAction {
+    Ok(views.html.intersection.push())
+  }
+
   def userInformation = SecuredAction(ajaxCall = true) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     sendJson(user)
@@ -61,7 +65,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           }
         }
     }.recoverTotal {
-        e =>
+      e =>
         BadRequest(toJson(ServerResponse("Invalid intersect request")))
     }
   }
@@ -115,7 +119,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           }
       }
     }.getOrElse {
-      BadRequest(toJson(ServerResponse("Server is currently not available")))
+      BadRequest(toJson(ServerResponse("Invalid upload request")))
     }
   }
 
@@ -141,7 +145,20 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           case _ => BadRequest(toJson(ServerResponse("Unknown delete action")))
         }
     }.getOrElse {
-      BadRequest(toJson(ServerResponse("Server is currently not available")))
+      BadRequest(toJson(ServerResponse("Invalid delete request")))
+    }
+  }
+
+  case class BranchRequest(branchName: String)
+  implicit val branchRequestRead = Json.reads[BranchRequest]
+
+  def handlePush = SecuredAction(parse.json) { implicit request =>
+    val user = User.findByUUID(request.user.identityId.userId)
+    request.body.validate[BranchRequest].map {
+      case BranchRequest(branchName) =>
+        Ok(toJson(ServerResponse("working")))
+    }.getOrElse {
+      BadRequest(toJson(ServerResponse("Invalid branch request")))
     }
   }
 

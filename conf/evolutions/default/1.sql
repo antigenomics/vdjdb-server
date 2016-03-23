@@ -12,6 +12,17 @@ create table auth_token (
   constraint pk_auth_token primary key (uuid))
 ;
 
+create table database_branch (
+  id                        bigint not null,
+  user_uuid                 varchar(255),
+  branch_name               varchar(255),
+  merged                    boolean,
+  rejected                  boolean,
+  created_at                timestamp,
+  directory_path            varchar(255),
+  constraint pk_database_branch primary key (id))
+;
+
 create table server_file (
   id                        bigint not null,
   user_uuid                 varchar(255),
@@ -38,12 +49,16 @@ create table user (
 
 create sequence auth_token_seq;
 
+create sequence database_branch_seq;
+
 create sequence server_file_seq;
 
 create sequence user_seq;
 
-alter table server_file add constraint fk_server_file_user_1 foreign key (user_uuid) references user (uuid) on delete restrict on update restrict;
-create index ix_server_file_user_1 on server_file (user_uuid);
+alter table database_branch add constraint fk_database_branch_user_1 foreign key (user_uuid) references user (uuid) on delete restrict on update restrict;
+create index ix_database_branch_user_1 on database_branch (user_uuid);
+alter table server_file add constraint fk_server_file_user_2 foreign key (user_uuid) references user (uuid) on delete restrict on update restrict;
+create index ix_server_file_user_2 on server_file (user_uuid);
 
 
 
@@ -53,6 +68,8 @@ SET REFERENTIAL_INTEGRITY FALSE;
 
 drop table if exists auth_token;
 
+drop table if exists database_branch;
+
 drop table if exists server_file;
 
 drop table if exists user;
@@ -60,6 +77,8 @@ drop table if exists user;
 SET REFERENTIAL_INTEGRITY TRUE;
 
 drop sequence if exists auth_token_seq;
+
+drop sequence if exists database_branch_seq;
 
 drop sequence if exists server_file_seq;
 

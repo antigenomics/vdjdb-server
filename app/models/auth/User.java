@@ -2,6 +2,7 @@ package models.auth;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import models.DatabaseBranch;
 import models.ServerFile;
 import play.db.ebean.Model;
 import server.Configuration;
@@ -33,8 +34,12 @@ public class User extends Model {
     private String directoryPath;
     private Integer maxFilesCount;
     private Integer maxFilesSize;
+
     @OneToMany(mappedBy = "user")
     private List<ServerFile> files;
+
+    @OneToMany(mappedBy = "user")
+    private List<DatabaseBranch> branches;
 
     public User(String uuid, String provider, String email, String password) {
         this.uuid = uuid;
@@ -94,6 +99,8 @@ public class User extends Model {
     public  List<ServerFile> getFiles() {
         return files;
     }
+
+    public List<DatabaseBranch> getBranches() { return branches; }
 
     public Boolean isMaxFilesCountExceeded() {
         return maxFilesCount > 0 && files.size() >= maxFilesCount;

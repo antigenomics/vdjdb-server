@@ -4,6 +4,7 @@
 
 # Home page
 GET     /                           controllers.Application.index
+GET     /about                      controllers.Application.about
 
 # Search api
 GET     /search                     controllers.SearchAPI.index
@@ -13,6 +14,8 @@ POST    /search                     controllers.SearchAPI.search
 GET     /intersection                controllers.IntersectionAPI.index
 POST    /intersection                controllers.IntersectionAPI.intersect
 GET     /intersection/upload         controllers.IntersectionAPI.uploadPage
+GET     /intersection/branch           controllers.IntersectionAPI.pushDBPage
+POST    /intersection/branch           controllers.IntersectionAPI.handlePush
 
 GET     /api/userinfo               controllers.IntersectionAPI.userInformation
 POST    /api/upload                 controllers.IntersectionAPI.upload
