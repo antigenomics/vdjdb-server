@@ -59,6 +59,7 @@ create table user (
   directory_path            varchar(255),
   max_files_count           integer,
   max_file_size             integer,
+  privelegies               boolean,
   constraint pk_user primary key (uuid))
 ;
 

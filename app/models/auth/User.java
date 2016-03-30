@@ -9,6 +9,7 @@ import play.db.ebean.Model;
 import server.Configuration;
 import server.ServerLogger;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -34,6 +35,8 @@ public class User extends Model {
     private String directoryPath;
     private Integer maxFilesCount;
     private Integer maxFileSize;
+    @JsonIgnore
+    private Boolean privelegies = false;
 
     @OneToMany(mappedBy = "user")
     private List<IntersectionFile> files;
@@ -89,11 +92,11 @@ public class User extends Model {
     }
 
     public Integer getMaxFilesCount() {
-        return maxFilesCount;
+        return privelegies ? 0 : maxFilesCount;
     }
 
     public Integer getMaxFileSize() {
-        return maxFileSize;
+        return privelegies ? 0 : maxFileSize;
     }
 
     public  List<IntersectionFile> getFiles() {

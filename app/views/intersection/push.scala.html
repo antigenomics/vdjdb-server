@@ -19,7 +19,8 @@
                             Submitted branches
                         </div>
                         <div class="box-body">
-                            <p ng-if="!isSubmittedBranchesExists()">You have no submitted files</p>
+                            <p ng-if="!isSubmittedBranchesExists() && !isUploadedFilesExists()">You have no submitted files</p>
+                            <p ng-if="!isSubmittedBranchesExists() && isUploadedFilesExists()">Reload the page to see the changes</p>
                             <table class="table" ng-if="isSubmittedBranchesExists()">
                                 <thead>
                                     <tr>

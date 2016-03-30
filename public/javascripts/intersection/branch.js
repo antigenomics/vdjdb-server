@@ -8,6 +8,7 @@
         var uid = 0;
         var newBranches = [];
         var user = userInfo.getUser();
+        var uploadedExists = false;
 
         function addNewBranch(file, data) {
             newBranches.push({
@@ -89,6 +90,7 @@
         }
 
         function uploaded(branch) {
+            uploadedExists = true;
             branch.uploaded = true;
             branch.result = 'success';
             branch.tooltip = 'Uploaded';
@@ -167,6 +169,10 @@
             return userInfo.getBranches().length > 0;
         }
 
+        function isUploadedFilesExists() {
+            return uploadedExists;
+        }
+
 
         return {
             addNewBranch: addNewBranch,
@@ -186,7 +192,8 @@
             isWaitForUpload: isWaitForUpload,
             isBranchUploaded: isBranchUploaded,
             isNewBranchesExists: isNewBranchesExists,
-            isSubmittedBranchesExists: isSubmittedBranchesExists
+            isSubmittedBranchesExists: isSubmittedBranchesExists,
+            isUploadedFilesExists: isUploadedFilesExists
         }
     }]);
 
@@ -210,6 +217,7 @@
                 $scope.isBranchUploaded = branches.isBranchUploaded;
                 $scope.isNewBranchesExists = branches.isNewBranchesExists;
                 $scope.isSubmittedBranchesExists = branches.isSubmittedBranchesExists;
+                $scope.isUploadedFilesExists = branches.isUploadedFilesExists;
 
                 function branchStatus(branch) {
                     if (branch['merged']) return 'Merged';
