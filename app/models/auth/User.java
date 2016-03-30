@@ -2,11 +2,11 @@ package models.auth;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import models.DatabaseBranch;
-import models.ServerFile;
+import models.file.BranchFile;
+import models.file.IntersectionFile;
+import models.file.ServerFile;
 import play.db.ebean.Model;
 import server.Configuration;
-import utils.CommonUtils;
 import server.ServerLogger;
 
 import javax.persistence.Entity;
@@ -36,10 +36,10 @@ public class User extends Model {
     private Integer maxFileSize;
 
     @OneToMany(mappedBy = "user")
-    private List<ServerFile> files;
+    private List<IntersectionFile> files;
 
     @OneToMany(mappedBy = "user")
-    private List<DatabaseBranch> branches;
+    private List<BranchFile> branches;
 
     public User(String uuid, String provider, String email, String password) {
         this.uuid = uuid;
@@ -96,11 +96,11 @@ public class User extends Model {
         return maxFileSize;
     }
 
-    public  List<ServerFile> getFiles() {
+    public  List<IntersectionFile> getFiles() {
         return files;
     }
 
-    public List<DatabaseBranch> getBranches() { return branches; }
+    public List<BranchFile> getBranches() { return branches; }
 
     public Boolean isMaxFilesCountExceeded() {
         return maxFilesCount > 0 && files.size() >= maxFilesCount;
@@ -110,9 +110,16 @@ public class User extends Model {
         return maxFileSize > 0 && size > maxFileSize;
     }
 
-    public Boolean isNameUnique(String fileName) {
+    public Boolean isIntersectionFileNameUnique(String fileName) {
         for (ServerFile file : files) {
             if (file.getFileName().equals(fileName)) return false;
+        }
+        return true;
+    }
+
+    public Boolean isBranchNameUnique(String branchName) {
+        for (BranchFile file: branches) {
+            if (file.getBranchName().equals(branchName)) return false;
         }
         return true;
     }

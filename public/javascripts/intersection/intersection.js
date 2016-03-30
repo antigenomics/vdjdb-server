@@ -61,6 +61,8 @@
                 $scope.deleteFile = sidebar.deleteFile;
                 $scope.deleteAllFiles = sidebar.deleteAllFiles;
                 $scope.select = sidebar.select;
+                $scope.isFileSelected = sidebar.isFileSelected;
+                $scope.isFile = sidebar.isFile;
 
 
             }]

@@ -1,4 +1,4 @@
-package models;
+package models.file;
 
 import com.antigenomics.vdjtools.misc.Software;
 import com.avaje.ebean.Ebean;
@@ -7,41 +7,39 @@ import models.auth.User;
 import org.apache.commons.io.FileDeleteStrategy;
 import org.joda.time.DateTime;
 import play.db.ebean.Model;
-import utils.CommonUtils;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import java.io.File;
 
+
 @Entity
 public class ServerFile extends Model {
     @Id
     @JsonIgnore
-    private Long id;
+    protected Long id;
 
     @ManyToOne
     @JsonIgnore
-    private User user;
+    protected User user;
 
-    private String fileName;
-    private Software software;
-
-    @JsonIgnore
-    private String uniqueName;
-
-    private DateTime createdAt;
+    protected String fileName;
 
     @JsonIgnore
-    private String directoryPath;
+    protected String uniqueName;
+
+    protected DateTime createdAt;
 
     @JsonIgnore
-    private String filePath;
+    protected String directoryPath;
 
-    public ServerFile(User user, String fileName, Software software, String uniqueName, String directoryPath, String filePath) {
+    @JsonIgnore
+    protected String filePath;
+
+    public ServerFile(User user, String fileName, String uniqueName, String directoryPath, String filePath) {
         this.user = user;
         this.fileName = fileName;
-        this.software = software;
         this.uniqueName = uniqueName;
         this.createdAt = new DateTime();
         this.directoryPath = directoryPath;
@@ -54,10 +52,6 @@ public class ServerFile extends Model {
 
     public String getFileName() {
         return fileName;
-    }
-
-    public Software getSoftware() {
-        return software;
     }
 
     public String getUniqueName() {
@@ -93,14 +87,6 @@ public class ServerFile extends Model {
         }
         fileDir.delete();
         Ebean.delete(file);
-    }
-
-    public static ServerFile fyndByNameAndUser(User user, String fileName) {
-        return find().where().eq("user", user).eq("fileName", fileName).findUnique();
-    }
-
-    public static Model.Finder<Long, ServerFile> find() {
-        return new Model.Finder<>(Long.class, ServerFile.class);
     }
 
 }

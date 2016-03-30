@@ -5,7 +5,6 @@ import java.io.{File, PrintWriter}
 import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
-import models.ServerFile
 import models.auth.User
 import play.api.libs.json.Json
 import server.wrappers.IntersectResult
@@ -18,6 +17,7 @@ import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
 import java.util.ArrayList
 
+import models.file.{BranchFile, FileFinder, IntersectionFile, ServerFile}
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Repository
@@ -49,7 +49,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     val user = User.findByUUID(request.user.identityId.userId)
     request.body.validate[IntersectRequest].map {
       case IntersectRequest(fileName) =>
-        val file = ServerFile.fyndByNameAndUser(user, fileName)
+        val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
         if (file == null) {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
         } else {
@@ -67,6 +67,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               if (e.getMessage.contains("Unable to parse"))
                 BadRequest(toJson(ServerResponse("Wrong file format, unable to parse, " + file.getSoftware.name() + " format expected")))
               else
+                print(e.getMessage)
                 BadRequest(toJson(ServerResponse("Error while intersecting")))
           }
         }
@@ -99,7 +100,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           BadRequest(toJson(ServerResponse("File is too large")))
         case _ if !fileName.matches("^[a-zA-Z0-9_.+-]{1,40}$") =>
           BadRequest(toJson(ServerResponse("Invalid name")))
-        case _ if !user.isNameUnique(fileName) =>
+        case _ if !user.isIntersectionFileNameUnique(fileName) =>
           BadRequest(toJson(ServerResponse("You should use unique names for your files")))
         case _ if !user.isUserDirectoryExists =>
           user.logError("Error while creating user's directory")
@@ -118,7 +119,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               BadRequest(toJson(ServerResponse("Invalid software type")))
             } else {
               val software = Software.byName(defSoftwareType)
-              val newFile = new ServerFile(user, fileName, software, uniqueName, fileDirectoryPath, filePath)
+              val newFile = new IntersectionFile(user, fileName, uniqueName, fileDirectoryPath, filePath, software)
               newFile.save()
               Ok(toJson(ServerResponse("Success")))
             }
@@ -138,7 +139,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
       case DeleteRequest(fileName, action) =>
         action match {
           case "delete" =>
-            val file = ServerFile.fyndByNameAndUser(user, fileName)
+            val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
             if (file == null) {
               BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
             } else {
@@ -155,13 +156,56 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     }
   }
 
-  case class BranchRequest(branchName: String)
-  implicit val branchRequestRead = Json.reads[BranchRequest]
-
   def handlePush = SecuredAction(parse.multipartFormData) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     val defFileName = request.body.asFormUrlEncoded.get("fileName").get.head
-    Ok(toJson(ServerResponse("Upload not implemented")))
+    val defBranchName = request.body.asFormUrlEncoded.get("branchName").get.head
+
+    request.body.file("file").map { file =>
+      val fileName = defFileName match {
+        case "" => CommonUtils.randomAlphaString(10)
+        case _ => defFileName
+      }
+
+      val uploadedFile = file.ref.file
+      val uniqueName = CommonUtils.randomAlphaString(10)
+      val fileDirectoryPath = user.getDirectoryPath + "/" + uniqueName + "/"
+      val fileDirectory = new File(fileDirectoryPath)
+
+      val checks = false
+      checks match {
+        case _ if defBranchName.equals("") =>
+          BadRequest(toJson(ServerResponse("Invalid branch name")))
+        case _ if user.isMaxFilesCountExceeded =>
+          BadRequest(toJson(ServerResponse("Exceeded the limit of the number of files")))
+        case _ if user.isMaxFileSizeExceeded(file.ref.file.length() / 1024) =>
+          BadRequest(toJson(ServerResponse("File is too large")))
+        case _ if !fileName.matches("^[a-zA-Z0-9_.+-]{1,40}$") =>
+          BadRequest(toJson(ServerResponse("Invalid name")))
+        case _ if !user.isBranchNameUnique(defBranchName) =>
+          BadRequest(toJson(ServerResponse("You should use unique names for your files")))
+        case _ if !user.isUserDirectoryExists =>
+          user.logError("Error while creating user's directory")
+          BadRequest(toJson(ServerResponse("Server is currently not available")))
+        case _ if !fileDirectory.exists() && !fileDirectory.mkdir() =>
+          user.logError("Error while creating file's directory")
+          BadRequest(toJson(ServerResponse("Server is currently not available")))
+        case _ =>
+          val filePath = fileDirectoryPath + fileName
+          val uploaded = uploadedFile.renameTo(new File(filePath))
+          if (!uploaded) {
+            user.logError("Error while uploading new file")
+            BadRequest(toJson(ServerResponse("Server is currently not available")))
+          } else {
+            val newFile = new BranchFile(user, fileName, uniqueName, fileDirectoryPath, filePath, defBranchName)
+            GithubAPI.createBranch(user, new File(filePath), defBranchName, defFileName)
+            newFile.save()
+            Ok(toJson(ServerResponse("Success")))
+          }
+      }
+    }.getOrElse {
+      BadRequest(toJson(ServerResponse("Invalid upload request")))
+    }
   }
 
 }

@@ -188,6 +188,10 @@ body {
     letter-spacing: 2em;
 }
 
+.selected_file {
+    border-left: solid #605ca8;
+}
+
 
 td.details-control {
     cursor: pointer;

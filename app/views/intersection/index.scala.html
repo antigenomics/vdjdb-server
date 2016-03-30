@@ -20,7 +20,7 @@
                             <table class="table" ng-if="isFilesExist()">
                                 <tbody>
                                     <tr ng-repeat="file in files()" class="sidebar_file_td">
-                                        <td width="90%" ng-click="select(file)">{{ ::file.nameWithoutExt }}</td>
+                                        <td ng-class="{'selected_file':isFile(file)}" width="90%" ng-click="select(file)">{{ ::file.nameWithoutExt }}</td>
                                         <td><i class="fa fa-trash sidebar_file_delete" ng-click="deleteFile(file)"></i></td>
                                     </tr>
                                 </tbody>
