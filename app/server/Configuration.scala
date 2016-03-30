@@ -8,5 +8,5 @@ import play.api.{Play}
 object Configuration {
   def uploadPath : String = Play.current.configuration.getString("uploadPath").get
   def maxFilesCount : Int = Play.current.configuration.getInt("maxFilesCount").get
-  def maxFilesSize : Int = Play.current.configuration.getInt("maxFilesSize").get
+  def maxFileSize : Int = Play.current.configuration.getInt("maxFileSize").get
 }

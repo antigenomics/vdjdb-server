@@ -1,5 +1,9 @@
 @main("VDJdb: annotations") {
 
+    <script src="@routes.Assets.at("lib/FileUpload/jquery.ui.widget.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/FileUpload/jquery.iframe-transport.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/FileUpload/jquery.fileupload.js")" type="text/javascript"></script>
+
     <script src="@routes.Assets.at("javascripts/blockpage.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/user.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/intersection/branch.js")" type="text/javascript"></script>
@@ -10,12 +14,54 @@
         <div class="container-fluid">
             <div class="row">
                 <branch class="col-lg-8 col-lg-offset-2">
-                    <div class="box box-solid">
+                    <div class="box box-solid flat">
                         <div class="box-header with-border">
                             Test
                         </div>
+                        <div class="box-body text-center">
+                            <p ng-if="!isNewBranchesExists()">Click 'Add branch' button to start</p>
+                            <table class="table" ng-if="isNewBranchesExists()">
+                                <thead>
+                                    <tr>
+                                        <th>Branch name</th>
+                                        <th>File name</th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="branch in newBranches" ng-class="{'danger':isError(branch), 'success':isSuccess(branch), 'warning':isRemoved(branch)}">
+                                        <td width="30%">
+                                            <input ng-model="branch.branchName" type="text" value="branch.branchName" class="form-control" ng-show="isWaitForUpload(branch)">
+                                            <text ng-hide="isWaitForUpload(branch)">{{ branch.branchName }}</text>
+                                        </td>
+                                        <td width="20%">{{ ::branch.fileName }}</td>
+                                        <td width="40%">
+                                            <div class="progress progress-sm mbn" ng-show="isOk(branch) && !isRemoved(branch)">
+                                                <div role="progressbar" style="width: {{ branch.progress }}%" class="progress-bar progress-bar-success"></div>
+                                            </div>
+                                            <text ng-show="isError(branch)">{{ branch.errorTooltip }}</text>
+                                            <text ng-hide="isWaitForUpload(branch) || isError(branch)">{{ branch.tooltip }}</text>
+                                        </td>
+                                        <td width="10%">
+                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="pushBranch(branch)" ng-show="isWaitForUpload(branch)">Upload</button>
+                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="removeBranch(branch)" ng-show="isWaitForUpload(branch)">X</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="box-footer">
+                            <form id="fileupload" method="POST" action="" enctype="multipart/form-data" class="hidden_fileupload_form">
+                                <input type="file" name="file" multiple/>
+                            </form>
+                            <button class="btn btn-sm btn-flat bg-purple" ng-click="addNewButtonClick()">Add branch</button>
+                            <button class="btn btn-sm btn-flat bg-purple pull-right" ng-click="pushAll()">Upload all</button>
+                        </div>
+                    </div>
+                    <div class="box box-solid flat">
                         <div class="box-body">
-                            <button class="btn btn-sm btn-flat bg-purple" ng-click="testBranch()">Test add branch</button>
+                            <a href="@routes.IntersectionAPI.index()">Go to annotations page</a>
                         </div>
                     </div>
                 </branch>

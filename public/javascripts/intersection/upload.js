@@ -22,7 +22,6 @@
                 })
             }
             return contain;
-
         }
 
         function isSizeExceeded(file) {
@@ -30,7 +29,11 @@
         }
 
         function isFilesCountExcedeed() {
-            return user.maxFilesCount > 0 && (userInfo.getFiles().length + newFiles.length) >= user.maxFilesCount;
+            var newReadyFiles = 0;
+            angular.forEach(newFiles, function(file) {
+                if (file.waitForUpload || file.uploaded) newReadyFiles += 1;
+            });
+            return user.maxFilesCount > 0 && (userInfo.getFiles().length + newReadyFiles) >= user.maxFilesCount;
         }
 
         function isNameValid(file) {
@@ -100,7 +103,7 @@
 
         function uploadAll() {
             angular.forEach(newFiles, function(file) {
-                uploadFile(file);
+                if (file.waitForUpload) uploadFile(file);
             });
         }
 

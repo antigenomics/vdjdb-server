@@ -25,7 +25,7 @@
                             Upload your files here
                         </div>
                         <div class="box-body text-center">
-                            <p ng-if="!isNewFilesExists()">Click 'Add file' button</p>
+                            <p ng-if="!isNewFilesExists()">Click 'Add file' button to start</p>
                             <table class="table" ng-if="isNewFilesExists()">
                                 <thead>
                                     <tr>
@@ -70,7 +70,7 @@
                                             <text ng-hide="isWaitForUpload(file) || isError(file)">{{ file.tooltip }}</text>
                                         </td>
                                         <td width="10%">
-                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file) && isUploadValid(file)">Upload</button>
+                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file)">Upload</button>
                                             <button class="btn btn-flat btn-sm bg-purple" ng-click="removeFile(file)" ng-show="isWaitForUpload(file)">X</button>
                                         </td>
                                     </tr>

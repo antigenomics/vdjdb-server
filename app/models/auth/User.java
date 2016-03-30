@@ -33,7 +33,7 @@ public class User extends Model {
     @JsonIgnore
     private String directoryPath;
     private Integer maxFilesCount;
-    private Integer maxFilesSize;
+    private Integer maxFileSize;
 
     @OneToMany(mappedBy = "user")
     private List<ServerFile> files;
@@ -48,7 +48,7 @@ public class User extends Model {
         this.password = password;
         this.directoryPath = Configuration.uploadPath() + "/" + email + "/";
         this.maxFilesCount = Configuration.maxFilesCount();
-        this.maxFilesSize = Configuration.maxFilesCount();
+        this.maxFileSize = Configuration.maxFileSize();
         this.files = new ArrayList<>();
     }
 
@@ -92,8 +92,8 @@ public class User extends Model {
         return maxFilesCount;
     }
 
-    public Integer getMaxFilesSize() {
-        return maxFilesSize;
+    public Integer getMaxFileSize() {
+        return maxFileSize;
     }
 
     public  List<ServerFile> getFiles() {
@@ -107,7 +107,7 @@ public class User extends Model {
     }
 
     public Boolean isMaxFileSizeExceeded(Long size) {
-        return maxFilesSize > 0 && size > maxFilesSize;
+        return maxFileSize > 0 && size > maxFileSize;
     }
 
     public Boolean isNameUnique(String fileName) {

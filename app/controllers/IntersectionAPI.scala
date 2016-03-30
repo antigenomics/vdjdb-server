@@ -1,6 +1,6 @@
 package controllers
 
-import java.io.File
+import java.io.{File, PrintWriter}
 
 import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjtools.io.SampleFileConnection
@@ -9,6 +9,7 @@ import models.ServerFile
 import models.auth.User
 import play.api.libs.json.Json
 import server.wrappers.IntersectResult
+
 import scala.collection.JavaConversions._
 import play.api.mvc._
 import server.{GlobalDatabase, ServerResponse}
@@ -16,6 +17,11 @@ import utils.CommonUtils
 import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
 import java.util.ArrayList
+
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.internal.storage.file.FileRepository
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 
 object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
@@ -152,14 +158,10 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
   case class BranchRequest(branchName: String)
   implicit val branchRequestRead = Json.reads[BranchRequest]
 
-  def handlePush = SecuredAction(parse.json) { implicit request =>
+  def handlePush = SecuredAction(parse.multipartFormData) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
-    request.body.validate[BranchRequest].map {
-      case BranchRequest(branchName) =>
-        Ok(toJson(ServerResponse("working")))
-    }.getOrElse {
-      BadRequest(toJson(ServerResponse("Invalid branch request")))
-    }
+    val defFileName = request.body.asFormUrlEncoded.get("fileName").get.head
+    Ok(toJson(ServerResponse("Upload not implemented")))
   }
 
 }
