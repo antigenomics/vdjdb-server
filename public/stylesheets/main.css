@@ -122,6 +122,8 @@ body {
 
 .hidden_fileupload_form {
     visibility: hidden;
+    position: absolute;
+    top: -100px;
 }
 
 .block-page {

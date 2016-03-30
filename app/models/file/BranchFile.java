@@ -1,13 +1,8 @@
 package models.file;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.auth.User;
-import org.joda.time.DateTime;
-import play.db.ebean.Model;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 
 /**
  * Created by bvdmitri on 23.03.16.
@@ -19,10 +14,16 @@ public class BranchFile extends ServerFile {
     private String branchName;
     private Boolean merged = false;
     private Boolean rejected = false;
+    private String link;
 
-    public BranchFile(User user, String fileName, String uniqueName, String directoryPath, String filePath, String branchName) {
+    public BranchFile(User user, String fileName, String uniqueName, String directoryPath, String filePath, String branchName, String link) {
         super(user, fileName, uniqueName, directoryPath, filePath);
         this.branchName = branchName;
+        this.link = link;
+    }
+
+    public String getLink() {
+        return link;
     }
 
     public String getBranchName() {

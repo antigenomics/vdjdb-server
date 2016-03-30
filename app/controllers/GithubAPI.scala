@@ -17,7 +17,7 @@ object GithubAPI {
     private val TMP_DIRECTORY: String = "/tmp/"
     private val GITHUB_TOKEN: String = "secret"
 
-    def createBranch(user: User, file: File, defbranchName: String, fileName: String): Unit = {
+    def createBranch(user: User, file: File, defbranchName: String, fileName: String): String = {
       val repoDirectory: String = TMP_DIRECTORY + CommonUtils.randomAlphaString(5)
       Git.cloneRepository.setURI(REPO_URL).setDirectory(new File(repoDirectory)).call
       file.renameTo(new File(repoDirectory + "/" + fileName))
@@ -28,5 +28,6 @@ object GithubAPI {
       git.add.addFilepattern(".").call
       git.commit.setMessage("commit").call
       git.push.setCredentialsProvider(new UsernamePasswordCredentialsProvider("token", GITHUB_TOKEN)).call
+      REPO_URL + "/branches"
     }
 }

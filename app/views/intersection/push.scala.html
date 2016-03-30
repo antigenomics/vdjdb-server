@@ -16,11 +16,35 @@
                 <branch class="col-lg-8 col-lg-offset-2">
                     <div class="box box-solid flat">
                         <div class="box-header with-border">
-                            Test
+                            Submitted branches
                         </div>
-                        <div class="box-body text-center">
-                            <p ng-if="!isNewBranchesExists()">Click 'Add branch' button to start</p>
-                            <table class="table" ng-if="isNewBranchesExists()">
+                        <div class="box-body">
+                            <p ng-if="!isSubmittedBranchesExists()">You have no submitted files</p>
+                            <table class="table" ng-if="isSubmittedBranchesExists()">
+                                <thead>
+                                    <tr>
+                                        <th width="5%"></th>
+                                        <th>Branch name</th>
+                                        <th>File name</th>
+                                        <th>Status</th>
+                                        <th>Link</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="branch in submittedBranches()">
+                                        <td>#{{ ::branch.uid + 1 }}</td>
+                                        <td>{{ ::branch.branchName }}</td>
+                                        <td>{{ ::branch.fileName }}</td>
+                                        <td>{{ ::branchStatus(branch)}}</td>
+                                        <td><a href="{{ branch.link }}">Link</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-solid flat">
+                        <div class="box-body text-center" ng-if="isNewBranchesExists()">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th>Branch name</th>
@@ -36,14 +60,14 @@
                                             <text ng-hide="isWaitForUpload(branch)">{{ branch.branchName }}</text>
                                         </td>
                                         <td width="20%">{{ ::branch.fileName }}</td>
-                                        <td width="40%">
+                                        <td width="35%">
                                             <div class="progress progress-sm mbn" ng-show="isOk(branch) && !isRemoved(branch)">
                                                 <div role="progressbar" style="width: {{ branch.progress }}%" class="progress-bar progress-bar-success"></div>
                                             </div>
                                             <text ng-show="isError(branch)">{{ branch.errorTooltip }}</text>
                                             <text ng-hide="isWaitForUpload(branch) || isError(branch)">{{ branch.tooltip }}</text>
                                         </td>
-                                        <td width="10%">
+                                        <td width="15%">
                                             <button class="btn btn-flat btn-sm bg-purple" ng-click="pushBranch(branch)" ng-show="isWaitForUpload(branch)">Upload</button>
                                             <button class="btn btn-flat btn-sm bg-purple" ng-click="removeBranch(branch)" ng-show="isWaitForUpload(branch)">X</button>
                                         </td>
@@ -56,7 +80,7 @@
                                 <input type="file" name="file" multiple/>
                             </form>
                             <button class="btn btn-sm btn-flat bg-purple" ng-click="addNewButtonClick()">Add branch</button>
-                            <button class="btn btn-sm btn-flat bg-purple pull-right" ng-click="pushAll()">Upload all</button>
+                            <button class="btn btn-sm btn-flat bg-purple pull-right" ng-click="pushAll()" ng-if="isNewBranchesExists()">Upload all</button>
                         </div>
                     </div>
                     <div class="box box-solid flat">

@@ -23,6 +23,7 @@ create table branch_file (
   branch_name               varchar(255),
   merged                    boolean,
   rejected                  boolean,
+  link                      varchar(255),
   constraint pk_branch_file primary key (id))
 ;
 

@@ -197,8 +197,8 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
             user.logError("Error while uploading new file")
             BadRequest(toJson(ServerResponse("Server is currently not available")))
           } else {
-            val newFile = new BranchFile(user, fileName, uniqueName, fileDirectoryPath, filePath, defBranchName)
-            GithubAPI.createBranch(user, new File(filePath), defBranchName, defFileName)
+            val link = GithubAPI.createBranch(user, new File(filePath), defBranchName, defFileName)
+            val newFile = new BranchFile(user, fileName, uniqueName, fileDirectoryPath, filePath, defBranchName, link)
             newFile.save()
             Ok(toJson(ServerResponse("Success")))
           }

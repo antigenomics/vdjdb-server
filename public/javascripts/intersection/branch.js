@@ -71,6 +71,10 @@
             return newBranches;
         }
 
+        function getSubmittedBranches() {
+            return userInfo.getBranches();
+        }
+
         function updateProgress(branch, progress) {
             branch.progress = progress;
         }
@@ -159,10 +163,15 @@
             return regexp.test(branch.branchName);
         }
 
+        function isSubmittedBranchesExists() {
+            return userInfo.getBranches().length > 0;
+        }
+
 
         return {
             addNewBranch: addNewBranch,
             getNewBranches: getNewBranches,
+            getSubmittedBranches: getSubmittedBranches,
             updateProgress: updateProgress,
             uploaded: uploaded,
             removeBranch: removeBranch,
@@ -176,7 +185,8 @@
             isSuccess: isSuccess,
             isWaitForUpload: isWaitForUpload,
             isBranchUploaded: isBranchUploaded,
-            isNewBranchesExists: isNewBranchesExists
+            isNewBranchesExists: isNewBranchesExists,
+            isSubmittedBranchesExists: isSubmittedBranchesExists
         }
     }]);
 
@@ -188,8 +198,10 @@
                 $scope.pushAll = branches.pushAll;
                 $scope.removeBranch = branches.removeBranch;
                 $scope.newBranches = branches.getNewBranches();
+                $scope.submittedBranches = branches.getSubmittedBranches;
 
                 $scope.addNewButtonClick = addNewButtonClick;
+                $scope.branchStatus = branchStatus;
                 $scope.isError = branches.isError;
                 $scope.isOk = branches.isOk;
                 $scope.isRemoved = branches.isRemoved;
@@ -197,6 +209,13 @@
                 $scope.isWaitForUpload = branches.isWaitForUpload;
                 $scope.isBranchUploaded = branches.isBranchUploaded;
                 $scope.isNewBranchesExists = branches.isNewBranchesExists;
+                $scope.isSubmittedBranchesExists = branches.isSubmittedBranchesExists;
+
+                function branchStatus(branch) {
+                    if (branch['merged']) return 'Merged';
+                    if (branch['rejected']) return 'Rejected';
+                    return 'In review';
+                }
 
                 function addNewButtonClick() {
                     $("form input[type=file]").click();
