@@ -8,6 +8,7 @@ import com.antigenomics.vdjdb.Util.checkDatabase
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text.TextFilter
 import com.antigenomics.vdjtools.sample.Sample
+import controllers.IntersectionAPI.IntersectParametersRequest
 import utils.SynchronizedAccess
 
 /**
@@ -22,8 +23,11 @@ object GlobalDatabase extends SynchronizedAccess {
     }
 
   def intersect(sample: Sample) =
+  def intersect(sample: Sample, parameters: IntersectParametersRequest) =
     synchronizeRead { implicit lock =>
       val clonotypeDatabase = VdjdbInstance.asClonotypeDatabase(db().getDbInstance)
+      val clonotypeDatabase = VdjdbInstance.asClonotypeDatabase(db().getDbInstance, parameters.matchV, parameters.matchV,
+        parameters.maxMismatches, parameters.maxInsertions, parameters.maxDeletions, parameters.maxMutations)
       clonotypeDatabase.search(sample)
     }
 
