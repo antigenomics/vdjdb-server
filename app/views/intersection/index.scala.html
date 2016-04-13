@@ -26,7 +26,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="box-footer">
+                        <div class="box-footer" ng-if="isFilesExist()">
                             <button class="btn btn-sm btn-flat bg-purple" ng-click="deleteAllFiles()">Delete all</button>
                         </div>
                     </div>
@@ -46,8 +46,46 @@
                         <div class="box-body">
                             <p ng-if="!isFileSelected()">No file selected</p>
                             <div ng-if="isFileSelected()">
-                                <p>File: {{ selectedFile().nameWithoutExt }}</p>
-                                <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect()">Intersect</button>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="parameters_maxMismatches">Max mismatches</label>
+                                        <input type="number" class="form-control" id="parameters_maxMismatches" ng-model="parameters.maxMismatches">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="parameters_maxInsertions">Max insertions</label>
+                                        <input type="number" class="form-control" id="parameters_maxInsertions" ng-model="parameters.maxInsertions">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="parameters_maxDeletions">Max deletions</label>
+                                        <input type="number" class="form-control" id="parameters_maxDeletions" ng-model="parameters.maxDeletions">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="parameters_maxMutations">Max mutations</label>
+                                        <input type="number" class="form-control" id="parameters_maxMutations" ng-model="parameters.maxMutations">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" ng-model="parameters.matchV"> Match V
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" ng-model="parameters.matchJ"> Match J
+                                        </label>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="col-lg-12">
+                                    <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect()">Intersect</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -58,9 +96,9 @@
                                 <div class="cube2"></div>
                             </div>
                         </div>
-                        <div class="box-body">
+                        <div class="box-body" ng-hide="isLoading()">
                             <div ng-repeat="file in files()" ng-show="isFile(file)">
-                                <p ng-hide="isLoading() || isLoaded(file)">Click intersect button to start</p>
+                                <p ng-hide="isLoaded(file)">Click intersect button to start</p>
                                 <div class="table-responsive">
                                 <table class="table" id="intersect_report_table_{{ ::file.uid }}" cellspacing="0" width="100%" ng-show="isLoaded(file)">
 

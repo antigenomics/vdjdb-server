@@ -42,13 +42,16 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     sendJson(user)
   }
 
-  case class IntersectRequest(fileName: String)
+  case class IntersectRequest(fileName: String, parameters: IntersectParametersRequest)
+  case class IntersectParametersRequest(matchV: Boolean, matchJ: Boolean, maxMismatches: Int, maxInsertions: Int, maxDeletions: Int, maxMutations: Int)
+
+  implicit val intersectParametersRequestRead = Json.reads[IntersectParametersRequest]
   implicit val intersectRequestRead = Json.reads[IntersectRequest]
 
   def intersect = SecuredAction(parse.json) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     request.body.validate[IntersectRequest].map {
-      case IntersectRequest(fileName) =>
+      case IntersectRequest(fileName, parameters) =>
         val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
         if (file == null) {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
@@ -56,7 +59,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           try {
             val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
-            val results = GlobalDatabase.intersect(sample)
+            val results = GlobalDatabase.intersect(sample, parameters)
             val convertedResults : ArrayList[IntersectResult] = new ArrayList[IntersectResult]()
             results.keySet().toList.foreach(clonotype => {
               convertedResults.add(new IntersectResult(clonotype, results.get(clonotype)))
@@ -67,12 +70,13 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               if (e.getMessage.contains("Unable to parse"))
                 BadRequest(toJson(ServerResponse("Wrong file format, unable to parse, " + file.getSoftware.name() + " format expected")))
               else
-                print(e.getMessage)
+                print(e)
                 BadRequest(toJson(ServerResponse("Error while intersecting")))
           }
         }
     }.recoverTotal {
       e =>
+        print(e)
         BadRequest(toJson(ServerResponse("Invalid intersect request")))
     }
   }

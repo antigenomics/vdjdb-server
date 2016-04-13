@@ -4,6 +4,8 @@ import com.antigenomics.vdjdb.db.Row;
 import com.antigenomics.vdjdb.impl.ClonotypeSearchResult;
 import com.antigenomics.vdjtools.sample.Clonotype;
 import com.milaboratory.core.alignment.AlignmentHelper;
+import com.milaboratory.core.mutations.Mutation;
+import com.milaboratory.core.mutations.Mutations;
 
 import java.util.ArrayList;
 import java.util.List;

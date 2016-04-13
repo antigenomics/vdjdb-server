@@ -78,24 +78,26 @@
             return loaded.indexOf(file.uid) >= 0;
         }
 
-        function intersect() {
+        function intersect(parameters) {
+            if (loading) {
+                notify.info('Intersection', 'Please wait until server intersect previous one');
+                return;
+            }
             if (sidebar.isFileSelected()) {
                 var file = sidebar.getSelectedFile();
-                if (!isLoaded(file)) {
-                    loading = true;
-                    $http.post('/intersection', { fileName: file.fileName })
-                        .success(function(data) {
-                            intersectResultsTable(data, file.uid);
-                            loaded.push(file.uid);
-                            loading = false;
-                            console.log(data);
-                            //angular.copy(data, intersectData);
-                        })
-                        .error(function(response) {
-                            notify.error('Intersect', response.message);
-                            loading = false;
-                        })
-                }
+                loading = true;
+                $http.post('/intersection', { fileName: file.fileName, parameters: parameters })
+                    .success(function(data) {
+                        intersectResultsTable(data, file);
+                        loaded.push(file.uid);
+                        loading = false;
+                        console.log(data);
+                        //angular.copy(data, intersectData);
+                    })
+                    .error(function(response) {
+                        notify.error('Intersect', response.message);
+                        loading = false;
+                    })
             }
         }
 
@@ -114,13 +116,26 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'sidebar', 'intersection', function($scope, sidebar, intersection) {
+                $scope.parameters  = {
+                    matchV: false,
+                    matchJ: false,
+                    maxMismatches: 1,
+                    maxInsertions: 0,
+                    maxDeletions: 0,
+                    maxMutations: 1
+                };
+
                 $scope.files = sidebar.files;
                 $scope.isFileSelected = sidebar.isFileSelected;
                 $scope.isFile = sidebar.isFile;
                 $scope.selectedFile = sidebar.getSelectedFile;
-                $scope.intersect = intersection.intersect;
+                $scope.intersect = function() {
+                    intersection.intersect($scope.parameters);
+                };
                 $scope.isLoading = intersection.isLoading;
                 $scope.isLoaded = intersection.isLoaded;
+
+
             }]
         }
     })
@@ -146,8 +161,9 @@ function reference_wrap(data) {
     }
 }
 
-function intersectResultsTable(data, uid) {
+function intersectResultsTable(data, file) {
     var clonotypes = [];
+    var uid = file.uid;
     angular.forEach(data, function (result) {
         //TODO code must be simple, maybe push clonotype itself
         var cdr = cdr3Transform(result.clonotype.cdr);
@@ -181,16 +197,25 @@ function intersectResultsTable(data, uid) {
         { data: 'cdr3nt', title: 'CDR3nt'}
     ];
 
+    if (file.table) {
+        file.table.destroy();
+        $('#intersect_report_table_' + uid + ' tbody').off('click');
+    }
 
     var dataTable = $('#intersect_report_table_' + uid).DataTable({
         data: clonotypes,
         columns: columns,
         iDisplayLength: 25,
         order: [
-            [1, 'desc']
-        ]//,
-        //scrollX: true
+            [1, 'desc'],
+            [3, 'desc']
+        ],
+        oLanguage: {
+            sEmptyTable: "No records found in database"
+        }
     });
+
+    file.table = dataTable;
 
     function format(d) {
         var helpers = d.helpers;
