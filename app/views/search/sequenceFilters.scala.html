@@ -19,9 +19,9 @@
             <tbody>
                 <tr ng-repeat="filter in sequenceFilters" on-last-repeat="">
                     <td width="30%">
-                        <select class="dropdown" id="{{ filter.filterId }}" name="columnId">
+                        <select class="dropdown" id="{{ ::filter.filterId }}" name="columnId">
                             <option>Please select column name:</option>
-                            <option ng-repeat="column in sequenceFiltersColumns" value="{{ column.dbName }}">{{ column.clientName }}</option>
+                            <option ng-repeat="column in sequenceFiltersColumns" value="{{ ::column.name }}">{{ ::column.title }}</option>
                         </select>
                     </td>
                     <td width="30%">

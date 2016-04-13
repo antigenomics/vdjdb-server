@@ -194,6 +194,13 @@ body {
     border-left: solid #605ca8;
 }
 
+.logout_wrapper {
+    position: fixed;
+    width: 250px;
+    left: 10px;
+    bottom: 10px;
+}
+
 
 td.details-control {
     cursor: pointer;
@@ -207,7 +214,7 @@ td.details-control:before {
     position:absolute;
 }
 
-td.comments-control {
+.comments-control {
     cursor: pointer;
 }
 

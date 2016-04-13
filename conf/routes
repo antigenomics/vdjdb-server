@@ -8,6 +8,7 @@ GET     /about                      controllers.Application.about
 
 # Search api
 GET     /search                     controllers.SearchAPI.index
+GET     /search/columns             controllers.SearchAPI.columns
 POST    /search                     controllers.SearchAPI.search
 
 # Annotations api

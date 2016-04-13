@@ -27,6 +27,7 @@
                 textFilters: filters.getTextFilters(),
                 sequenceFilters: filters.getSequenceFilters()
             }).then(function (response) {
+                console.log(response);
                 return response
             })
         }
@@ -36,37 +37,55 @@
         }
     }]);
 
-    application.factory('filters', function () {
+    application.factory('filters', ['$http', 'notify', function ($http, notify) {
         var textFilters = [];
         var sequenceFilters = [];
         var textFilterIndex = 0;
         var sequenceFilterIndex = 0;
 
-        var textFiltersColumns = Object.freeze([
-            {dbName: 'cdr3', clientName: 'CDR3'},
-            {dbName: 'v.segm', clientName: 'V Segment'},
-            {dbName: 'j.segm', clientName: 'J Segment'},
-            {dbName: 'gene', clientName: 'Gene'},
-            {dbName: 'species', clientName: 'Species'},
-            {dbName: 'mhc.a', clientName: 'mhc.a'},
-            {dbName: 'mhc.b', clientName: 'mhc.b'},
-            {dbName: 'mhc.type', clientName: 'mhc.type'},
-            {dbName: 'antigen', clientName: 'Antigen'},
-            {dbName: 'antigen.gene', clientName: 'Antigen.Gene'},
-            {dbName: 'antigen.species', clientName: 'Antigen.Species'},
-            {dbName: 'reference.id', clientName: 'Reference.Id'}
-        ]);
+        var loading = true;
+        var error = false;
+
+        var textFiltersColumns = [];
+        var sequenceFiltersColumns = [];
+        
+        $http.get('/search/columns')
+            .success(function(columns) {
+                angular.forEach(columns, function(column) {
+                    if (column.metadata.searchable == 1) {
+                        if (column.metadata.type === 'txt') {
+                            textFiltersColumns.push({
+                                name: column.name,
+                                title: column.metadata.title
+                            })
+                        } else if (column.metadata.type === 'seq') {
+                            textFiltersColumns.push({
+                                name: column.name,
+                                title: column.metadata.title
+                            });
+                            sequenceFiltersColumns.push({
+                                name: column.name,
+                                title: column.metadata.title
+                            })
+                        }
+                    }
+                });
+                loading = false;
+
+            })
+            .error(function() {
+                notify.error('Filters', 'Error while loading filters');
+                error = true;
+                loading = false;
+            });
+
+
 
         var textFiltersTypes = Object.freeze([
-            {dbName: 'substring', clientName: 'Substring'},
-            {dbName: 'exact', clientName: 'Exact'},
-            {dbName: 'pattern', clientName: 'Pattern'},
-            {dbName: 'value', clientName: 'Value'}
-        ]);
-
-        var sequenceFiltersColumns = Object.freeze([
-            { dbName: 'cdr3', clientName: 'CDR3' },
-            { dbName: 'antigen', clientName: 'Antigen' }
+            { name: 'substring', title: 'Substring'},
+            { name: 'exact', title: 'Exact'},
+            { name: 'pattern', title: 'Pattern'},
+            { name: 'value', title: 'Value'}
         ]);
 
         function pickFiltersSelectData() {
@@ -137,6 +156,14 @@
             if (index >= 0) sequenceFilters.splice(index, 1);
         }
 
+        function isLoaded() {
+            return !loading;
+        }
+
+        function isError() {
+            return error;
+        }
+
         return {
             getTextFiltersColumns: getTextFiltersColumns,
             getTextFiltersTypes: getTextFiltersTypes,
@@ -147,9 +174,11 @@
             getSequenceFilters: getSequenceFilters,
             addSequenceFilter: addSequenceFilter,
             deleteSequenceFilter: deleteSequenceFilter,
-            pickFiltersSelectData: pickFiltersSelectData
+            pickFiltersSelectData: pickFiltersSelectData,
+            isLoaded: isLoaded,
+            isError: isError
         }
-    });
+    }]);
 
     application.directive('filters', function () {
         return {
@@ -175,6 +204,9 @@
                 $scope.isSequenceFiltersExist = function() {
                     return $scope.sequenceFilters.length > 0;
                 };
+
+                $scope.isLoaded = filters.isLoaded;
+                $scope.isError = filters.isError;
 
                 $scope.$on('onRepeatLast', function () {
                     $('[data-toggle="tooltip"]').tooltip({
@@ -232,10 +264,14 @@
 
                 function searchResultsTable(data) {
                     var results = [];
+                    console.log(data.results);
                     angular.forEach(data.results, function (searchResult) {
                         var entries = [];
                         angular.forEach(searchResult.row.entries, function (entry) {
-                            entries.push(entry.value)
+                            entries.push({
+                                meta: entry.column.metadata,
+                                value: entry.value
+                            })
                         });
                         results.push(entries);
                     });
@@ -248,28 +284,18 @@
 
                     var columns = [];
                     var referenceIdTarget = 0;
-
+                    var json = [];
                     angular.forEach(data.columns, function(column, index) {
-                        if (column.name === 'comment') {
-                            referenceIdTarget = index;
-                            columns.push({
-                                data: null,
-                                title: column.metadata.title,
-                                visible: true,
-                                orderable: false,
-                                defaultContent: '',
-                                className: 'comments-control'
-
-                            })
-                        } else {
-                            columns.push({
-                                data: index,
-                                title: column.metadata.title,
-                                visible: (function () {
-                                    return column.metadata.implicit == -0
-                                }())
-                            })
+                        if (column.metadata['data.type'].indexOf('json') >= 0) {
+                            json.push(index);
                         }
+                        columns.push({
+                            data: index,
+                            title: column.metadata.title,
+                            visible: (function () {
+                                return column.metadata.visible == 1
+                            }())
+                        })
                     });
 
                     var dataTable = $('#results-table').DataTable({
@@ -278,46 +304,52 @@
                         dom: '<"pull-left"l><"clear">Trtd<"pull-left"i>p',
                         responsive: true,
                         order: [
-                            [0, "desc"]
+                            //[0, "desc"]
                         ],
                         iDisplayLength: 50,
                         scrollY: "600px",
+                        autoWidth: true,
                         columnDefs: [
                             {
-                                targets: -2,
-                                render: function (data) {
-                                    if (data.indexOf('PMID') >= 0) {
-                                        var id = data.substring(5, data.length);
-                                        return 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
-                                    } else if (data.indexOf('http') >= 0) {
-                                        var domain;
-                                        //find & remove protocol (http, ftp, etc.) and get domain
-                                        if (data.indexOf("://") > -1) {
-                                            domain = data.split('/')[2];
-                                        } else {
-                                            domain = data.split('/')[0];
-                                        }
-                                        //find & remove port number
-                                        domain = domain.split(':')[0];
-                                        return '<a href="' + data  + '">' + domain + '</a>'
-                                    } else {
-                                        return data;
-                                    }
-                                }
+                                targets: [3,4,5],
+                                width: '5%'
                             },
                             {
-                                targets: -1,
+                                targets: '_all',
                                 render: function(data, type, row) {
-                                    try {
-                                        var comment = JSON.parse(data[referenceIdTarget]);
-                                        var text = "";
-                                        angular.forEach(comment, function (value, key) {
-                                            text += '<p>' + key + ' : ' + value + '</p>';
-                                        });
-                                        return '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
-                                    } catch (e) {
-                                        return ''
+                                    var value = data.value;
+                                    var dataType = data.meta['data.type'];
+                                    if (dataType === 'url') {
+                                        if (value.indexOf('PMID') >= 0) {
+                                            var id = value.substring(5, value.length);
+                                            return 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                                        } else if (data.indexOf('http') >= 0) {
+                                            var domain;
+                                            //find & remove protocol (http, ftp, etc.) and get domain
+                                            if (value.indexOf("://") > -1) {
+                                                domain = value.split('/')[2];
+                                            } else {
+                                                domain = value.split('/')[0];
+                                            }
+                                            //find & remove port number
+                                            domain = domain.split(':')[0];
+                                            return '<a href="' + value  + '">' + domain + '</a>'
+                                        } else {
+                                            return value;
+                                        }
+                                    } else if (dataType.indexOf('json') >= 0) {
+                                        try {
+                                            var comment = JSON.parse(value);
+                                            var text = "";
+                                            angular.forEach(comment, function (value, key) {
+                                                text += '<p>' + key + ' : ' + value + '</p>';
+                                            });
+                                            return '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
+                                        } catch (e) {
+                                            return ''
+                                        }
                                     }
+                                    return value;
                                 }
                             }
                         ],

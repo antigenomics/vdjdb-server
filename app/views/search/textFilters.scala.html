@@ -17,18 +17,18 @@
             <tbody>
                 <tr ng-repeat="filter in textFilters" on-last-repeat>
                     <td width="30%">
-                        <select class="dropdown" id="{{ filter.filterId }}" name="columnId">
+                        <select class="dropdown" id="{{ ::filter.filterId }}" name="columnId">
                             <option>Please select column name:</option>
-                            <option ng-repeat="column in textFiltersColumns" value="{{ column.dbName }}">{{ column.clientName }}</option>
+                            <option ng-repeat="column in textFiltersColumns" value="{{ ::column.name }}">{{ ::column.title }}</option>
                         </select>
                     </td>
                     <td width="30%">
                         <input class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
                     </td>
                     <td width="30%">
-                        <select class="dropdown" id="{{ filter.filterId }}" name="filterType">
+                        <select class="dropdown" id="{{ ::filter.filterId }}" name="filterType">
                             <option>Please select filter type:</option>
-                            <option ng-repeat="type in textFiltersTypes" value="{{ type.dbName }}">{{ type.clientName }}</option>
+                            <option ng-repeat="type in textFiltersTypes" value="{{ ::type.name }}">{{ ::type.title }}</option>
                         </select>
                     </td>
                     <td width="5%">

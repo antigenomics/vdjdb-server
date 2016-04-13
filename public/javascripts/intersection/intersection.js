@@ -88,6 +88,7 @@
                             intersectResultsTable(data, file.uid);
                             loaded.push(file.uid);
                             loading = false;
+                            console.log(data);
                             //angular.copy(data, intersectData);
                         })
                         .error(function(response) {
@@ -168,15 +169,16 @@ function intersectResultsTable(data, uid) {
             orderable:      false,
             data:           '',
             defaultContent: '',
-            width: '15px'
+            width: '15px',
+            title: 'Info'
         },
-        { data: 'matches'},
-        { data: 'freq', width: '5%' },
-        { data: 'count', width: '5%' },
-        { data: 'cdr3aa' },
-        { data: 'v' },
-        { data: 'j' },
-        { data: 'cdr3nt'}
+        { data: 'matches', title: '# Matches'},
+        { data: 'freq', title: 'Frequency', width: '5%' },
+        { data: 'count', title: 'Count', width: '5%' },
+        { data: 'cdr3aa', title: 'CDR3aa' },
+        { data: 'v', title: 'V' },
+        { data: 'j', title: 'J' },
+        { data: 'cdr3nt', title: 'CDR3nt'}
     ];
 
 
@@ -186,7 +188,8 @@ function intersectResultsTable(data, uid) {
         iDisplayLength: 25,
         order: [
             [1, 'desc']
-        ]
+        ]//,
+        //scrollX: true
     });
 
     function format(d) {
@@ -194,7 +197,7 @@ function intersectResultsTable(data, uid) {
         var addInfo = "";
         var skipColumn = [];
         angular.forEach(helpers, function(helper) {
-            addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
+            addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%">';
             var tdRow = '<tr>';
             var thRow = '<tr>';
 
@@ -202,14 +205,25 @@ function intersectResultsTable(data, uid) {
             tdRow += '<td>' + helper.score + '</td>';
 
             angular.forEach(helper.row.entries, function(entry, index) {
-                if (entry.column.metadata.implicit == 0) {
+                var meta = entry.column.metadata;
+                if (meta.visible == 1) {
                     var value = entry.value;
-                    if (entry.column.name === 'reference.id') value = reference_wrap(entry.value);
-                    if (entry.column.name === 'comment') value = 'comment wrap to do';
-                    if (index != 0 && index != 1) {
-                        thRow += '<th>' + entry.column.metadata.title + '</th>';
-                        tdRow += '<td>' + value + '</td>'
+                    if (meta['data.type'] === 'url') {
+                        value = reference_wrap(entry.value);
+                    } else if (meta['data.type'].indexOf('json') >= 0) {
+                        try {
+                            var comment = JSON.parse(value);
+                            var text = "";
+                            angular.forEach(comment, function (value, key) {
+                                text += '<p>' + key + ' : ' + value + '</p>';
+                            });
+                            value = '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
+                        } catch (e) {
+                            value = ''
+                        }
                     }
+                    thRow += '<th>' + meta.title + '</th>';
+                    tdRow += '<td>' + value + '</td>'
                 }
             });
             thRow += '</tr>';
@@ -218,7 +232,7 @@ function intersectResultsTable(data, uid) {
             addInfo += tdRow;
             addInfo += '</table>';
 
-            addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%" style="padding-left:50px;">';
+            addInfo += '<table cellpadding="5" cellspacing="0" border="0" width="100%">';
             addInfo += '<tr>' +
                     '<td class="alignment_block">' +
                         '<p class="alignment_text">' +
@@ -232,9 +246,9 @@ function intersectResultsTable(data, uid) {
                         '</p>' +
                         '<hr>' +
                     '</td>' +
-                '</tr>'
+                '</tr>';
+            addInfo += '</table>';
         });
-        addInfo += '</table>';
         return addInfo;
     }
 
@@ -251,6 +265,10 @@ function intersectResultsTable(data, uid) {
             // Open this row
             row.child( format(row.data())).show();
             tr.addClass('shown');
+            $('[data-toggle="popover"]').popover({
+                container: 'body',
+                html: true
+            });
         }
     } );
 }

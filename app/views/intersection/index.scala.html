@@ -51,7 +51,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="box box-solid" ng-show="isFileSelected()">
+                    <div class="box box-solid flat" ng-show="isFileSelected()">
                         <div class="box-header" ng-if="isLoading()">
                             <div class="spinner">
                                 <div class="cube1"></div>
@@ -61,32 +61,11 @@
                         <div class="box-body">
                             <div ng-repeat="file in files()" ng-show="isFile(file)">
                                 <p ng-hide="isLoading() || isLoaded(file)">Click intersect button to start</p>
-                                <table class="table" id="intersect_report_table_{{ ::file.uid }}" ng-show="isLoaded(file)">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th># Matches</th>
-                                            <th>Freq</th>
-                                            <th>Count</th>
-                                            <th>CDR3aa</th>
-                                            <th>V</th>
-                                            <th>J</th>
-                                            <th>CDR3nt</th>
-                                        </tr>
-                                    </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th></th>
-                                            <th># Matches</th>
-                                            <th>Freq</th>
-                                            <th>Count</th>
-                                            <th>CDR3aa</th>
-                                            <th>V</th>
-                                            <th>J</th>
-                                            <th>CDR3nt</th>
-                                        </tr>
-                                    </tfoot>
+                                <div class="table-responsive">
+                                <table class="table" id="intersect_report_table_{{ ::file.uid }}" cellspacing="0" width="100%" ng-show="isLoaded(file)">
+
                                 </table>
+                                </div>
                             </div>
                         </div>
                     </div>

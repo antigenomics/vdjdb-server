@@ -11,13 +11,19 @@
     <div ng-app="searchPage" class="wrapper">
         <div class="container-fluid">
             <filters class="row">
-                <div class="col-md-10 col-md-offset-1">
+                <div class="col-md-12" ng-if="!isLoaded()">
+                    @views.html.search.loadingFilters()
+                </div>
+                <div class="col-md-12" ng-if="isLoaded() && !isError()">
                     @views.html.search.textFilters()
                     @views.html.search.sequenceFilters()
                 </div>
+                <div class="col-md-12" ng-if="isError()">
+                    @views.html.search.errorFilters()
+                </div>
             </filters>
-            <search class="row">
-                <div class="col-md-10 col-md-offset-1">
+            <search class="row" ng-hide="isError() || !isLoaded()">
+                <div class="col-md-12">
                     <div class="box box-solid">
                         <div class="box-header with-border">
                             <button class="btn bg-purple btn-flat" ng-click="search()">Search</button>
