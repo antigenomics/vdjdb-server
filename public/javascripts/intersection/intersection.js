@@ -254,12 +254,14 @@ function intersectResultsTable(data, file) {
                             }
                             value = '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control" tab-index="0" ' +
                                 'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
-                                'title="Additional info" data-content="' + text + '"></i>'
+                                'title="' + meta['title'] + '" data-content="' + text + '"></i>'
                         } catch (e) {
                             value = ''
                         }
                     }
-                    thRow += '<th>' + meta.title + '</th>';
+                    var columnHeader = '<text data-trigger="hover" data-toggle="popover" data-placement="top" data-content="Column description placeholder">' +
+                        meta.title +  '</text>';
+                    thRow += '<th>' + columnHeader + '</th>';
                     tdRow += '<td>' + value + '</td>'
                 }
             });
