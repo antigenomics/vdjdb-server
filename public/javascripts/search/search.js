@@ -340,14 +340,14 @@
                                             var comment = JSON.parse(value);
                                             var text = "";
                                             angular.forEach(comment, function (value, key) {
-                                                if (value != "")
+                                                if (value !== "")
                                                     text += '<p>' + key + ' : ' + value + '</p>';
                                             });
                                             var color_i = 'black';
                                             if (data.meta['name'] === 'cdr3fix') {
-                                                if (comment['fixNeeded'] == false) {
+                                                if (comment['fixNeeded'] === false) {
                                                     color_i = '#00a65a';
-                                                } else if (comment['good'] == true) {
+                                                } else if (comment['good'] === true) {
                                                     color_i = '#f39c12'
                                                 } else {
                                                     color_i = '#dd4b39'

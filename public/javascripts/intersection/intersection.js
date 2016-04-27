@@ -239,10 +239,22 @@ function intersectResultsTable(data, file) {
                             var comment = JSON.parse(value);
                             var text = "";
                             angular.forEach(comment, function (value, key) {
-                                if (value != "")
+                                if (value !== "")
                                     text += '<p>' + key + ' : ' + value + '</p>';
                             });
-                            value = '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
+                            var color_i = 'black';
+                            if (meta['name'] === 'cdr3fix') {
+                                if (comment['fixNeeded'] === false) {
+                                    color_i = '#00a65a';
+                                } else if (comment['good'] === true) {
+                                    color_i = '#f39c12'
+                                } else {
+                                    color_i = '#dd4b39'
+                                }
+                            }
+                            value = '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control" tab-index="0" ' +
+                                'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
+                                'title="Additional info" data-content="' + text + '"></i>'
                         } catch (e) {
                             value = ''
                         }

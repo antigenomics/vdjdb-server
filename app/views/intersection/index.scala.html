@@ -1,3 +1,4 @@
+@import server.Configuration
 @main("VDJdb: annotations") {
 
     <script src="@routes.Assets.at("javascripts/blockpage.js")" type="text/javascript"></script>
@@ -30,11 +31,14 @@
                             <button class="btn btn-sm btn-flat bg-purple" ng-click="deleteAllFiles()">Delete all</button>
                         </div>
                     </div>
-                    <div class="box box-solid flat">
-                        <div class="box-body">
-                            <a href="@routes.IntersectionAPI.pushDBPage()" class="btn btn-sm btn-flat bg-purple">Add file to database</a>
+                    @if(Configuration.allowGitRequest) {
+                        <div class="box box-solid flat">
+                            <div class="box-body">
+                                <a href="@routes.IntersectionAPI.pushDBPage()" class="btn btn-sm btn-flat bg-purple">
+                                    Add file to database</a>
+                            </div>
                         </div>
-                    </div>
+                    }
                     <div class="box box-solid flat">
                         <div class="box-body">
                             <a href="/logout" class="btn btn-default btn-sm btn-flat"><i class="fa fa-sign-out"></i>Logout</a>
