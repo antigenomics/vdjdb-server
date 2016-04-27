@@ -4,7 +4,7 @@ import java.io.FileInputStream
 import java.util
 
 import com.antigenomics.vdjdb.VdjdbInstance
-import com.antigenomics.vdjdb.db.Database
+import com.antigenomics.vdjdb.db.{Column, Database}
 import com.antigenomics.vdjdb.Util.checkDatabase
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text.TextFilter

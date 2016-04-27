@@ -11,24 +11,24 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="filter in textFilters" on-last-repeat>
+                <tr ng-repeat="filter in textFilters | orderBy:'index'" on-last-repeat>
                     <td width="30%">
-                        <select class="dropdown" id="{{ ::filter.filterId }}" name="columnId">
+                        <select class="dropdown" id="{{ ::filter.filterId }}" name="columnId" import="{{ filter.columnId }}" title="{{ filter.columnTitle }}">
                             <option>Please select column name:</option>
                             <option ng-repeat="column in textFiltersColumns" value="{{ ::column.name }}">{{ ::column.title }}</option>
                         </select>
                     </td>
                     <td width="30%">
-                        <input class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
+                        <input id="input_{{ ::filter.filterId }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
                     </td>
                     <td width="30%">
                         <select class="dropdown" id="{{ ::filter.filterId }}" name="filterType">
                             <option>Please select filter type:</option>
-                            <option ng-repeat="type in textFiltersTypes" value="{{ ::type.name }}">{{ ::type.title }}</option>
+                            <option ng-repeat="type in filter.types" value="{{ ::textFiltersTypes[type].name }}">{{ ::textFiltersTypes[type].title }}</option>
                         </select>
                     </td>
                     <td width="5%">
-                        <input type="checkbox" ng-model="filter.negative">
+                        <input type="checkbox" ng-model="filter.negative" ng-show="filter.allowNegative">
                     </td>
                     <td width="5%">
                         <i class="fa fa-trash" ng-click="deleteTextFilter(filter)" style="cursor: pointer ;" data-toggle="tooltip" data-placement="top" title="Remove filter"></i>

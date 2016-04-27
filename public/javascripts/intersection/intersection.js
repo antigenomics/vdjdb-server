@@ -91,7 +91,6 @@
                         intersectResultsTable(data, file);
                         loaded.push(file.uid);
                         loading = false;
-                        console.log(data);
                         //angular.copy(data, intersectData);
                     })
                     .error(function(response) {
@@ -240,14 +239,29 @@ function intersectResultsTable(data, file) {
                             var comment = JSON.parse(value);
                             var text = "";
                             angular.forEach(comment, function (value, key) {
-                                text += '<p>' + key + ' : ' + value + '</p>';
+                                if (value !== "")
+                                    text += '<p>' + key + ' : ' + value + '</p>';
                             });
-                            value = '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
+                            var color_i = 'black';
+                            if (meta['name'] === 'cdr3fix') {
+                                if (comment['fixNeeded'] === false) {
+                                    color_i = '#00a65a';
+                                } else if (comment['good'] === true) {
+                                    color_i = '#f39c12'
+                                } else {
+                                    color_i = '#dd4b39'
+                                }
+                            }
+                            value = '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control" tab-index="0" ' +
+                                'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
+                                'title="' + meta['title'] + '" data-content="' + text + '"></i>'
                         } catch (e) {
                             value = ''
                         }
                     }
-                    thRow += '<th>' + meta.title + '</th>';
+                    var columnHeader = '<text data-trigger="hover" data-toggle="popover" data-placement="top" data-content="Column description placeholder">' +
+                        meta.title +  '</text>';
+                    thRow += '<th>' + columnHeader + '</th>';
                     tdRow += '<td>' + value + '</td>'
                 }
             });

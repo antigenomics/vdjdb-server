@@ -23,7 +23,7 @@ function applySelectTheme(onChangeCallback)
 			hiddenfield.name=sels[i].name;
 			hiddenfield.type='hidden';
 			hiddenfield.id=sels[i].id;
-			hiddenfield.value=sels[i].options[0].value;
+			hiddenfield.value=sels[i].attributes.import  ? sels[i].attributes.import.value :  sels[i].options[0].value;
 			hiddenfield.className += sels[i].id;
 			sels[i].parentNode.insertBefore(hiddenfield,sels[i]);
 			var trigger=document.createElement('a');
@@ -34,7 +34,7 @@ function applySelectTheme(onChangeCallback)
 				ts_swapclass(this.parentNode.getElementsByTagName('ul')[0],ts_dropdownclosed,ts_dropdownopen);
 				return false;
 			};
-			trigger.appendChild(document.createTextNode(sels[i].options[0].text));
+			trigger.appendChild(document.createTextNode(sels[i].attributes.title ? sels[i].attributes.title.value : sels[i].options[0].text));
 			sels[i].parentNode.insertBefore(trigger,sels[i]);
 			var replaceUL=document.createElement('ul');
 			for(var j=0;j<sels[i].getElementsByTagName('option').length;j++)
