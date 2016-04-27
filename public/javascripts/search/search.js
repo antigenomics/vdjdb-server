@@ -323,7 +323,7 @@
                                         if (value.indexOf('PMID') >= 0) {
                                             var id = value.substring(5, value.length);
                                             return 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
-                                        } else if (data.indexOf('http') >= 0) {
+                                        } else if (value.indexOf('http') >= 0) {
                                             var domain;
                                             //find & remove protocol (http, ftp, etc.) and get domain
                                             if (value.indexOf("://") > -1) {
@@ -342,7 +342,8 @@
                                             var comment = JSON.parse(value);
                                             var text = "";
                                             angular.forEach(comment, function (value, key) {
-                                                text += '<p>' + key + ' : ' + value + '</p>';
+                                                if (value != "")
+                                                    text += '<p>' + key + ' : ' + value + '</p>';
                                             });
                                             return '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
                                         } catch (e) {

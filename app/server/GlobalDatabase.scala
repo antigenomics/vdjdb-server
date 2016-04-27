@@ -1,5 +1,6 @@
 package server
 
+import java.io.FileInputStream
 import java.util
 
 import com.antigenomics.vdjdb.VdjdbInstance
@@ -15,17 +16,16 @@ import utils.SynchronizedAccess
   * Created by bvdmitri on 16.03.16.
   */
 object GlobalDatabase extends SynchronizedAccess {
-  private var db : Synchronized[VdjdbInstance] = Synchronized(new VdjdbInstance())
+  private var db : Synchronized[VdjdbInstance] = Synchronized(new VdjdbInstance(new FileInputStream("/Users/bvdmitri/vdjdb.meta.txt"),
+                                                                                new FileInputStream("/Users/bvdmitri/vdjdb.txt")))
 
   def search(textFilters : util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter]) =
     synchronizeRead { implicit lock =>
       db().getDbInstance.search(textFilters, sequenceFilters)
     }
 
-  def intersect(sample: Sample) =
   def intersect(sample: Sample, parameters: IntersectParametersRequest) =
     synchronizeRead { implicit lock =>
-      val clonotypeDatabase = VdjdbInstance.asClonotypeDatabase(db().getDbInstance)
       val clonotypeDatabase = VdjdbInstance.asClonotypeDatabase(db().getDbInstance, parameters.matchV, parameters.matchV,
         parameters.maxMismatches, parameters.maxInsertions, parameters.maxDeletions, parameters.maxMutations)
       clonotypeDatabase.search(sample)
