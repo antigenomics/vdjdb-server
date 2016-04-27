@@ -1,18 +1,14 @@
 <div class="box box-solid">
-    <div class="box-header with-border">
-        Sequence filters
-    </div>
     <div class="box-body text-center">
-        <p ng-if="!isSequenceFiltersExist()">No sequence filters added</p>
         <table class="table table-responsive" ng-if="isSequenceFiltersExist()">
             <thead>
                 <tr>
-                    <th>Column name</th>
+                    <th>Filed</th>
                     <th>Query</th>
-                    <th>Mismatches</th>
                     <th>Insertions</th>
                     <th>Deletions</th>
-                    <th>Mutations</th>
+                    <th>Substitutions</th>
+                    <th>Total mismatches</th>
                     <th width="5%"></th>
                 </tr>
             </thead>
@@ -28,9 +24,6 @@
                         <input class="form-control input-sm" type="text" placeholder="Query" ng-model="filter.query">
                     </td>
                     <td>
-                        <input class="form-control input-sm" type="number" placeholder="Mismatches" ng-model="filter.mismatches">
-                    </td>
-                    <td>
                         <input class="form-control input-sm" type="number" placeholder="Insertions" ng-model="filter.insertions">
                     </td>
                     <td>
@@ -38,6 +31,9 @@
                     </td>
                     <td>
                         <input class="form-control input-sm" type="number" placeholder="Mutations" ng-model="filter.mutations">
+                    </td>
+                    <td>
+                        <input class="form-control input-sm" type="number" placeholder="Mismatches" ng-model="filter.mismatches">
                     </td>
                     <td width="5%">
                         <i class="fa fa-trash" ng-click="deleteSequenceFilter(filter)" style="cursor: pointer ;" data-toggle="tooltip" data-placement="top" title="Remove filter"></i>

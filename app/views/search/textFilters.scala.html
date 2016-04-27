@@ -1,14 +1,10 @@
 <div class="box box-solid">
-    <div class="box-header with-border">
-        Text filters
-    </div>
     <div class="box-body text-center">
-        <p ng-if="!isTextFiltersExist()">No text filters added</p>
         <table class="table table-responsive" ng-if="isTextFiltersExist()">
             <thead>
                 <tr>
-                    <th>Column name</th>
-                    <th>Value</th>
+                    <th>Field</th>
+                    <th>Filter value / expression</th>
                     <th>Filter type</th>
                     <th>Negative</th>
                     <th width="5%"></th>
