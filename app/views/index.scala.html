@@ -1,13 +1,53 @@
+@main("VDJdb: main") {
+    @views.html.navbar()
+    
+    <div class="wrapper">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="box box-solid">
+                        <div class="box-header with-border"> 
+            	           <h3>VDJdb: A curated database of T-cell receptor antigen specificities</h3>
+                        </div>
+            	        <div class="box box-body">
+                        <p>
+                        
+                    
+                        The primary goal of VDJdb is to aggregate and verify scarce information on 
+                        T-cell receptor (TCR) that recognize certain antigen epitopes in certain MHC context.
+                    
+                        Our mission is to both aggregate scarce TCR specificity information published so far and 
+                        to create a portal 
+                        </p>
 
-    @main("VDJdb: main") {
-        @views.html.navbar()
-        <div class="wrapper">
-        <div class="col-md-12 col-lg-12">
-            <div class="panel panel-solid">
-                <div class="panel-body text-center">
-                    <h3>Main page</h3>
+                        <p>
+                        In addition to routine database updates providing the  most up-to-date information, we make our best to ensure 
+                        data consistency and fight irregularities in TCR specificity reporting with a complex database validation scheme:
+                        <ul>
+                            <li>We take into account all available information on experimental setup used to 
+                            identify antigen-specific TCR sequences and assign a single confidence score to highligh most reliable 
+                            records at the database generation stage.</li>
+                            <li>Each database record is also automatically checked against a database of V/J segment germline sequences 
+                                to ensure standardized and consistent reporting of V-J junctions and CDR3 sequences that define T-cell clones.</li>
+                        </ul>
+                        </p>
+                        </div>    
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="box box-solid">
+                        <div class="box-header with-border"> 
+                            <h3>VDJdb-server</h3>
+                        </div>
+                        <div class="box box-body">
+                            <p>                    
+                            The web GUI application you are viewing right now is a versatile VDJdb browser and immune repertoire sequencing 
+                            dataset annotation system. VDJdb-server provides an intuitive tabular view of the database and supports a wide range of database queries:
+                            from searching individual CDR3 and antigen sequences to large-scale annotation of immune repertoire sequencing datasets.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        </div>
-    }
+    </div>
+}
