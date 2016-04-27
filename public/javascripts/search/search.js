@@ -386,9 +386,11 @@
                         if (column.metadata['data.type'].indexOf('json') >= 0) {
                             json.push(index);
                         }
+                        var columnHeader = '<text data-trigger="hover" data-toggle="popover" data-placement="top" data-content="Column description placeholder">' +
+                            column.metadata.title +  '</text>';
                         columns.push({
                             data: index,
-                            title: column.metadata.title,
+                            title: columnHeader,
                             visible: (function () {
                                 return column.metadata.visible == 1
                             }())
@@ -455,7 +457,7 @@
                                             }
                                             return '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control" tab-index="0" ' +
                                                 'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
-                                                'title="Additional info" data-content="' + text + '"></i>'
+                                                'title="' + data.meta.title + '" data-content="' + text + '"></i>'
                                         } catch (e) {
                                             return ''
                                         }
