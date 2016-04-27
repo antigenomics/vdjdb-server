@@ -1,10 +1,16 @@
 @main("VDJdb: search") {
 
+    <script src="@routes.Assets.at("lib/jquery/jquery-ui.min.js")" type="text/javascript"></script>
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.structure.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.theme.min.css")" rel="stylesheet">
+
     <!-- Select styling -->
     <script src="@routes.Assets.at("lib/select/js/select.js")" type="text/javascript"></script>
     <link href="@routes.Assets.at("lib/select/css/style.css")" rel="stylesheet">
 
     <script src="@routes.Assets.at("javascripts/search/search.js")" type="text/javascript"></script>
+
 
     @views.html.navbar()
 

@@ -49,22 +49,42 @@
         var sequenceFiltersColumns = [];
         
         $http.get('/search/columns')
-            .success(function(columns) {
-                angular.forEach(columns, function(column) {
+            .success(function(columnsInfo) {
+                var columns = columnsInfo.columns;
+                angular.forEach(columns, function(columnInfo) {
+                    var column = columnInfo.column;
                     if (column.metadata.searchable == 1) {
                         if (column.metadata.type === 'txt') {
                             textFiltersColumns.push({
                                 name: column.name,
-                                title: column.metadata.title
+                                title: column.metadata.title,
+                                types: (function() {
+                                    if (column.metadata['data.type'] === 'uint')
+                                        return [3];
+                                    return [0, 1, 2]
+                                }()),
+                                allowNegative: (function() {
+                                    return column.metadata['data.type'] !== 'uint';
+                                }()),
+                                autocomplete: columnInfo.autocomplete,
+                                values: columnInfo.values
                             })
                         } else if (column.metadata.type === 'seq') {
                             textFiltersColumns.push({
                                 name: column.name,
-                                title: column.metadata.title
+                                title: column.metadata.title,
+                                types: [0, 1, 2],
+                                allowNegative: true,
+                                autocomplete: false,
+                                values: []
                             });
                             sequenceFiltersColumns.push({
                                 name: column.name,
-                                title: column.metadata.title
+                                title: column.metadata.title,
+                                types: [0, 1, 2],
+                                allowNegative: true,
+                                autocomplete: false,
+                                values: []
                             })
                         }
                     }
@@ -79,12 +99,11 @@
             });
 
 
-
         var textFiltersTypes = Object.freeze([
-            { name: 'substring', title: 'Substring'},
-            { name: 'exact', title: 'Exact'},
-            { name: 'pattern', title: 'Pattern'},
-            { name: 'value', title: 'Value'}
+            { name: 'substring', title: 'Substring', allowNegative: true},
+            { name: 'exact', title: 'Exact', allowNegative: true},
+            { name: 'pattern', title: 'Pattern', allowNegative: true},
+            { name: 'level', title: 'Level', allowNegative: false}
         ]);
 
         function pickFiltersSelectData() {
@@ -93,6 +112,7 @@
                 angular.forEach(list, function (el) {
                     filter[el.name] = el.value;
                 });
+                filter.value = $('#input_'+filter.filterId).val();
             });
             angular.forEach(sequenceFilters, function (filter) {
                 var list = document.getElementsByClassName(filter.filterId);
@@ -115,14 +135,40 @@
         }
 
         function addTextFilter() {
-            textFilters.push({
-                filterId: 'text_filter_' + textFilterIndex++,
-                columnId: '',
-                value: '',
-                filterType: '',
-                negative: false
-            });
+            if (textFilters.length === 0 || textFilters[textFilters.length - 1].initialized) {
+                textFilters.push({
+                    index: textFilterIndex,
+                    filterId: 'text_filter_' + textFilterIndex++,
+                    columnId: 'Please select column name:',
+                    columnTitle: 'Please select column name:',
+                    value: '',
+                    filterType: '',
+                    negative: false,
+                    allowNegative: true,
+                    types: [0, 1, 2, 3],
+                    initialized: false
+                });
+            }
         }
+
+        function copyFilter(f) {
+            deleteTextFilter(f);
+            var new_f = {
+                index: f.index,
+                filterId: 'text_filter_' + textFilterIndex++,
+                columnId: f.columnId,
+                columnTitle: f.columnTitle,
+                value: f.value,
+                filterType: '',
+                negative: f.negative,
+                allowNegative: f.allowNegative,
+                types: f.types,
+                initialized: f.initialized
+            };
+            textFilters.push(new_f);
+            return new_f;
+        }
+
 
         function deleteTextFilter(filter) {
             var index = textFilters.indexOf(filter);
@@ -150,6 +196,13 @@
             });
         }
 
+        function findFilter(id) {
+            for (var i = 0; i < textFilters.length; i++) {
+                if (textFilters[i].filterId === id) return textFilters[i];
+            }
+            return null;
+        }
+
         function deleteSequenceFilter(filter) {
             var index = sequenceFilters.indexOf(filter);
             if (index >= 0) sequenceFilters.splice(index, 1);
@@ -161,6 +214,10 @@
 
         function isError() {
             return error;
+        }
+
+        function changeFilterSearchTypes(id, types) {
+            textFilters[id].types = types;
         }
 
         return {
@@ -175,7 +232,10 @@
             deleteSequenceFilter: deleteSequenceFilter,
             pickFiltersSelectData: pickFiltersSelectData,
             isLoaded: isLoaded,
-            isError: isError
+            isError: isError,
+            changeFilterSearchTypes: changeFilterSearchTypes,
+            copyFilter: copyFilter,
+            findFilter: findFilter
         }
     }]);
 
@@ -207,11 +267,51 @@
                 $scope.isLoaded = filters.isLoaded;
                 $scope.isError = filters.isError;
 
+                function arraysEqual(a, b) {
+                    if (a === b) return true;
+                    if (a == null || b == null) return false;
+                    if (a.length != b.length) return false;
+
+                    // If you don't care about the order of the elements inside
+                    // the array, you should sort both arrays here.
+
+                    for (var i = 0; i < a.length; ++i) {
+                        if (a[i] !== b[i]) return false;
+                    }
+                    return true;
+                }
+
                 $scope.$on('onRepeatLast', function () {
                     $('[data-toggle="tooltip"]').tooltip({
                         container: 'body'
                     });
-                    applySelectTheme();
+                    applySelectTheme(function(id, name, title) {
+                        $scope.$apply(function() {
+                            angular.forEach(filters.getTextFiltersColumns(), function (column) {
+                                if (column.name === name) {
+                                    var filter = filters.findFilter(id);
+                                    var filterId = id;
+                                    if (!arraysEqual(filter.types, column.types)) {
+                                        filter.types = column.types;
+                                        filter.columnId = column.name;
+                                        filter.columnTitle = column.title;
+                                        filter.allowNegative = column.allowNegative;
+                                        filter.initialized = true;
+                                        //todo not working ?
+                                        if (column.allowNegative === false) filter.negative = true;
+                                        var new_f = filters.copyFilter(filter);
+                                        filterId = new_f.filterId;
+                                    }
+                                    setTimeout(function() {
+                                        $( "#input_" + filterId ).autocomplete({
+                                            source: column.values,
+                                            minLength: 0
+                                        });
+                                    }, 100)
+                                }
+                            });
+                        })
+                    });
                 });
             }]
         }

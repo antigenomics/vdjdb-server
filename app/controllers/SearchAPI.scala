@@ -9,7 +9,7 @@ import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
 import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.mvc._
-import server.wrappers.SearchResult
+import server.wrappers.{ColumnsInfo, SearchResult}
 import server.{GlobalDatabase, ServerLogger, ServerResponse}
 import utils.JsonUtil.sendJson
 import play.api.libs.json.Json.toJson
@@ -28,8 +28,9 @@ object SearchAPI extends Controller {
     sendJson(GlobalDatabase.getDatabase())
   }
 
+
   def columns = Action {
-    sendJson(GlobalDatabase.getDatabase().getColumns)
+    sendJson(new ColumnsInfo(GlobalDatabase.getColumns()))
   }
 
   case class DatabaseTextFilter(columnId: String, value: String, filterType: String, negative: Boolean)
