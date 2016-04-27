@@ -34,9 +34,11 @@
                                 <div class="cube1"></div>
                                 <div class="cube2"></div>
                             </div>
-                            <table class="table results-table" ng-if="isFound() || isLoading()">
+                            <div ng-class="{'hidden_table':isLoading()}" ng-if="isFound() || isLoading()">
+                                <table id="results-table" class="table results-table table-hover compact" style="width: 100%">
 
-                            </table>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

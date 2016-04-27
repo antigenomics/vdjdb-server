@@ -27,7 +27,6 @@
                 textFilters: filters.getTextFilters(),
                 sequenceFilters: filters.getSequenceFilters()
             }).then(function (response) {
-                console.log(response);
                 return response
             })
         }
@@ -227,27 +226,33 @@
                 var loading = false;
                 var search = false;
                 var found = false;
+                var dataTable = null;
 
 
                 $scope.search = function () {
-                    search = true;
-                    loading = true;
-                    found = true;
-                    var searchPromise = SearchDatabaseAPI.search();
-                    searchPromise.then(function (searchResults) {
-                        if (searchResults.data.results.length > 0) {
-                            searchResultsTable(searchResults.data);
-                            angular.forEach(searchResults.data.warnings, function(warning) {
-                                notify.info('Search', warning);
-                            })
-                        } else {
-                            found = false;
-                        }
-                        loading = false;
-                    }, function(error) {
-                        $log.error(error);
-                        notify.error('Search', error.data.message);
-                    })
+                    if (!loading) {
+                        search = true;
+                        loading = true;
+                        found = true;
+                        var searchPromise = SearchDatabaseAPI.search();
+                        searchPromise.then(function (searchResults) {
+                            if (searchResults.data.results.length > 0) {
+                                if (dataTable != null) dataTable.destroy();
+                                dataTable = searchResultsTable(searchResults.data);
+                                angular.forEach(searchResults.data.warnings, function(warning) {
+                                    notify.info('Search', warning);
+                                })
+                            } else {
+                                found = false;
+                            }
+                            loading = false;
+                        }, function(error) {
+                            loading = false;
+                            notify.error('Search', error.data.message);
+                        })
+                    } else {
+                        notify.info('Search', 'Loading...')
+                    }
                 };
 
                 $scope.isFound = function() {
@@ -264,7 +269,6 @@
 
                 function searchResultsTable(data) {
                     var results = [];
-                    console.log(data.results);
                     angular.forEach(data.results, function (searchResult) {
                         var entries = [];
                         angular.forEach(searchResult.row.entries, function (entry) {
@@ -276,14 +280,7 @@
                         results.push(entries);
                     });
 
-                    var d3Place = d3.select(".results-table");
-                        d3Place.html("");
-                    var table = d3Place.append("table")
-                        .attr("id", "results-table")
-                        .attr("class", "table table-hover compact");
-
                     var columns = [];
-                    var referenceIdTarget = 0;
                     var json = [];
                     angular.forEach(data.columns, function(column, index) {
                         if (column.metadata['data.type'].indexOf('json') >= 0) {
@@ -308,7 +305,8 @@
                         ],
                         iDisplayLength: 50,
                         scrollY: "600px",
-                        autoWidth: true,
+                        autoWidth: false,
+                        bAutoWidth: false,
                         columnDefs: [
                             {
                                 targets: [3,4,5],
@@ -345,7 +343,19 @@
                                                 if (value != "")
                                                     text += '<p>' + key + ' : ' + value + '</p>';
                                             });
-                                            return '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
+                                            var color_i = 'black';
+                                            if (data.meta['name'] === 'cdr3fix') {
+                                                if (comment['fixNeeded'] == false) {
+                                                    color_i = '#00a65a';
+                                                } else if (comment['good'] == true) {
+                                                    color_i = '#f39c12'
+                                                } else {
+                                                    color_i = '#dd4b39'
+                                                }
+                                            }
+                                            return '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control" tab-index="0" ' +
+                                                'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
+                                                'title="Additional info" data-content="' + text + '"></i>'
                                         } catch (e) {
                                             return ''
                                         }
@@ -360,7 +370,9 @@
                                 html: true
                             });
                         }
-                    })
+                    });
+
+                    return dataTable;
                 }
 
 

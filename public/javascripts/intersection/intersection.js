@@ -91,7 +91,6 @@
                         intersectResultsTable(data, file);
                         loaded.push(file.uid);
                         loading = false;
-                        console.log(data);
                         //angular.copy(data, intersectData);
                     })
                     .error(function(response) {
@@ -240,7 +239,8 @@ function intersectResultsTable(data, file) {
                             var comment = JSON.parse(value);
                             var text = "";
                             angular.forEach(comment, function (value, key) {
-                                text += '<p>' + key + ' : ' + value + '</p>';
+                                if (value != "")
+                                    text += '<p>' + key + ' : ' + value + '</p>';
                             });
                             value = '<i class="fa fa-info-circle comments-control" tab-index="0" data-trigger="hover" data-toggle="popover" data-placement="left" title="Additional info" data-content="' + text + '"></i>'
                         } catch (e) {

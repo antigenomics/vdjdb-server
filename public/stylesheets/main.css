@@ -234,3 +234,7 @@ tr.shown td.details-control:before {
     position:absolute;
 }
 
+.hidden_table {
+    visibility: hidden;
+}
+
