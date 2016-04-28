@@ -16,18 +16,16 @@
 
     <div ng-app="searchPage" class="wrapper">
         <div class="container-fluid">
-            <filters class="row">
-                <div class="col-md-4">
                     @views.html.search.description()
-                </div>
-                <div class="col-md-8" ng-if="!isLoaded()">
+            <filters class="row">
+                <div class="col-md-12" ng-if="!isLoaded()">
                     @views.html.search.loadingFilters()
                 </div>
-                <div class="col-md-8" ng-if="isLoaded() && !isError()">
+                <div class="col-md-12" ng-if="isLoaded() && !isError()">
                     @views.html.search.textFilters()
                     @views.html.search.sequenceFilters()
                 </div>
-                <div class="col-md-8" ng-if="isError()">
+                <div class="col-md-12" ng-if="isError()">
                     @views.html.search.errorFilters()
                 </div>
             </filters>
