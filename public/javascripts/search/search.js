@@ -381,11 +381,7 @@
                     });
 
                     var columns = [];
-                    var json = [];
                     angular.forEach(data.columns, function(column, index) {
-                        if (column.metadata['data.type'].indexOf('json') >= 0) {
-                            json.push(index);
-                        }
                         var columnHeader = '<text data-trigger="hover" data-toggle="popover" data-placement="top" data-content="' +
                         column.metadata['comment'] + '">' + column.metadata.title +  '</text>';
                         columns.push({

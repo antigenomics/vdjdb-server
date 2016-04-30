@@ -163,22 +163,6 @@ body {
     position: absolute;
 }
 
-.sidebar_file_td {
-    cursor: pointer;
-}
-
-.sidebar_file_delete {
-    visibility: hidden;
-}
-
-.sidebar_file_td:hover {
-    background-color: #DCDCDC;
-}
-
-.sidebar_file_td:hover .sidebar_file_delete {
-    visibility: visible;
-}
-
 .alignment_block {
     width: 100%;
     text-align: center;
@@ -188,10 +172,6 @@ body {
     white-space: pre;
     font-family: monospace;
     letter-spacing: 2em;
-}
-
-.selected_file {
-    border-left: solid #605ca8;
 }
 
 .logout_wrapper {
@@ -291,3 +271,28 @@ tr.shown td.details-control:before {
     -moz-border-radius: 0px;
     background-image: none;
 }
+
+.file_cell {
+    float: left;
+    margin-right: 15px;
+    margin-top:10px;
+    min-height: 30px;
+    cursor: pointer;
+    min-width: 200px;
+    border-bottom: solid #dcdcdc;
+    border-width: 2px;
+}
+
+.selected_file {
+    border-bottom: solid #605ca8;
+}
+
+.sidebar_file_delete {
+    float: right;
+    visibility: hidden;
+}
+
+.file_cell:hover .sidebar_file_delete {
+    visibility: visible;
+}
+

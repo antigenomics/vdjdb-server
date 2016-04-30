@@ -3,7 +3,7 @@
 
     application.factory('sidebar', ['user', function(userInfo) {
         var user = userInfo.getUser();
-        var selectedFile = '';
+        var selectedFileUID = -1;
 
         function files() {
             return user.files;
@@ -15,28 +15,30 @@
 
         function deleteFile(file) {
             userInfo.deleteFile(file);
-            if (file === selectedFile) selectedFile = '';
+            if (file.uid === selectedFileUID) selectedFileUID = -1;
+            //selectedFileUID = -1;
         }
 
         function deleteAllFiles() {
             userInfo.deleteAllFiles();
-            selectedFile = '';
+            selectedFileUID = -1;
         }
 
         function select(file) {
-            selectedFile = file;
+            selectedFileUID = file.uid;
         }
 
         function getSelectedFile() {
-            return selectedFile;
+            if (selectedFileUID < 0) return null;
+            return user.files[selectedFileUID];
         }
 
         function isFileSelected() {
-            return selectedFile !== '';
+            return selectedFileUID >= 0;
         }
 
         function isFile(file) {
-            return selectedFile === file;
+            return selectedFileUID === file.uid;
         }
 
         return {
@@ -261,8 +263,8 @@ function intersectResultsTable(data, file) {
                             value = ''
                         }
                     }
-                    var columnHeader = '<text data-trigger="hover" data-toggle="popover" data-placement="top" data-content="Column description placeholder">' +
-                        meta.title +  '</text>';
+                    var columnHeader = '<text data-trigger="hover" data-toggle="popover" data-placement="top" data-content="' + meta['comment'] + '">' +
+                        meta['title'] +  '</text>';
                     thRow += '<th>' + columnHeader + '</th>';
                     tdRow += '<td>' + value + '</td>'
                 }

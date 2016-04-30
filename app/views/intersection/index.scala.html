@@ -1,4 +1,3 @@
-@import server.Configuration
 @main("VDJdb: annotations") {
 
     <script src="@routes.Assets.at("javascripts/blockpage.js")" type="text/javascript"></script>
@@ -10,112 +9,8 @@
         <block></block>
         <div class="container-fluid">
             <div class="row">
-                <sidebar class="col-md-2 col-lg-2">
-                    <div class="box box-solid flat">
-                        <div class="box-header with-border">
-                            <h4>Samples</h4>
-                        </div>
-                        <div class="box-body">
-                            <p ng-if="!isFilesExist()">You have no samples uploaded..</p>
-                            <table class="table" ng-if="isFilesExist()">
-                                <tbody>
-                                    <tr ng-repeat="file in files()" class="sidebar_file_td">
-                                        <td ng-class="{'selected_file':isFile(file)}" width="90%" ng-click="select(file)">{{ ::file.nameWithoutExt }}</td>
-                                        <td><i class="fa fa-trash sidebar_file_delete" ng-click="deleteFile(file)"></i></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="box-footer" ng-if="isFilesExist()">
-                            <a class="btn btn-sm btn-flat bg-purple" href="@routes.IntersectionAPI.uploadPage()">Upload</a>
-                            <button class="btn btn-sm btn-flat bg-purple pull-right" ng-click="deleteAllFiles()">Delete all</button>
-                        </div>
-                    </div>
-                    @if(Configuration.allowGitRequest) {
-                        <div class="box box-solid flat">
-                            <div class="box-body">
-                                <a href="@routes.IntersectionAPI.pushDBPage()" class="btn btn-sm btn-flat bg-purple">
-                                    Add file to database</a>
-                            </div>
-                        </div>
-                    }
-                    <div class="box box-solid flat">
-                        <div class="box-body">
-                            <a href="/logout" class="btn btn-default btn-sm btn-flat"><i class="fa fa-sign-out"></i>Logout</a>
-                        </div>
-                    </div>
-                </sidebar>
-                <intersection class="col-md-10 col-lg-10">
-                    <div class="box box-solid flat">
-                        <div ng-if="isFileSelected()" class="box-header with-border">
-                        <h4>Search parameters</h4>
-                        </div>
-                        <div class="box-body">
-                            <p ng-if="!isFileSelected()">Select a sample to annotate..</p>
-                            <div ng-if="isFileSelected()">
-                                <div class="col-lg-2">
-                                    <div class="form-group">
-                                        <label for="parameters_maxMismatches">Max substitutions</label>
-                                        <input type="number" class="form-control" id="parameters_maxMismatches" ng-model="parameters.maxMismatches">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2">
-                                    <div class="form-group">
-                                        <label for="parameters_maxInsertions">Max insertions</label>
-                                        <input type="number" class="form-control" id="parameters_maxInsertions" ng-model="parameters.maxInsertions">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2">
-                                    <div class="form-group">
-                                        <label for="parameters_maxDeletions">Max deletions</label>
-                                        <input type="number" class="form-control" id="parameters_maxDeletions" ng-model="parameters.maxDeletions">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2">
-                                    <div class="form-group">
-                                        <label for="parameters_maxMutations">Max mutations</label>
-                                        <input type="number" class="form-control" id="parameters_maxMutations" ng-model="parameters.maxMutations">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" ng-model="parameters.matchV"> Require V match
-                                        </label>
-                                    </div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" ng-model="parameters.matchJ"> Require J match
-                                        </label>
-                                    </div>
-                                </div>
-                                <br>
-                                <div class="col-lg-12">
-                                    <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect()">Annotate</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="box box-solid flat" ng-show="isFileSelected()">
-                        <div class="box-header" ng-if="isLoading()">
-                            <div class="spinner">
-                                <div class="cube1"></div>
-                                <div class="cube2"></div>
-                            </div>
-                        </div>
-                        <div class="box-body" ng-hide="isLoading()">
-                            <div ng-repeat="file in files()" ng-show="isFile(file)">
-                                <p ng-hide="isLoaded(file)">Click annotate button to start</p>
-                                <div class="table-responsive">
-                                <table class="table" id="intersect_report_table_{{ ::file.uid }}" cellspacing="0" width="100%" ng-show="isLoaded(file)">
-
-                                </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </intersection>
-
+                @views.html.intersection.files()
+                @views.html.intersection.results()
             </div>
         </div>
     </div>

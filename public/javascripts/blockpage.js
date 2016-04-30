@@ -43,7 +43,7 @@
         return {
             restrict: 'E',
             template:
-            '<div class="block-page" ng-show="isBlocked()">' +
+            '<div class="block-page" ng-if="isBlocked()">' +
                 '<div class="background"></div>' +
                 '<div class="info">' +
                     '<div class="text-info">' +

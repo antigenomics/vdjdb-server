@@ -1,0 +1,33 @@
+@import server.Configuration
+
+<sidebar class="col-md-12">
+    <div class="box box-solid flat">
+        <div class="box-header with-border">
+            <h4>Samples</h4>
+        </div>
+        <div class="box-body">
+            <p ng-if="!isFilesExist()">You have no samples uploaded..</p>
+            <div class="file_cell" ng-repeat="file in files()" ng-class="{'selected_file':isFile(file)}" ng-click="select(file)">
+                {{ ::file.nameWithoutExt }}
+                <i class="fa fa-trash sidebar_file_delete" ng-click="deleteFile(file); $event.stopPropagation();"></i>
+            </div>
+        </div>
+        <div class="box-footer">
+            <a class="btn btn-sm btn-flat bg-purple" href="@routes.IntersectionAPI.uploadPage()">Upload</a>
+            <button class="btn btn-sm btn-flat bg-purple pull-right" ng-click="deleteAllFiles()" ng-if="isFilesExist()">Delete all</button>
+        </div>
+    </div>
+    @if(Configuration.allowGitRequest) {
+        <div class="box box-solid flat">
+            <div class="box-body">
+                <a href="@routes.IntersectionAPI.pushDBPage()" class="btn btn-sm btn-flat bg-purple">
+                    Add file to database</a>
+            </div>
+        </div>
+    }
+    @*<div class="box box-solid flat">
+        <div class="box-body">
+            <a href="/logout" class="btn btn-default btn-sm btn-flat"><i class="fa fa-sign-out"></i>Logout</a>
+        </div>
+    </div>*@
+</sidebar>
