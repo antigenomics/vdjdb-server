@@ -244,12 +244,14 @@ function intersectResultsTable(data, file) {
                             });
                             var color_i = 'black';
                             if (meta['name'] === 'cdr3fix') {
-                                if (comment['fixNeeded'] === false) {
-                                    color_i = '#00a65a';
-                                } else if (comment['good'] === true) {
-                                    color_i = '#f39c12'
+                                if (comment['fixNeeded'] === false && comment['good'] === true) {
+                                    color_i = '#1a9641';
+                                } else if (comment['fixNeeded'] === false && comment['good'] === false) {
+                                    color_i = '#fdae61'
+                                } else if (comment['fixNeeded'] === true && comment['good'] === true) {
+                                    color_i = '#a6d96a'
                                 } else {
-                                    color_i = '#dd4b39'
+                                    color_i = '#d7191c'
                                 }
                             }
                             value = '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control" tab-index="0" ' +

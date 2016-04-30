@@ -16,6 +16,7 @@
 
     <div ng-app="searchPage" class="wrapper">
         <div class="container-fluid">
+                    @views.html.search.description()
             <filters class="row">
                 <div class="col-md-12" ng-if="!isLoaded()">
                     @views.html.search.loadingFilters()

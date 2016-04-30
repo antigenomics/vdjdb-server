@@ -16,8 +16,8 @@ import utils.SynchronizedAccess
   * Created by bvdmitri on 16.03.16.
   */
 object GlobalDatabase extends SynchronizedAccess {
-  private var db : Synchronized[VdjdbInstance] = Synchronized(new VdjdbInstance(new FileInputStream("/Users/bvdmitri/vdjdb.meta.txt"),
-                                                                                new FileInputStream("/Users/bvdmitri/vdjdb.txt")))
+  private var db : Synchronized[VdjdbInstance] = Synchronized(new VdjdbInstance(new FileInputStream("database/vdjdb.meta.txt"),
+                                                                                new FileInputStream("database/vdjdb.txt")))
 
   def search(textFilters : util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter]) =
     synchronizeRead { implicit lock =>

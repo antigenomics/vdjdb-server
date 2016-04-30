@@ -22,10 +22,10 @@
                 <div class="row">
                     <div class="box box-solid flat">
                         <div class="box-header with-border">
-                            Upload your files here
+                            Upload RepSeq samples
                         </div>
                         <div class="box-body text-center">
-                            <p ng-if="!isNewFilesExists()">Click 'Add file' button to start</p>
+                            <p ng-if="!isNewFilesExists()">No files to upload..</p>
                             <table class="table" ng-if="isNewFilesExists()">
                                 <thead>
                                     <tr>
@@ -40,7 +40,7 @@
                                         <td></td>
                                         <td ng-click="commonSoftwareType()">
                                             <select class="dropdown" id="commonSoftwareType" name="commonSoftwareId">
-                                                <option>Please select software type:</option>
+                                                <option>Select software type for all uploads</option>
                                                 <option ng-repeat="software in softwareTypes" value="{{ software.dbName }}">{{ software.clientName }}</option>
                                             </select>
                                         </td>
@@ -56,7 +56,7 @@
                                         <td width="30%">
                                             <div ng-show="isWaitForUpload(file)">
                                             <select class="dropdown" id="software_file_{{ file.uid }}" name="fileSoftwareId">
-                                                <option>Please select software type:</option>
+                                                <option>Select software type</option>
                                                 <option ng-repeat="software in softwareTypes" value="{{ software.dbName }}">{{ software.clientName }}</option>
                                             </select>
                                             </div>
@@ -78,7 +78,7 @@
                             </table>
                         </div>
                         <div class="box-footer">
-                            <button class="btn btn-flat bg-purple btn-sm" ng-click="addNewButtonClick()">Add file</button>
+                            <button class="btn btn-flat bg-purple btn-sm" ng-click="addNewButtonClick()">Choose file(s)</button>
                             <button class="btn btn-red pull-right bg-purple btn-sm" ng-click="uploadAll()" ng-show="isWaitingExists()">Upload all</button>
                             <form id="fileupload" method="POST" action="" enctype="multipart/form-data" class="hidden_fileupload_form">
                                 <input type="file" name="file" multiple/>
@@ -87,7 +87,7 @@
                     </div>
                     <div class="box box-solid flat">
                         <div class="box-body">
-                            <a href="@routes.IntersectionAPI.index()">Go to annotations page</a>
+                            <a href="@routes.IntersectionAPI.index()">Back to annotation page</a>
                         </div>
                     </div>
                 </div>

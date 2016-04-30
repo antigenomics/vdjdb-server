@@ -1,13 +1,76 @@
+@main("VDJdb: main") {
+@views.html.navbar()
 
-    @main("VDJdb: main") {
-        @views.html.navbar()
-        <div class="wrapper">
-        <div class="col-md-12 col-lg-12">
-            <div class="panel panel-solid">
-                <div class="panel-body text-center">
-                    <h3>Main page</h3>
+<div class="wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3">
+                <div class="panel panel-default">
+                    <div class="panel-heading text-center">
+                        <h3>VDJdb browser</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>The web application you are viewing right now has two major capabilities:
+                        <ul class="list-group">
+                            <li class="list-group-item"><span class="badge">1</span> Browsing, filtering and querying
+                                the VDJdb, a curated database
+                                of T-cell
+                                receptor (TCR) antigen specificities.
+                            </li>
+                            <li class="list-group-item"><span class="badge">2</span> Functional annotation of immune
+                                repertoire sequencing (RepSeq)
+                                datasets, more
+                                specifically, TCR alpha and beta repertoires.
+                            </li>
+                        </ul>
+                        </p>
+                        <p>Click on the corresponding item of the menu at the top of this page to proceed.</p>
+                        <img class="img-thumbnail" src="@routes.Assets.at("images/browser-splash.png")" alt="splash">
+                    </div>
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3">
+                <div class="panel panel-default">
+                    <div class="panel-heading text-center">
+                        <h3>VDJdb</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            The primary goal of VDJdb is to facilitate access to existing information on T-cell receptor
+                            antigen specificities, i.e. the ability to recognize certain epitopes in certain MHC
+                            contexts.
+
+                            Our mission is to both aggregate the scarce TCR specificity information available so far and
+                            to create a curated repository to store such data.
+                        </p>
+
+                        <p>
+                            In addition to routine database updates providing the most up-to-date information, we make
+                            our best to ensure
+                            data consistency and fight irregularities in TCR specificity reporting with a complex
+                            database validation scheme:
+                        <ul class="list-group">
+                            <li class="list-group-item">We take into account all available information on experimental
+                                setup used to
+                                identify antigen-specific TCR sequences and assign a single confidence score to highligh
+                                most reliable
+                                records at the database generation stage.
+                            </li>
+                            <li class="list-group-item">Each database record is also automatically checked against a
+                                database of V/J segment
+                                germline sequences
+                                to ensure standardized and consistent reporting of V-J junctions and CDR3 sequences that
+                                define T-cell clones.
+                            </li>
+                        </ul>
+                        </p>
+                        <img class="img-thumbnail" src="@routes.Assets.at("images/vdjdb-splash.png")" alt="splash">
+                    </div>
+                </div>
+            </div>
         </div>
-    }
+    </div>
+</div>
+}
