@@ -2,7 +2,6 @@ package controllers
 
 import java.io.{File, PrintWriter}
 
-import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
 import models.auth.User

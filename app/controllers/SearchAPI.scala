@@ -3,7 +3,6 @@ package controllers
 
 import java.util
 
-import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
