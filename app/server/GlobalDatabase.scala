@@ -26,7 +26,7 @@ object GlobalDatabase extends SynchronizedAccess {
 
   def intersect(sample: Sample, parameters: IntersectParametersRequest) =
     synchronizeRead { implicit lock =>
-      val clonotypeDatabase = db().asClonotypeDatabase(parameters.matchV, parameters.matchV,
+      val clonotypeDatabase = db().asClonotypeDatabase(parameters.matchV, parameters.matchJ,
         parameters.maxMismatches, parameters.maxInsertions, parameters.maxDeletions, parameters.maxMutations)
       clonotypeDatabase.search(sample)
     }

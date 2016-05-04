@@ -323,31 +323,32 @@
             restrict: 'E',
             controller: ['$scope', '$sce', '$log', 'SearchDatabaseAPI', 'notify', function ($scope, $sce, $log, SearchDatabaseAPI, notify) {
 
-                var loading = false;
+                var loadingRef = {
+                    val: false
+                };
                 var search = false;
                 var found = false;
                 var dataTable = null;
 
 
                 $scope.search = function () {
-                    if (!loading) {
+                    if (!loadingRef.val) {
                         search = true;
-                        loading = true;
+                        loadingRef.val = true;
                         found = true;
                         var searchPromise = SearchDatabaseAPI.search();
                         searchPromise.then(function (searchResults) {
                             if (searchResults.data.results.length > 0) {
                                 if (dataTable != null) dataTable.destroy();
-                                dataTable = searchResultsTable(searchResults.data);
+                                dataTable = searchResultsTable(searchResults.data, loadingRef);
                                 angular.forEach(searchResults.data.warnings, function(warning) {
                                     notify.info('Search', warning);
                                 })
                             } else {
                                 found = false;
                             }
-                            loading = false;
                         }, function(error) {
-                            loading = false;
+                            loadingRef.val = false;
                             notify.error('Search', error.data.message);
                         })
                     } else {
@@ -360,14 +361,14 @@
                 };
 
                 $scope.isLoading = function () {
-                    return loading;
+                    return loadingRef.val;
                 };
 
                 $scope.isSearch = function () {
                     return search;
                 };
 
-                function searchResultsTable(data) {
+                function searchResultsTable(data, loadingRef) {
                     var results = [];
                     angular.forEach(data.results, function (searchResult) {
                         var entries = [];
@@ -392,7 +393,6 @@
                             }())
                         })
                     });
-
                     var dataTable = $('#results-table').DataTable({
                         data: results,
                         columns: columns,
@@ -415,6 +415,29 @@
                                 render: function(data, type, row) {
                                     var value = data.value;
                                     var dataType = data.meta['data.type'];
+                                    if (data.meta.name === 'cdr3') {
+                                        var cdr3fix = JSON.parse(row[row.length - 2].value);
+                                        var vend = cdr3fix['vEnd'];
+                                        var jstart = cdr3fix['jStart'];
+                                        if (vend <= 0 && jstart <= 0) return value;
+                                        var vRegion = '', jRegion = '', otherRegion = '';
+                                        if (vend > 0 && jstart <= 0) {
+                                            vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
+                                            otherRegion = value.substring(vend, value.length);
+                                            return vRegion + otherRegion
+                                        }
+                                        if (vend <= 0 && jstart > 0) {
+                                            jRegion = '<text style="color: #377eb8">' + value.substring(jstart - 1, value.length) + '</text>';
+                                            otherRegion = value.substring(0, jstart - 1);
+                                            return otherRegion + jRegion;
+                                        }
+                                        if (vend > 0 && jstart > 0) {
+                                            vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
+                                            otherRegion = value.substring(vend, jstart - 1);
+                                            jRegion = '<text style="color: #377eb8">' + value.substring(jstart - 1, value.length) + '</text>';
+                                            return vRegion + otherRegion + jRegion;
+                                        }
+                                    }
                                     if (dataType === 'url') {
                                         if (value.indexOf('PMID') >= 0) {
                                             var id = value.substring(5, value.length);
@@ -469,6 +492,7 @@
                                 container: 'body',
                                 html: true
                             });
+                            loadingRef.val = false;
                         }
                     });
 
