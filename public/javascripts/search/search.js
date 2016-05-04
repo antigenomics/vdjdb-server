@@ -47,6 +47,13 @@
 
         var textFiltersColumns = [];
         var sequenceFiltersColumns = [];
+
+        var textFiltersTypes = Object.freeze([
+            { name: 'substring', title: 'Substring', allowNegative: true},
+            { name: 'exact', title: 'Exact', allowNegative: true},
+            { name: 'pattern', title: 'Pattern', allowNegative: true},
+            { name: 'level', title: 'Level', allowNegative: false}
+        ]);
         
         $http.get('/search/columns')
             .success(function(columnsInfo) {
@@ -67,7 +74,12 @@
                                     return column.metadata['data.type'] !== 'uint';
                                 }()),
                                 autocomplete: columnInfo.autocomplete,
-                                values: columnInfo.values
+                                values: columnInfo.values,
+                                defaultFilterType: (function() {
+                                    if (column.metadata['data.type'] === 'uint')
+                                        return textFiltersTypes[3];
+                                    return textFiltersTypes[1];
+                                }())
                             })
                         } else if (column.metadata.type === 'seq') {
                             textFiltersColumns.push({
@@ -76,7 +88,8 @@
                                 types: [0, 1, 2],
                                 allowNegative: true,
                                 autocomplete: false,
-                                values: []
+                                values: [],
+                                defaultFilterType: textFiltersTypes[1]
                             });
                             sequenceFiltersColumns.push({
                                 name: column.name,
@@ -99,12 +112,7 @@
             });
 
 
-        var textFiltersTypes = Object.freeze([
-            { name: 'substring', title: 'Substring', allowNegative: true},
-            { name: 'exact', title: 'Exact', allowNegative: true},
-            { name: 'pattern', title: 'Pattern', allowNegative: true},
-            { name: 'level', title: 'Level', allowNegative: false}
-        ]);
+
 
         function pickFiltersSelectData() {
             angular.forEach(textFilters, function (filter) {
@@ -146,7 +154,8 @@
                     negative: false,
                     allowNegative: true,
                     types: [0, 1, 2, 3],
-                    initialized: false
+                    initialized: false,
+                    defaultFilterType: textFiltersTypes[1]
                 });
             }
         }
@@ -163,7 +172,8 @@
                 negative: f.negative,
                 allowNegative: f.allowNegative,
                 types: f.types,
-                initialized: f.initialized
+                initialized: f.initialized,
+                defaultFilterType: f.defaultFilterType
             };
             textFilters.push(new_f);
             return new_f;
@@ -296,9 +306,14 @@
                                         filter.columnId = column.name;
                                         filter.columnTitle = column.title;
                                         filter.allowNegative = column.allowNegative;
+                                        filter.defaultFilterType = column.defaultFilterType;
                                         filter.initialized = true;
                                         //todo not working ?
-                                        if (column.allowNegative === false) filter.negative = true;
+                                        if (column.allowNegative === false) {
+                                            filter.negative = true;
+                                        } else {
+                                            filter.negative = false;
+                                        }
                                         var new_f = filters.copyFilter(filter);
                                         filterId = new_f.filterId;
                                     }
@@ -346,6 +361,7 @@
                                 })
                             } else {
                                 found = false;
+                                loadingRef.val = false;
                             }
                         }, function(error) {
                             loadingRef.val = false;

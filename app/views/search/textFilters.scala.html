@@ -22,7 +22,7 @@
                         <input id="input_{{ ::filter.filterId }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
                     </td>
                     <td width="30%">
-                        <select class="dropdown" id="{{ ::filter.filterId }}" name="filterType">
+                        <select class="dropdown" id="{{ ::filter.filterId }}" name="filterType" import="{{ filter.defaultFilterType.name }}" title="{{ filter.defaultFilterType.title }}">
                             <option>Please select filter type:</option>
                             <option ng-repeat="type in filter.types" value="{{ ::textFiltersTypes[type].name }}">{{ ::textFiltersTypes[type].title }}</option>
                         </select>
