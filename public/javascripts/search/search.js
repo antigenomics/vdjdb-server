@@ -183,7 +183,7 @@
                                             var text = "";
                                             var color_i = 'black';
                                             angular.forEach(Object.keys(comment).sort(), function (propertyName) {
-                                                if (value !== "")
+                                                if (comment[propertyName] !== "")
                                                     text += '<p>' + propertyName + ' : ' + comment[propertyName] + '</p>';
                                             });
                                             if (data.meta['name'] === 'cdr3fix') {
@@ -212,11 +212,14 @@
                             $('[data-toggle="popover"]').popover({
                                 container: 'body',
                                 html: true
-                            }).on('click', function() {
-                                var content = $(this).attr('data-content');
-                                content = content.replace(/<p>/gm, " ");
-                                content = content.replace(/(<([^>]+)>)/ig, "\n");
-                                alert(content);
+                            }).on('click', function(e) {
+                                if ($(this).prop("tagName") === 'I') {
+                                    var content = $(this).attr('data-content');
+                                    content = content.replace(/<p>/gm, " ");
+                                    content = content.replace(/(<([^>]+)>)/ig, "\n");
+                                    alert(content);
+                                }
+                                e.preventDefault();
                             });
                             loadingRef.val = false;
                         }

@@ -279,6 +279,11 @@ function intersectResultsTable(data, file) {
                         try {
                             var comment = JSON.parse(value);
                             var text = "";
+                            
+                            angular.forEach(Object.keys(comment).sort(), function (propertyName) {
+                                if (comment[propertyName] !== "")
+                                    text += '<p>' + propertyName + ' : ' + comment[propertyName] + '</p>';
+                            });
                             angular.forEach(comment, function (value, key) {
                                 if (value !== "")
                                     text += '<p>' + key + ' : ' + value + '</p>';
@@ -350,6 +355,15 @@ function intersectResultsTable(data, file) {
             $('[data-toggle="popover"]').popover({
                 container: 'body',
                 html: true
+            }).on('click', function(e) {
+                if ($(this).prop("tagName") === 'I') {
+                    var content = $(this).attr('data-content');
+                    content = content.replace(/<p>/gm, " ");
+                    content = content.replace(/(<([^>]+)>)/ig, "\n");
+                    alert(content);
+                }
+                e.preventDefault();
+
             });
         }
     } );
