@@ -76,6 +76,42 @@
         var loading = false;
         var loaded = [];
 
+        filters.copyFilter({
+            columnId: 'antigen.species',
+            columnTitle: 'Antigen.Species',
+            value: 'HomoSapiens',
+            filterType: 'exact',
+            negative: false,
+            allowNegative: true,
+            types: [0, 1, 2],
+            initialized: true,
+            defaultFilterType: filters.getDefaultFilterTypes()[1]
+        });
+
+        filters.copyFilter({
+            columnId: 'gene',
+            columnTitle: 'Gene',
+            value: 'TRB',
+            filterType: 'exact',
+            negative: false,
+            allowNegative: true,
+            types: [0, 1, 2],
+            initialized: true,
+            defaultFilterType: filters.getDefaultFilterTypes()[1]
+        });
+
+        filters.copyFilter({
+            columnId: 'vdjdb.score',
+            columnTitle: 'score',
+            value: '2',
+            filterType: 'exact',
+            negative: false,
+            allowNegative: false,
+            types: [3],
+            initialized: true,
+            defaultFilterType: filters.getDefaultFilterTypes()[3]
+        });
+
         function isFileLoaded(file) {
             return loaded.indexOf(file.uid) >= 0;
         }
@@ -88,6 +124,7 @@
             if (sidebar.isFileSelected()) {
                 var file = sidebar.getSelectedFile();
                 loading = true;
+                filters.pickFiltersSelectData();
                 $http.post('/intersection', { fileName: file.fileName, parameters: parameters, filters: {
                     textFilters: filters.getTextFilters(), sequenceFilters: filters.getSequenceFilters()
                 }})

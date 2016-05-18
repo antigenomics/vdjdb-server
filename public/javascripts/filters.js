@@ -198,6 +198,10 @@
             textFilters[id].types = types;
         }
 
+        function getDefaultFilterTypes() {
+            return textFiltersTypes;
+        }
+
         return {
             getTextFiltersColumns: getTextFiltersColumns,
             getTextFiltersTypes: getTextFiltersTypes,
@@ -213,7 +217,8 @@
             isFiltersError: isFiltersError,
             changeFilterSearchTypes: changeFilterSearchTypes,
             copyFilter: copyFilter,
-            findFilter: findFilter
+            findFilter: findFilter,
+            getDefaultFilterTypes: getDefaultFilterTypes
         }
     }]);
 

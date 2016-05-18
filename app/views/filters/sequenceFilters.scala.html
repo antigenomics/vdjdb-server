@@ -24,16 +24,16 @@
                         <input class="form-control input-sm" type="text" placeholder="Query" ng-model="filter.query">
                     </td>
                     <td>
-                        <input class="form-control input-sm" type="number" placeholder="Insertions" ng-model="filter.insertions">
+                        <input class="form-control input-sm" type="number" min="0"  placeholder="Insertions" ng-model="filter.insertions">
                     </td>
                     <td>
-                        <input class="form-control input-sm" type="number" placeholder="Deletions" ng-model="filter.deletions">
+                        <input class="form-control input-sm" type="number" min="0" placeholder="Deletions" ng-model="filter.deletions">
                     </td>
                     <td>
-                        <input class="form-control input-sm" type="number" placeholder="Mutations" ng-model="filter.mutations">
+                        <input class="form-control input-sm" type="number" min="0" placeholder="Mutations" ng-model="filter.mutations">
                     </td>
                     <td>
-                        <input class="form-control input-sm" type="number" placeholder="Mismatches" ng-model="filter.mismatches">
+                        <input class="form-control input-sm" type="number" min="0" placeholder="Mismatches" ng-model="filter.mismatches">
                     </td>
                     <td width="5%">
                         <i class="fa fa-trash" ng-click="deleteSequenceFilter(filter)" style="cursor: pointer ;"></i>

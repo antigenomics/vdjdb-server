@@ -1,6 +1,7 @@
 package controllers
 
 import java.io.{File, PrintWriter}
+import java.util
 
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
@@ -16,6 +17,11 @@ import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
 import java.util.ArrayList
 
+import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
+import com.antigenomics.vdjdb.sequence.SequenceFilter
+import com.antigenomics.vdjdb.text._
+import com.antigenomics.vdjtools.sample.Clonotype
+import com.milaboratory.core.tree.TreeSearchParameters
 import controllers.SearchAPI.SearchRequest
 import models.file.{BranchFile, FileFinder, IntersectionFile, ServerFile}
 import org.eclipse.jgit.api.Git
@@ -62,13 +68,53 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
         } else {
           try {
+            val warnings : util.ArrayList[String] = new util.ArrayList[String]()
+            val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
+            val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
+            val columns = GlobalDatabase.getDatabase().getHeader
+            filters.textFilters.foreach(filter => {
+              if (columns.indexOf(filter.columnId) >= 0) {
+                filter.value match {
+                  case "" =>
+                    warnings.add("Text filter ignored for " +  filter.columnId + ": empty value field")
+                  case _ =>
+                    filter.filterType match {
+                      case "exact" => textFilters.add(new ExactTextFilter(filter.columnId, filter.value, filter.negative))
+                      case "pattern" => textFilters.add(new PatternTextFilter(filter.columnId, filter.value, filter.negative))
+                      case "substring" => textFilters.add(new SubstringTextFilter(filter.columnId, filter.value, filter.negative))
+                      case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
+                      case _ =>
+                        warnings.add("Text filter ignored for " + filter.columnId + ": please select filter type")
+                    }
+                }
+              } else {
+                warnings.add("Text filter ignored : please select column name")
+              }
+            })
+            filters.sequenceFilters.foreach(filter => {
+              filter.columnId match {
+                case "" =>
+                  warnings.add("Sequence filter ignored : please select column name")
+                case _  =>
+                  filter.query match {
+                    case "" =>
+                      warnings.add("Sequence filter ignored for " + filter.columnId + ": empty query field")
+                    case _ =>
+                      val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations)
+                      sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
+                  }
+              }
+            })
             val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
-            val results = GlobalDatabase.intersect(sample, parameters)
+            val results = GlobalDatabase.intersect(sample, parameters, textFilters, sequenceFilters)
             val convertedResults : ArrayList[IntersectResult] = new ArrayList[IntersectResult]()
-            results.keySet().toList.foreach(clonotype => {
-              convertedResults.add(new IntersectResult(clonotype, results.get(clonotype)))
-            })
+            if (results != null) {
+              results.keySet().toList.foreach(clonotype => {
+                convertedResults.add(new IntersectResult(clonotype, results.get(clonotype)))
+              })
+            }
+
             sendJson(convertedResults)
           } catch {
             case e: Exception =>
