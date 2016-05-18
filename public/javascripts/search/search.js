@@ -212,6 +212,11 @@
                             $('[data-toggle="popover"]').popover({
                                 container: 'body',
                                 html: true
+                            }).on('click', function() {
+                                var content = $(this).attr('data-content');
+                                content = content.replace(/<p>/gm, " ");
+                                content = content.replace(/(<([^>]+)>)/ig, "\n");
+                                alert(content);
                             });
                             loadingRef.val = false;
                         }
