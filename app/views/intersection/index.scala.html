@@ -2,7 +2,12 @@
 
     <script src="@routes.Assets.at("javascripts/blockpage.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/user.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/filters.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/intersection/intersection.js")" type="text/javascript"></script>
+
+        <!-- Select styling -->
+    <script src="@routes.Assets.at("lib/select/js/select.js")" type="text/javascript"></script>
+    <link href="@routes.Assets.at("lib/select/css/style.css")" rel="stylesheet">
 
     @navbar()
     <div class="wrapper" ng-app="intersectionPage">
@@ -10,6 +15,7 @@
         <div class="container-fluid">
             <div class="row">
                 @views.html.intersection.files()
+                @views.html.filters.filters()
                 @views.html.intersection.results()
             </div>
         </div>

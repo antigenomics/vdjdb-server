@@ -16,6 +16,7 @@ import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
 import java.util.ArrayList
 
+import controllers.SearchAPI.SearchRequest
 import models.file.{BranchFile, FileFinder, IntersectionFile, ServerFile}
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
@@ -45,7 +46,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     sendJson(user)
   }
 
-  case class IntersectRequest(fileName: String, parameters: IntersectParametersRequest)
+  case class IntersectRequest(fileName: String, parameters: IntersectParametersRequest, filters: SearchRequest)
   case class IntersectParametersRequest(matchV: Boolean, matchJ: Boolean, maxMismatches: Int, maxInsertions: Int, maxDeletions: Int, maxMutations: Int)
 
   implicit val intersectParametersRequestRead = Json.reads[IntersectParametersRequest]
@@ -54,7 +55,8 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
   def intersect = SecuredAction(parse.json) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     request.body.validate[IntersectRequest].map {
-      case IntersectRequest(fileName, parameters) =>
+      case IntersectRequest(fileName, parameters, filters) =>
+        println(filters)
         val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
         if (file == null) {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))

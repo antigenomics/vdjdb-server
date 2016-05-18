@@ -1,5 +1,5 @@
 (function() {
-    var application = angular.module('intersectionPage', ['user', 'notifications']);
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters']);
 
     application.factory('sidebar', ['user', function(userInfo) {
         var user = userInfo.getUser();
@@ -71,12 +71,12 @@
         }
     });
 
-    application.factory('intersection', ['$http', 'sidebar', 'notify', function($http, sidebar, notify) {
+    application.factory('intersection', ['$http', 'sidebar', 'notify', 'filters', function($http, sidebar, notify, filters) {
 
         var loading = false;
         var loaded = [];
 
-        function isLoaded(file) {
+        function isFileLoaded(file) {
             return loaded.indexOf(file.uid) >= 0;
         }
 
@@ -88,7 +88,9 @@
             if (sidebar.isFileSelected()) {
                 var file = sidebar.getSelectedFile();
                 loading = true;
-                $http.post('/intersection', { fileName: file.fileName, parameters: parameters })
+                $http.post('/intersection', { fileName: file.fileName, parameters: parameters, filters: {
+                    textFilters: filters.getTextFilters(), sequenceFilters: filters.getSequenceFilters()
+                }})
                     .success(function(data) {
                         intersectResultsTable(data, file);
                         loaded.push(file.uid);
@@ -102,14 +104,14 @@
             }
         }
 
-        function isLoading() {
+        function isFileLoading() {
             return loading;
         }
 
         return {
             intersect: intersect,
-            isLoading: isLoading,
-            isLoaded: isLoaded
+            isFileLoading: isFileLoading,
+            isFileLoaded: isFileLoaded
         }
     }]);
 
@@ -133,8 +135,8 @@
                 $scope.intersect = function() {
                     intersection.intersect($scope.parameters);
                 };
-                $scope.isLoading = intersection.isLoading;
-                $scope.isLoaded = intersection.isLoaded;
+                $scope.isFileLoading = intersection.isFileLoading;
+                $scope.isFileLoaded = intersection.isFileLoaded;
 
 
             }]

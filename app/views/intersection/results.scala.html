@@ -50,17 +50,17 @@
         </div>
     </div>
     <div class="box box-solid flat" ng-show="isFileSelected()">
-        <div class="box-header" ng-if="isLoading()">
+        <div class="box-header" ng-if="isFileLoading()">
             <div class="spinner">
                 <div class="cube1"></div>
                 <div class="cube2"></div>
             </div>
         </div>
-        <div class="box-body" ng-hide="isLoading()">
+        <div class="box-body" ng-hide="isFileLoading()">
             <div ng-repeat="file in files()" ng-show="isFile(file)">
-                <p ng-hide="isLoaded(file)">Click annotate button to start</p>
+                <p ng-hide="isFileLoaded(file)">Click annotate button to start</p>
                 <div class="table-responsive">
-                    <table class="table" id="intersect_report_table_{{ ::file.uid }}" cellspacing="0" width="100%" ng-show="isLoaded(file)"></table>
+                    <table class="table" id="intersect_report_table_{{ ::file.uid }}" cellspacing="0" width="100%" ng-show="isFileLoaded(file)"></table>
                 </div>
             </div>
         </div>

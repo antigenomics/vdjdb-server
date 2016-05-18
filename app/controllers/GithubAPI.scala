@@ -15,7 +15,7 @@ import utils.CommonUtils
 object GithubAPI {
     private val REPO_URL: String = "https://github.com/bvdmitri/git-test"
     private val TMP_DIRECTORY: String = "/tmp/"
-    private val GITHUB_TOKEN: String = "secret"
+    private val GITHUB_TOKEN: String = "c9fbf87b47ba4f73b4ae5512c435e4a693f26a53"
 
     def createBranch(user: User, file: File, defbranchName: String, fileName: String): String = {
       val repoDirectory: String = TMP_DIRECTORY + CommonUtils.randomAlphaString(5)
