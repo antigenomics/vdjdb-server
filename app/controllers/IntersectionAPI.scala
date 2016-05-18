@@ -2,6 +2,11 @@ package controllers
 
 import java.io.{File, PrintWriter}
 import java.util
+import play.api.{Play}
+import scala.concurrent.duration._
+import play.api.libs.concurrent.Execution.Implicits._
+
+import scala.concurrent.Future
 
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
@@ -11,7 +16,7 @@ import server.wrappers.IntersectResult
 
 import scala.collection.JavaConversions._
 import play.api.mvc._
-import server.{Configuration, GlobalDatabase, ServerResponse}
+import server.{Configuration, GlobalDatabase, ServerLogger, ServerResponse}
 import utils.CommonUtils
 import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
@@ -28,6 +33,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import play.api.libs.concurrent.Akka
 
 object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
@@ -176,6 +182,17 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               val software = Software.byName(defSoftwareType)
               val newFile = new IntersectionFile(user, fileName, uniqueName, fileDirectoryPath, filePath, software)
               newFile.save()
+              if (Configuration.deleteAfter > 0) {
+                Akka.system(Play.application).scheduler.scheduleOnce(Configuration.deleteAfter hours, new Runnable {
+                  override def run(): Unit = {
+                    val id = newFile.getUniqueName
+                    val file = new FileFinder(classOf[IntersectionFile]).findByUniqueNameAndUser(user, uniqueName);
+                    if (file != null) {
+                      ServerFile.deleteFile(file)
+                    }
+                  }
+                })
+              }
               Ok(toJson(ServerResponse("Success")))
             }
           }

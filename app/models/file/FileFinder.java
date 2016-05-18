@@ -23,4 +23,8 @@ public class FileFinder<T extends Model> {
         return find().where().eq("user", user).eq("fileName", fileName).findUnique();
     }
 
+    public T findByUniqueNameAndUser(User user, String uniqueName) {
+        return find().where().eq("user", user).eq("uniqueName", uniqueName).findUnique();
+    }
+
 }

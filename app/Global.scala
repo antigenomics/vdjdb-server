@@ -17,8 +17,10 @@ import scala.concurrent.Future
 object Global extends GlobalSettings {
   override def onStart(app: Application) : Unit = {
     ServerLogger.info("Application has started : trying to update the database")
-    //GlobalDatabase.update()
-    //updateDaemon(app)
+    GlobalDatabase.initDatabase()
+    if (server.Configuration.automaticDatabaseUpdate) {
+      updateDaemon(app)
+    }
   }
 
   override def onStop(app: Application) : Unit = {
@@ -38,4 +40,5 @@ object Global extends GlobalSettings {
       }
     })
   }
+
 }

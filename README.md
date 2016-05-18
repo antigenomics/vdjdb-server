@@ -9,7 +9,7 @@ After downloading unzip the package wherever you want, but please avoid long pat
 You can find the server executable in ``bin/`` directory. To set up the server:
 
 - Run `vdjdb.bat` file (Windows)
-- Run `bash vdjdb -Dconfig.file=../application.conf` in your console (Linux/Mac OS)
+- Run `bash vdjdb -Dconfig.file=../conf/application.conf` in your console (Linux/Mac OS)
 
 Wait until the server is started, and go to ``localhost:9000`` URL in your browser to open VDJviz.
 
@@ -37,6 +37,19 @@ Default: `0` (no limit)
 - ``maxFilesCount``
 Limit on the number of uploaded files per user.
 Default: ``0`` (no limit)
+
+- ``deleteAfter``
+Time period after which uploaded files are deleted from the server, in hours.
+Default: ``0`` (never)
+
+- ``automaticDatabaseUpdate``
+Default: ``true``
+
+- ``useLocalDatabase``
+Default: ``false``
+
+- ``databasePath``
+Default: ``~/database/``
 
 - ``db.default.url``
 Points to the path that will be used to store H2 database file.

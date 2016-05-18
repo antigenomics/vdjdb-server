@@ -21,6 +21,15 @@ object GlobalDatabase extends SynchronizedAccess {
   private var db : Synchronized[VdjdbInstance] = Synchronized(new VdjdbInstance(new FileInputStream("database/vdjdb.meta.txt"),
                                                                                 new FileInputStream("database/vdjdb.txt")))
 
+  def initDatabase(): Unit = {
+    if (Configuration.useLocalDatabase) {
+      db = Synchronized(new VdjdbInstance(new FileInputStream(Configuration.databasePath + "vdjdb.meta.txt"),
+        new FileInputStream(Configuration.databasePath + "vdjdb.txt")))
+    } else {
+      update()
+    }
+  }
+
   def search(textFilters : util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter]) =
     synchronizeRead { implicit lock =>
       db().getDbInstance.search(textFilters, sequenceFilters)
