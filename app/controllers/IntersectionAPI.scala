@@ -183,7 +183,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               val newFile = new IntersectionFile(user, fileName, uniqueName, fileDirectoryPath, filePath, software)
               newFile.save()
               if (Configuration.deleteAfter > 0) {
-                Akka.system(Play.application).scheduler.scheduleOnce(Configuration.deleteAfter hours, new Runnable {
+                Akka.system(play.api.Play.current).scheduler.scheduleOnce(Configuration.deleteAfter hours, new Runnable {
                   override def run(): Unit = {
                     val id = newFile.getUniqueName
                     val file = new FileFinder(classOf[IntersectionFile]).findByUniqueNameAndUser(user, uniqueName);

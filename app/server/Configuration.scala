@@ -14,6 +14,6 @@ object Configuration {
   def deleteAfter : Int = Play.current.configuration.getInt("deleteAfter").getOrElse(0)
   def automaticDatabaseUpdate : Boolean = Play.current.configuration.getBoolean("automaticDatabaseUpdate").getOrElse(true)
   def useLocalDatabase : Boolean = Play.current.configuration.getBoolean("useLocalDatabase").getOrElse(false)
-  def databasePath : String = Play.configuration.getString("databasePath").getOrElse("~/database/")
+  def databasePath : String = Play.current.configuration.getString("databasePath").getOrElse("~/database/")
 
 }
