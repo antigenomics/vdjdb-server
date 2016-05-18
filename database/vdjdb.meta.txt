@@ -1,0 +1,19 @@
+name	type	visible	searchable	data.type	title	comment
+complex.id	txt	0	0	complex.id	complex.id	TCR alpha and beta chain records having the same complex identifier belong to the same T-cell clone.
+gene	txt	1	1	factor	Gene	TCR chain: alpha or beta.
+cdr3	seq	1	1	cdr3	CDR3	TCR complementarity determining region 3 (CDR3) amino acid sequence.
+v.segm	txt	1	1	factor	V	TCR Variable segment identifier.
+d.segm	txt	1	0	factor	D	TCR Diversity segment identifier (beta chain only).
+j.segm	txt	1	1	factor	J	TCR Joining segment identifier.
+species	txt	1	1	factor	Species	Parent species of a given TCR.
+mhc.a	txt	1	1	factor	MHC.A	First MHC chain identifier.
+mhc.b	txt	1	1	factor	MHC.B	Second MHC chain identifier (set to beta2microglobulin for MHC class I).
+mhc.class	txt	1	1	factor	MHC.class	MHC class (I or II).
+antigen.epitope	seq	1	1	peptide	Antigen.Epitope	Amino acid sequence of the antigen peptide.
+antigen.gene	txt	1	1	factor	Antigen.Gene	Parent gene of the antigen peptide.
+antigen.species	txt	1	1	factor	Antigen.Species	Parent species of the antigen peptide.
+reference.id	txt	1	1	url	Reference	Pubmed reference / URL / or submitter details in case unpublished.
+method	txt	1	0	method.json	Method	Details on method used to assay TCR specificity.
+meta	txt	1	0	meta.json	Meta	Various meta-information: cell subset, donor status, etc.
+cdr3fix	txt	1	0	fixer.json	cdr3fix	Details on CDR3 sequence fixing (if applied) and consistency between V, J and reported CDR3 sequence.
+vdjdb.score	txt	1	1	uint	score	VDJdb confidence score, the higher is the score the more confidence we have in the antigen specificity annotation of a given TCR clonotype/clone. 0 score indicates that there are insufficient method details to draw any conclusion.

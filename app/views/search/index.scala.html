@@ -1,0 +1,45 @@
+@main("VDJdb: search") {
+
+    <script src="@routes.Assets.at("lib/jquery/jquery-ui.min.js")" type="text/javascript"></script>
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.structure.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.theme.min.css")" rel="stylesheet">
+
+    <!-- Select styling -->
+    <script src="@routes.Assets.at("lib/select/js/select.js")" type="text/javascript"></script>
+    <link href="@routes.Assets.at("lib/select/css/style.css")" rel="stylesheet">
+
+    <script src="@routes.Assets.at("javascripts/filters.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/search/search.js")" type="text/javascript"></script>
+
+
+    @views.html.navbar()
+
+    <div ng-app="searchPage" class="wrapper">
+        <div class="container-fluid">
+            @views.html.search.description()
+            @views.html.filters.filters()
+            <search class="row" ng-hide="isFiltersError() || !isFiltersLoaded()">
+                <div class="col-md-12">
+                    <div class="box box-solid">
+                        <div class="box-header with-border">
+                            <button class="btn bg-purple btn-flat" ng-click="search()">Search</button>
+                        </div>
+                        <div class="box-body text-center" ng-if="isSearch()">
+                            <p ng-if="!isSearchResultsFound() && !isSearchResultsLoading()">No results found</p>
+                            <div class="spinner" ng-if="isSearchResultsLoading()">
+                                <div class="cube1"></div>
+                                <div class="cube2"></div>
+                            </div>
+                            <div ng-class="{'hidden_table':isSearchResultsLoading()}" ng-if="isSearchResultsFound() || isSearchResultsLoading()">
+                                <table id="results-table" class="table results-table table-hover compact" style="width: 100%">
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </search>
+        </div>
+    </div>
+}

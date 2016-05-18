@@ -1,0 +1,298 @@
+body {
+    background-color: #ecf0f5 !important;
+}
+
+.spinner {
+    margin: 100px auto;
+    width: 40px;
+    height: 40px;
+    position: relative;
+}
+
+.cube1, .cube2 {
+    background-color: #605ca8;
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    -webkit-animation: sk-cubemove 1.8s infinite ease-in-out;
+    animation: sk-cubemove 1.8s infinite ease-in-out;
+}
+
+.cube2 {
+    -webkit-animation-delay: -0.9s;
+    animation-delay: -0.9s;
+}
+
+@-webkit-keyframes sk-cubemove {
+    25% { -webkit-transform: translateX(42px) rotate(-90deg) scale(0.5) }
+    50% { -webkit-transform: translateX(42px) translateY(42px) rotate(-180deg) }
+    75% { -webkit-transform: translateX(0px) translateY(42px) rotate(-270deg) scale(0.5) }
+    100% { -webkit-transform: rotate(-360deg) }
+}
+
+@keyframes sk-cubemove {
+    25% {
+        transform: translateX(42px) rotate(-90deg) scale(0.5);
+        -webkit-transform: translateX(42px) rotate(-90deg) scale(0.5);
+    } 50% {
+          transform: translateX(42px) translateY(42px) rotate(-179deg);
+          -webkit-transform: translateX(42px) translateY(42px) rotate(-179deg);
+      } 50.1% {
+            transform: translateX(42px) translateY(42px) rotate(-180deg);
+            -webkit-transform: translateX(42px) translateY(42px) rotate(-180deg);
+        } 75% {
+              transform: translateX(0px) translateY(42px) rotate(-270deg) scale(0.5);
+              -webkit-transform: translateX(0px) translateY(42px) rotate(-270deg) scale(0.5);
+          } 100% {
+                transform: rotate(-360deg);
+                -webkit-transform: rotate(-360deg);
+            }
+}
+
+.index_navbar_background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    z-index: 20000;
+    background-color: #ffffff;
+    border-bottom: 2px solid #605ca8;
+}
+
+.index_navbar {
+    position: fixed;
+    top: 15px;
+    left: 15%;
+    width: 70%;
+    height: 35px;
+    z-index: 20000;
+    color: #1abc9c;
+}
+
+.index_navbar > .navbar_cell {
+    float: left;
+    width: 100px;
+    height: 100%;
+    cursor: pointer;
+    margin: auto;
+    text-align: center;
+    transition: border-bottom 0.2s;
+}
+
+.navbar_cell:hover {
+    border-bottom: 4px solid #605ca8;
+}
+
+.brand_cell {
+    position: fixed;
+    left: 100px;
+    top: 0px;
+    font-size: xx-large;
+    width: 150px !important;
+}
+
+.cell_right {
+    float: right !important;
+}
+
+.cell_wide {
+    width: 350px !important;
+}
+
+.index_navbar > .navbar_cell > a {
+    text-decoration: none;
+    color: #605ca8;
+}
+
+.auth_wrapper {
+    position: absolute;
+    top:20%;
+    width: 100%;
+}
+
+.wrapper {
+    position: absolute;
+    top: 70px;
+    width: 100%;
+}
+
+.hidden_fileupload_form {
+    visibility: hidden;
+    position: absolute;
+    top: -100px;
+}
+
+.block-page {
+    width: 100%;
+    height: 100%;
+    visibility: visible;
+    z-index: 10000;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.block-page .info {
+    top: 20%;
+    left: 30%;
+    width: 40%;
+    height: 40%;
+    position: absolute;
+}
+
+.block-page .info .text-info {
+    position: absolute;
+    top: 100px;
+    color: #000000;
+    width: 100%;
+    text-align: center;
+    font: 15px sans-serif;
+}
+
+.block-page .background {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #FFFFFF;
+    opacity: 0.6;
+    position: absolute;
+}
+
+.alignment_block {
+    width: 100%;
+    text-align: center;
+}
+
+.alignment_text {
+    white-space: pre;
+    font-family: monospace;
+    letter-spacing: 2em;
+}
+
+.logout_wrapper {
+    position: fixed;
+    width: 250px;
+    left: 10px;
+    bottom: 10px;
+}
+
+
+td.details-control {
+    cursor: pointer;
+}
+
+td.details-control:before {
+    content: "\f063";
+    color: #377eb8;
+    font-family: FontAwesome;
+    padding-left: 10px;
+    position:absolute;
+}
+
+.comments-control {
+    cursor: pointer;
+}
+
+tr.shown td.details-control {
+    cursor: pointer;
+}
+
+tr.shown + tr {
+    background-color: #ecf0f5 !important;
+}
+
+tr.shown td.details-control:before {
+    content: "\f062";
+    color: #377eb8;
+    font-family: FontAwesome;
+    padding-left: 10px;
+    position:absolute;
+}
+
+.hidden_table {
+    visibility: hidden;
+}
+
+
+.ui-autocomplete {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    float: left;
+    display: none;
+    min-width: 160px;
+    max-height: 200px;
+    overflow: auto;
+    _width: 160px;
+    padding: 4px 0;
+    margin: 2px 0 0 0;
+    list-style: none;
+    background-color: #ffffff;
+    border-color: #ccc;
+    border-color: rgba(0, 0, 0, 0.2);
+    border-style: solid;
+    border-width: 1px;
+    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+    *border-right-width: 2px;
+    *border-bottom-width: 2px;
+}
+.ui-autocomplete .ui-menu-item {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.ui-autocomplete .ui-menu-item > a.ui-corner-all {
+    display: block;
+    padding: 10px;
+    margin-left: 10px;
+    clear: both;
+    font-weight: normal;
+    line-height: 18px;
+    color: #555555;
+    white-space: nowrap;
+}
+.ui-autocomplete .ui-menu-item > a.ui-corner-all.ui-state-hover, .ui-autocomplete .ui-menu-item > a.ui-corner-all.ui-state-active {
+    color: #ffffff;
+    text-decoration: none;
+    background-color: #0088cc;
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    background-image: none;
+}
+
+.file_cell {
+    float: left;
+    margin-right: 15px;
+    margin-top:10px;
+    min-height: 30px;
+    cursor: pointer;
+    min-width: 200px;
+    border-bottom: solid #dcdcdc;
+    border-width: 2px;
+}
+
+.selected_file {
+    border-bottom: solid #605ca8;
+}
+
+.sidebar_file_delete {
+    float: right;
+    visibility: hidden;
+}
+
+.file_cell:hover .sidebar_file_delete {
+    visibility: visible;
+}
+

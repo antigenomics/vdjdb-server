@@ -1,0 +1,68 @@
+<intersection class="col-md-12 col-lg-12">
+    <div class="box box-solid flat">
+        <div ng-show="isFileSelected()" class="box-header with-border">
+            <h4>Search parameters</h4>
+        </div>
+        <div class="box-body">
+            <p ng-show="!isFileSelected()">Select a sample to annotate..</p>
+            <div ng-show="isFileSelected()">
+                <div class="col-lg-2">
+                    <div class="form-group">
+                        <label for="parameters_maxMismatches">Max substitutions</label>
+                        <input type="number" min="0" class="form-control" id="parameters_maxMismatches" ng-model="parameters.maxMismatches">
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="form-group">
+                        <label for="parameters_maxInsertions">Max insertions</label>
+                        <input type="number" min="0" class="form-control" id="parameters_maxInsertions" ng-model="parameters.maxInsertions">
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="form-group">
+                        <label for="parameters_maxDeletions">Max deletions</label>
+                        <input type="number" min="0" class="form-control" id="parameters_maxDeletions" ng-model="parameters.maxDeletions">
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="form-group">
+                        <label for="parameters_maxMutations">Max mutations</label>
+                        <input type="number" min="0" class="form-control" id="parameters_maxMutations" ng-model="parameters.maxMutations">
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="parameters.matchV"> Require V match
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="parameters.matchJ"> Require J match
+                        </label>
+                    </div>
+                </div>
+                <br>
+                <div class="col-lg-12">
+                    <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect()">Annotate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="box box-solid flat" ng-show="isFileSelected()">
+        <div class="box-header" ng-if="isFileLoading()">
+            <div class="spinner">
+                <div class="cube1"></div>
+                <div class="cube2"></div>
+            </div>
+        </div>
+        <div class="box-body" ng-hide="isFileLoading()">
+            <div ng-repeat="file in files()" ng-show="isFile(file)">
+                <p ng-hide="isFileLoaded(file)">Click annotate button to start</p>
+                <div class="table-responsive">
+                    <table class="table" id="intersect_report_table_{{ ::file.uid }}" cellspacing="0" width="100%" ng-show="isFileLoaded(file)"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</intersection>

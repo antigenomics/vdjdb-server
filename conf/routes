@@ -1,0 +1,43 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index
+GET     /about                      controllers.Application.about
+
+# Search api
+GET     /search                     controllers.SearchAPI.index
+GET     /search/columns             controllers.SearchAPI.columns
+POST    /search                     controllers.SearchAPI.search
+
+# Annotations api
+GET     /intersection                controllers.IntersectionAPI.index
+POST    /intersection                controllers.IntersectionAPI.intersect
+GET     /intersection/upload         controllers.IntersectionAPI.uploadPage
+GET     /intersection/branch           controllers.IntersectionAPI.pushDBPage
+POST    /intersection/branch           controllers.IntersectionAPI.handlePush
+
+GET     /api/userinfo               controllers.IntersectionAPI.userInformation
+POST    /api/upload                 controllers.IntersectionAPI.upload
+POST    /api/delete                 controllers.IntersectionAPI.delete
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+# Auth routes
+GET         /signin                                           securesocial.controllers.LoginPage.login
+GET         /logout                                           securesocial.controllers.LoginPage.logout
+GET         /authenticate/:provider                           securesocial.controllers.ProviderController.authenticate(provider)
+POST        /authenticate/:provider                           securesocial.controllers.ProviderController.authenticateByPost(provider)
+GET         /signup                                           securesocial.controllers.Registration.startSignUp
+POST        /signup                                           securesocial.controllers.Registration.handleStartSignUp
+GET         /signup/:token                                    securesocial.controllers.Registration.signUp(token)
+POST        /signup/:token                                    securesocial.controllers.Registration.handleSignUp(token)
+GET         /password                                         securesocial.controllers.PasswordChange.page
+POST        /password                                         securesocial.controllers.PasswordChange.handlePasswordChange
+GET         /reset                                            securesocial.controllers.Registration.startResetPassword
+POST        /reset                                            securesocial.controllers.Registration.handleStartResetPassword
+GET         /reset/:token                                     securesocial.controllers.Registration.resetPassword(token)
+POST        /reset/:token                                     securesocial.controllers.Registration.handleResetPassword(token)

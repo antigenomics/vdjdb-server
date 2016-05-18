@@ -1,0 +1,46 @@
+@(loginForm: play.api.data.Form[(String, String)], errorMsg: Option[String] = None)(implicit request: play.api.mvc.RequestHeader)
+
+@import securesocial.core.Registry
+@import securesocial.core.providers.UsernamePasswordProvider.UsernamePassword
+
+@main(Messages("securesocial.login.title")) {
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-4 col-sm-4 col-lg-offset-4 col-md-offset-4 col-sm-offset-4">
+                <div class="box box-solid">
+                    <div class="box-header with-border">
+                        <h4>@Messages("securesocial.login.title")</h4>
+                    </div>
+
+                    @errorMsg.map { msg =>
+                        <div class="alert alert-danger alert-xs flat">
+                            @Messages(msg)
+                        </div>
+                    }
+
+                    @request.flash.get("success").map { msg =>
+                        <div class="alert alert-info alert-xs flat">
+                            @msg
+                        </div>
+                    }
+
+                    @request.flash.get("error").map { msg =>
+                        <div class="alert alert-warning alert-xs flat">
+                            @msg
+                        </div>
+                    }
+
+
+                    @defining(Registry.providers.all.values.filter(_.id != UsernamePassword)) { externalProviders =>
+
+                        @Registry.providers.get(UsernamePassword).map { up =>
+                            <div class="box-body">
+                                @views.html.auth.provider("userpass", Some(loginForm))(request)
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
