@@ -77,8 +77,8 @@
         var loaded = [];
 
         filters.copyFilter({
-            columnId: 'antigen.species',
-            columnTitle: 'Antigen.Species',
+            columnId: 'species',
+            columnTitle: 'Species',
             value: 'HomoSapiens',
             filterType: 'exact',
             negative: false,
