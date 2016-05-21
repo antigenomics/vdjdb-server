@@ -211,13 +211,14 @@
                         drawCallback: function() {
                             $('[data-toggle="popover"]').popover({
                                 container: 'body',
-                                html: true
+                                html: true,
+                                template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
                             }).on('click', function(e) {
                                 if ($(this).prop("tagName") === 'I') {
                                     var content = $(this).attr('data-content');
                                     content = content.replace(/<p>/gm, " ");
                                     content = content.replace(/(<([^>]+)>)/ig, "\n");
-                                    alert(content);
+                                    window.prompt("Copy to clipboard: Ctrl+C, Enter\nUse arrows to navigate", content);
                                 }
                                 e.preventDefault();
                             });

@@ -296,3 +296,14 @@ tr.shown td.details-control:before {
     visibility: visible;
 }
 
+.popover-footer {
+    padding:8px 14px;
+    margin:0;
+    font-size:14px;
+    background-color:#f7f7f7;
+    border-top:1px solid #ebebeb;
+    border-radius:0 0 5px 5px
+}
+
+
+
