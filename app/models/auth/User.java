@@ -167,5 +167,9 @@ public class User extends Model {
         return find().where().eq("uuid", uuid).findUnique();
     }
 
+    static public synchronized User findByEmail(String email) {
+        return find().where().eq("email", email).findUnique();
+    }
+
 }
 

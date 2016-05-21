@@ -27,7 +27,7 @@ class AuthService(application: Application) extends UserServicePlugin(applicatio
   override def findByEmailAndProvider(email: String, providerId: String): Option[Identity] = {
     val user = User.find().where().eq("email", email).eq("provider", providerId).findUnique()
     if (user == null) return None
-    Option.apply(new SocialUser(new IdentityId(user.getUuid, user.getProvider), "", "", "", Option.apply(user.getEmail), null, new AuthenticationMethod("userPassword"),
+    Option.apply(new SocialUser(new IdentityId(user.getEmail, user.getProvider), "", "", "", Option.apply(user.getEmail), null, new AuthenticationMethod("userPassword"),
       null, null, Some.apply(new PasswordInfo("bcrypt", user.getPassword, null))))
   }
 
@@ -39,7 +39,7 @@ class AuthService(application: Application) extends UserServicePlugin(applicatio
   override def save(identity: Identity): Identity = {
     var user = User.findByUUID(identity.identityId.userId)
     if (user == null) {
-      user = new User(identity.identityId.userId, identity.identityId.providerId, identity.email.get, identity.passwordInfo.get.password)
+      user = new User(identity.email.get, identity.identityId.providerId, identity.email.get, identity.passwordInfo.get.password)
       user.saveUser()
     }
     identity
