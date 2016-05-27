@@ -43,6 +43,7 @@
             columnId: defaultSortRule.columnId,
             sortType: defaultSortRule.sortType
         };
+        var pingWebSocket = null;
 
         connection.onMessage(function(message) {
             var response = JSON.parse(message.data);
@@ -73,18 +74,28 @@
             notify.error('Database', 'Connection error');
             connected = false;
             connectionError = true;
+            clearInterval(pingWebSocket);
         });
 
         connection.onClose(function() {
             notify.error('Database', 'Connection closed');
             connected = false;
             connectionError = true;
+            clearInterval(pingWebSocket);
         });
 
         connection.onOpen(function() {
             LoggerService.log('Connected to the database');
             connected = true;
             loading = false;
+            pingWebSocket = setInterval(function() {
+                connection.send({
+                    message: 'ping',
+                    filtersRequest: filters.getFiltersRequest(),
+                    page: 0,
+                    sortRule: sortRule
+                });
+            }, 10000)
         });
 
         function search() {
@@ -427,6 +438,7 @@
                 $scope.isDataFound = SearchDatabaseAPI.isDataFound;
                 $scope.isConnected = SearchDatabaseAPI.isConnected;
                 $scope.isConnectionBroken = SearchDatabaseAPI.isConnectionBroken;
+                $scope.isPageLoading = SearchDatabaseAPI.isPageLoading;
                 $scope.isLoading = SearchDatabaseAPI.isLoading;
 
                 $scope.isColumnAscSorted = SearchDatabaseAPI.isColumnAscSorted;
