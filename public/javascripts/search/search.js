@@ -36,7 +36,7 @@
         var maxPages = -1;
         var pageSize = -1;
         var totalItems = -1;
-        var loading = true;
+        var loading = false;
         var pageLoading = false;
         var connectionError = false;
         var sortRule = {
