@@ -9,6 +9,11 @@
     <script src="@routes.Assets.at("lib/select/js/select.js")" type="text/javascript"></script>
     <link href="@routes.Assets.at("lib/select/css/style.css")" rel="stylesheet">
 
+    <script src="@routes.Assets.at("lib/angular/plugins/websocket/angular-websocket.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/angular/plugins/bootstrap/ui-bootstrap-tpls-0.12.1.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ZeroClipboard.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ng-clip.min.js")" type="text/javascript"></script>
+
     <script src="@routes.Assets.at("javascripts/filters.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/search/search.js")" type="text/javascript"></script>
 
@@ -19,7 +24,7 @@
         <div class="container-fluid">
             @views.html.search.description()
             @views.html.filters.filters()
-            <search class="row" ng-hide="isFiltersError() || !isFiltersLoaded()">
+            <search class="row" ng-hide="isFiltersError() || !isFiltersLoaded() || true">
                 <div class="col-md-12">
                     <div class="box box-solid">
                         <div class="box-header with-border">
@@ -40,6 +45,54 @@
                     </div>
                 </div>
             </search>
+            <search-websocket class="row" ng-hide="isFiltersError() || !isFiltersLoaded()">
+                <div class="col-md-12">
+                    <div class="box box-solid">
+                        <div class="box-body" ng-show="isLoading()">
+                            <div class="spinner">
+                                <div class="cube1"></div>
+                                <div class="cube2"></div>
+                            </div>
+                        </div>
+                        <div class="box-body" ng-show="!isLoading()">
+                            <div class="text-center" ng-if="!isSearchStarted()">
+                                <h4>Click search button to start</h4>
+                            </div>
+                            <div class="text-center" ng-if="isConnectionBroken()">
+                                <h4>No connection to database. Please refresh the page.</h4>
+                            </div>
+                            <table class="table table-hover compact" ng-if="isSearchStarted()">
+                                <thead>
+                                    <tr>
+                                        <th class="column_header" ng-repeat="(index, entry) in getData()[0].row.entries"
+                                            ng-if="isColumnVisible(entry)" ng-bind-html="columnHeader(entry)" on-last-repeat="column"
+                                            ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="data in getData()" on-last-repeat="row">
+                                        <td ng-repeat="entry in ::data.row.entries" ng-if="isColumnVisible(entry)" compile="::entryValue(entry, data.row.entries)">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <pagination total-items="totalItems()"
+                                items-per-page="pageSize()" ng-model="page"
+                                max-size="10" class="pagination-sm" boundary-links="true"
+                                rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                            </pagination>
+                            <div class="text-center" ng-if="!isDataFound() && isSearchStarted()">
+                                <h4>No data found</h4>
+                            </div>
+                        </div>
+                        <div class="box-footer" ng-hide="isLoading()">
+                            <button class="btn bg-purple btn-flat" ng-click="searchWS()">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </search-websocket>
         </div>
     </div>
 }

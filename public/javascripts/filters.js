@@ -202,6 +202,13 @@
             return textFiltersTypes;
         }
 
+        function getFiltersRequest() {
+            return {
+                textFilters: getTextFilters(),
+                sequenceFilters: getSequenceFilters()
+            }
+        }
+
         return {
             getTextFiltersColumns: getTextFiltersColumns,
             getTextFiltersTypes: getTextFiltersTypes,
@@ -218,7 +225,8 @@
             changeFilterSearchTypes: changeFilterSearchTypes,
             copyFilter: copyFilter,
             findFilter: findFilter,
-            getDefaultFilterTypes: getDefaultFilterTypes
+            getDefaultFilterTypes: getDefaultFilterTypes,
+            getFiltersRequest: getFiltersRequest
         }
     }]);
 

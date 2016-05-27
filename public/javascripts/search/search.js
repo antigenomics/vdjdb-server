@@ -1,7 +1,11 @@
 (function () {
     "use strict";
 
-    var application = angular.module('searchPage', ['notifications', 'filters']);
+    var application = angular.module('searchPage', ['notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard']);
+
+    application.config(['ngClipProvider', function(ngClipProvider) {
+        ngClipProvider.setPath('/assets/lib/angular/plugins/zeroclipboard/ZeroClipboard.swf');
+    }]);
 
     application.factory('LoggerService', ['$log', function ($log) {
 
@@ -19,11 +23,72 @@
         }
     }]);
 
-    application.factory('SearchDatabaseAPI', ['$http', 'filters', function ($http, filters) {
+    application.factory('SearchDatabaseAPI', ['$http', 'filters', '$websocket', 'notify', 'LoggerService', function ($http, filters, $websocket, notify, LoggerService) {
+
+        var connected = false;
+        var connection = $websocket('ws://' + location.host + '/search/connect');
+        var defaultSortRule = Object.freeze({
+            columnId: 0,
+            sortType: 'asc'
+        });
+        var data = [];
+        var actualPage = 0;
+        var maxPages = -1;
+        var pageSize = -1;
+        var totalItems = -1;
+        var loading = true;
+        var pageLoading = false;
+        var connectionError = false;
+        var sortRule = {
+            columnId: defaultSortRule.columnId,
+            sortType: defaultSortRule.sortType
+        };
+
+        connection.onMessage(function(message) {
+            var response = JSON.parse(message.data);
+            loading = false;
+            pageLoading = false;
+            switch (response.status) {
+                case 'ok':
+                    var responseData = JSON.parse(response.data);
+                    data.splice(0, data.length);
+                    angular.extend(data, responseData);
+                    actualPage = response.page;
+                    maxPages = response.maxPages;
+                    pageSize = response.pageSize;
+                    totalItems = response.totalItems;
+                    break;
+                case 'warn':
+                    angular.forEach(response.warnings, function(warning) {
+                        notify.info('Search', warning);
+                    });
+                    break;
+                case 'error':
+                    notify.error('Search', response.message);
+                    break;
+            }
+        });
+
+        connection.onError(function() {
+            notify.error('Database', 'Connection error');
+            connected = false;
+            connectionError = true;
+        });
+
+        connection.onClose(function() {
+            notify.error('Database', 'Connection closed');
+            connected = false;
+            connectionError = true;
+        });
+
+        connection.onOpen(function() {
+            LoggerService.log('Connected to the database');
+            connected = true;
+            loading = false;
+        });
 
         function search() {
             filters.pickFiltersSelectData();
-            console.log(filters.getTextFilters());
             return $http.post('/search', {
                 textFilters: filters.getTextFilters(),
                 sequenceFilters: filters.getSequenceFilters()
@@ -33,8 +98,122 @@
             })
         }
 
+        function isConnected() {
+            return connected;
+        }
+
+        function isConnectionBroken() {
+            return connectionError;
+        }
+
+        function isLoading() {
+            return loading;
+        }
+
+        function isPageLoading() {
+            return pageLoading;
+        }
+
+        function getData() {
+            return data;
+        }
+
+        function isDataFound() {
+            return data.length > 0;
+        }
+
+        function getTotalItems() {
+            return totalItems;
+        }
+
+        function getMaxPages() {
+            return maxPages;
+        }
+
+        function getPageSize() {
+            return pageSize;
+        }
+
+        function searchWS() {
+            filters.pickFiltersSelectData();
+            if (connected && !loading) {
+                $("[data-toggle='popover']").popover('destroy');
+                loading = true;
+                sortRule.columnId = defaultSortRule.columnId;
+                sortRule.sortType = defaultSortRule.sortType;
+                connection.send({
+                    message: 'search',
+                    filtersRequest: filters.getFiltersRequest(),
+                    page: 0,
+                    sortRule: sortRule
+                });
+            } else if (loading) {
+                notify.info('Search', 'Loading...');
+            }
+        }
+
+        function changePage(page) {
+            if (connected && !loading) {
+                $("[data-toggle='popover']").popover('destroy');
+                pageLoading = true;
+                connection.send({
+                    message: 'page',
+                    filtersRequest: filters.getFiltersRequest(),
+                    page: page,
+                    sortRule: sortRule
+                })
+            } else if (loading) {
+                notify.info('Search', 'Loading...');
+            }
+        }
+
+        function sortDatabase(index, page) {
+            if (connected && !loading) {
+                $("[data-toggle='popover']").popover('destroy');
+                pageLoading = true;
+                if (sortRule.columnId === index) {
+                    sortRule.sortType = sortRule.sortType === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortRule.sortType = 'asc';
+                }
+                sortRule.columnId = index;
+                connection.send({
+                    message: 'sort',
+                    filtersRequest: filters.getFiltersRequest(),
+                    page: page,
+                    sortRule: sortRule
+                })
+            } else if (loading) {
+                notify.info('Search', 'Loading...');
+            }
+        }
+
+        function isColumnAscSorted(index) {
+            if (sortRule.columnId === index && sortRule.sortType === 'asc') return true;
+            return false;
+        }
+
+        function isColumnDescSorted(index) {
+            if (sortRule.columnId === index && sortRule.sortType === 'desc') return true;
+            return false;
+        }
+
         return {
-            search: search
+            search: search,
+            searchWS: searchWS,
+            sortDatabase: sortDatabase,
+            getData: getData,
+            isDataFound: isDataFound,
+            getTotalItems: getTotalItems,
+            getMaxPages: getMaxPages,
+            getPageSize: getPageSize,
+            changePage: changePage,
+            isConnected: isConnected,
+            isConnectionBroken: isConnectionBroken,
+            isLoading: isLoading,
+            isPageLoading: isPageLoading,
+            isColumnAscSorted: isColumnAscSorted,
+            isColumnDescSorted: isColumnDescSorted
         }
     }]);
     
@@ -234,6 +413,181 @@
         }
     });
 
+    application.directive('searchWebsocket', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', 'SearchDatabaseAPI', '$sce', 'notify', function($scope, SearchDatabaseAPI, $sce, notify) {
+                var searchStarted  = false;
+
+                $scope.page = 0;
+                $scope.maxPages = SearchDatabaseAPI.getMaxPages;
+                $scope.totalItems = SearchDatabaseAPI.getTotalItems;
+                $scope.pageSize = SearchDatabaseAPI.getPageSize;
+                $scope.getData = SearchDatabaseAPI.getData;
+                $scope.isDataFound = SearchDatabaseAPI.isDataFound;
+                $scope.isConnected = SearchDatabaseAPI.isConnected;
+                $scope.isConnectionBroken = SearchDatabaseAPI.isConnectionBroken;
+                $scope.isLoading = SearchDatabaseAPI.isLoading;
+
+                $scope.isColumnAscSorted = SearchDatabaseAPI.isColumnAscSorted;
+                $scope.isColumnDescSorted = SearchDatabaseAPI.isColumnDescSorted;
+
+                $scope.pageChanged = pageChanged;
+                $scope.searchWS = search;
+                $scope.sortDatabase = sortDatabase;
+                $scope.isSearchStarted = isSearchStarted;
+                $scope.entryValue = entryValue;
+                $scope.columnHeader = columnHeader;
+                $scope.isColumnVisible = isColumnVisible;
+                $scope.isShowPagination = isShowPagination;
+
+                $scope.clipNoFlash = clipNoFlash;
+                $scope.copyToClip = copyToClip;
+                $scope.copyToClipNotification = copyToClipNotification;
+
+                function isShowPagination() {
+                    if (!SearchDatabaseAPI.isDataFound() || SearchDatabaseAPI.isLoading()) return false;
+                    return $scope.maxPages() > 1;
+                }
+
+                function isSearchStarted() {
+                    return searchStarted;
+                }
+
+                function search() {
+                    $scope.page = 0;
+                    searchStarted = true;
+                    SearchDatabaseAPI.searchWS();
+                }
+
+                function pageChanged() {
+                    SearchDatabaseAPI.changePage($scope.page - 1);
+                }
+
+                function sortDatabase(index) {
+                    SearchDatabaseAPI.sortDatabase(index, $scope.page - 1);
+                }
+
+                function entryValue(entry, entries) {
+                    var value = entry.value;
+                    var dataType = entry.column.metadata['data.type'];
+                    if (entry.column.metadata.name === 'cdr3') {
+                        var cdr3fix = JSON.parse(entries[entries.length - 2].value);
+                        var vend = cdr3fix['vEnd'];
+                        var jstart = cdr3fix['jStart'];
+                        var vRegion = '', jRegion = '', otherRegion = '';
+                        if (vend > 0 && jstart <= 0) {
+                            vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
+                            otherRegion = value.substring(vend, value.length);
+                            value = vRegion + otherRegion
+                        }
+                        if (vend <= 0 && jstart > 0) {
+                            jRegion = '<text style="color: #377eb8">' + value.substring(jstart - 1, value.length) + '</text>';
+                            otherRegion = value.substring(0, jstart - 1);
+                            value = otherRegion + jRegion;
+                        }
+                        if (vend > 0 && jstart > 0) {
+                            vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
+                            otherRegion = value.substring(vend, jstart - 1);
+                            jRegion = '<text style="color: #377eb8">' + value.substring(jstart - 1, value.length) + '</text>';
+                            value = vRegion + otherRegion + jRegion;
+                        }
+                    }
+                    if (dataType === 'url') {
+                        if (value.indexOf('PMID') >= 0) {
+                            var id = value.substring(5, value.length);
+                            value = 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                        } else if (value.indexOf('http') >= 0) {
+                            var domain;
+                            //find & remove protocol (http, ftp, etc.) and get domain
+                            if (value.indexOf("://") > -1) {
+                                domain = value.split('/')[2];
+                            } else {
+                                domain = value.split('/')[0];
+                            }
+                            //find & remove port number
+                            domain = domain.split(':')[0];
+                            value = '<a href="' + value  + '">' + domain + '</a>'
+                        }
+                    } else if (dataType.indexOf('json') >= 0) {
+                        try {
+                            var comment = JSON.parse(value);
+                            var text = "";
+                            var color_i = 'black';
+                            angular.forEach(Object.keys(comment).sort(), function (propertyName) {
+                                if (comment[propertyName] !== "")
+                                    text += '<p>' + propertyName + ' : ' + comment[propertyName] + '</p>';
+                            });
+                            if (entry.column.metadata.name === 'cdr3fix') {
+                                if (comment['fixNeeded'] === false && comment['good'] === true) {
+                                    color_i = '#1a9641';
+                                } else if (comment['fixNeeded'] === false && comment['good'] === false) {
+                                    color_i = '#fdae61'
+                                } else if (comment['fixNeeded'] === true && comment['good'] === true) {
+                                    color_i = '#a6d96a'
+                                } else {
+                                    color_i = '#d7191c'
+                                }
+                            }
+                            value = '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control row_popover" tab-index="0" ' +
+                                'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
+                                'title="' + entry.column.metadata.title + '" data-content="' + text + '" clip-copy="copyToClip(\'' + text + '\')"' +
+                                'clip-click-fallback="clipNoFlash(\'' + text + '\')" clip-click="copyToClipNotification()"></i>'
+                        } catch (e) {
+                            value = ''
+                        }
+                    }
+                    return value;
+                }
+
+                function columnHeader(entry) {
+                    var column = entry.column;
+                    var header = '<text class="column_popover" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="' +
+                    column.metadata.comment + '">' + column.metadata.title +  '</text>';
+                    return $sce.trustAsHtml(header);
+                }
+
+                function isColumnVisible(entry) {
+                    return entry.column.metadata.visible != 0
+                }
+
+                $scope.$on('onRepeatLast', function(element, a, attrs) {
+                    var elem = attrs.onLastRepeat;
+                    if (elem === 'row') {
+                        $('.row_popover').popover({
+                            container: 'body',
+                            html: true,
+                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
+                        })
+                    } else if (elem === 'column') {
+                        $('.column_popover').popover({
+                            container: 'body',
+                            html: true,
+                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to sort</h3></div>'
+                        })
+                    }
+                });
+
+                function clipNoFlash(text) {
+                    var content = text;
+                    content = content.replace(/<p>/gm, " ");
+                    content = content.replace(/(<([^>]+)>)/ig, "\n");
+                    window.prompt("Copy to clipboard: Ctrl+C, Enter\nUse arrows to navigate", content);
+                }
+
+                function copyToClip(text) {
+                    var content = text;
+                    content = content.replace(/<p>/gm, " ");
+                    content = content.replace(/(<([^>]+)>)/ig, "\n");
+                    return content;
+                }
+
+                function copyToClipNotification() {
+                    notify.info('Meta information', 'Data has been copied to clipboard');
+                }
+            }]
+        }
+    });
 
     application.directive('onLastRepeat', function () {
         return function (scope, element, attrs) {
@@ -242,6 +596,19 @@
             }, 1);
         };
     });
+
+    application.directive('compile', ['$compile', function ($compile) {
+        return function(scope, element, attrs) {
+            scope.$watch(
+                function(scope) {
+                    return scope.$eval(attrs.compile);
+                },
+                function(value) {
+                    element.html(value);
+                    $compile(element.contents())(scope);
+                }
+            )};
+    }]);
 
 }());
 

@@ -11,7 +11,7 @@ import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text.TextFilter
 import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
 import controllers.IntersectionAPI.IntersectParametersRequest
-import controllers.SearchAPI.SearchRequest
+import controllers.SearchAPI.FiltersRequest
 import utils.SynchronizedAccess
 
 /**

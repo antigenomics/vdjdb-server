@@ -27,7 +27,7 @@ import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
 import com.antigenomics.vdjtools.sample.Clonotype
 import com.milaboratory.core.tree.TreeSearchParameters
-import controllers.SearchAPI.SearchRequest
+import controllers.SearchAPI.FiltersRequest
 import models.file.{BranchFile, FileFinder, IntersectionFile, ServerFile}
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
@@ -58,7 +58,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     sendJson(user)
   }
 
-  case class IntersectRequest(fileName: String, parameters: IntersectParametersRequest, filters: SearchRequest)
+  case class IntersectRequest(fileName: String, parameters: IntersectParametersRequest, filters: FiltersRequest)
   case class IntersectParametersRequest(matchV: Boolean, matchJ: Boolean, maxMismatches: Int, maxInsertions: Int, maxDeletions: Int, maxMutations: Int)
 
   implicit val intersectParametersRequestRead = Json.reads[IntersectParametersRequest]

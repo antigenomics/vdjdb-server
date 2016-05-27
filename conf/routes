@@ -10,6 +10,7 @@ GET     /about                      controllers.Application.about
 GET     /search                     controllers.SearchAPI.index
 GET     /search/columns             controllers.SearchAPI.columns
 POST    /search                     controllers.SearchAPI.search
+GET     /search/connect             controllers.SearchAPI.searchWebSocket
 
 # Annotations api
 GET     /intersection                controllers.IntersectionAPI.index
