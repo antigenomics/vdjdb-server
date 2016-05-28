@@ -45,9 +45,7 @@ object FiltersParser {
     val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
     sequence.foreach(filter => {
       filter.columnId match {
-        case "" =>
-          warnings.add("Sequence filter ignored : please select column name")
-        case _  =>
+        case "cdr3" | "antigen.epitope" =>
           filter.query match {
             case "" =>
               warnings.add("Sequence filter ignored for " + filter.columnId + ": empty query field")
@@ -55,6 +53,8 @@ object FiltersParser {
               val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations)
               sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
           }
+        case _  =>
+          warnings.add("Sequence filter ignored : please select column name")
       }
     })
     FiltersParser(textFilters, sequenceFilters, warnings)

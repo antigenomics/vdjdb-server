@@ -50,43 +50,9 @@ object SearchAPI extends Controller {
     request.body.validate[FiltersRequest].map {
       case FiltersRequest(requestTextFilters, requestSequenceFilters) =>
         val warnings : util.ArrayList[String] = new util.ArrayList[String]()
-        val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
         val columns = GlobalDatabase.getDatabase().getHeader
-        requestTextFilters.foreach(filter => {
-          if (columns.indexOf(filter.columnId) >= 0) {
-            filter.value match {
-              case "" =>
-                warnings.add("Text filter ignored for " +  filter.columnId + ": empty value field")
-              case _ =>
-                filter.filterType match {
-                  case "exact" => textFilters.add(new ExactTextFilter(filter.columnId, filter.value, filter.negative))
-                  case "pattern" => textFilters.add(new PatternTextFilter(filter.columnId, filter.value, filter.negative))
-                  case "substring" => textFilters.add(new SubstringTextFilter(filter.columnId, filter.value, filter.negative))
-                  case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
-                  case _ =>
-                    warnings.add("Text filter ignored for " + filter.columnId + ": please select filter type")
-                }
-            }
-          } else {
-            warnings.add("Text filter ignored : please select column name")
-          }
-        })
-        val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
-        requestSequenceFilters.foreach(filter => {
-          filter.columnId match {
-            case "" =>
-              warnings.add("Sequence filter ignored : please select column name")
-            case _  =>
-              filter.query match {
-                case "" =>
-                  warnings.add("Sequence filter ignored for " + filter.columnId + ": empty query field")
-                case _ =>
-                  val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations)
-                  sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
-              }
-          }
-        })
-        sendJson(new SearchResult(textFilters, sequenceFilters, warnings))
+        val filters = FiltersParser.parse(requestTextFilters, requestSequenceFilters)
+        sendJson(new SearchResult(filters.textFilters, filters.sequenceFilters, filters.warnings))
     }.recoverTotal {
         e => print(e)
         BadRequest(toJson(ServerResponse("Invalid search request")))
@@ -132,6 +98,11 @@ object SearchAPI extends Controller {
               val data = searchResults.getPage(searchRequest.page)
               channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), searchRequest.page,
                 searchResults.getMaxPages, searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
+            case "size" =>
+              searchResults.setPageSize(searchRequest.page)
+              val data = searchResults.getPage(0)
+              channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), 0, searchResults.getMaxPages,
+                searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
             case _ =>
 
           }

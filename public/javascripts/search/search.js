@@ -199,6 +199,20 @@
             }
         }
 
+        function changePageSize(newPageSize) {
+            if (connected && !loading) {
+                pageLoading = true;
+                connection.send({
+                    message: 'size',
+                    filtersRequest: filters.getFiltersRequest(),
+                    page: newPageSize,
+                    sortRule: sortRule
+                })
+            } else if (loading) {
+                notify.info('Search', 'Loading...');
+            }
+        }
+
         function isColumnAscSorted(index) {
             if (sortRule.columnId === index && sortRule.sortType === 'asc') return true;
             return false;
@@ -213,6 +227,7 @@
             search: search,
             searchWS: searchWS,
             sortDatabase: sortDatabase,
+            changePageSize: changePageSize,
             getData: getData,
             isDataFound: isDataFound,
             getTotalItems: getTotalItems,
@@ -430,7 +445,8 @@
             controller: ['$scope', 'SearchDatabaseAPI', '$sce', 'notify', function($scope, SearchDatabaseAPI, $sce, notify) {
                 var searchStarted  = false;
 
-                $scope.page = 0;
+                $scope.page = 1;
+                $scope.userPageSize = 25;
                 $scope.maxPages = SearchDatabaseAPI.getMaxPages;
                 $scope.totalItems = SearchDatabaseAPI.getTotalItems;
                 $scope.pageSize = SearchDatabaseAPI.getPageSize;
@@ -452,6 +468,7 @@
                 $scope.columnHeader = columnHeader;
                 $scope.isColumnVisible = isColumnVisible;
                 $scope.isShowPagination = isShowPagination;
+                $scope.changePageSize = changePageSize;
 
                 $scope.clipNoFlash = clipNoFlash;
                 $scope.copyToClip = copyToClip;
@@ -478,6 +495,11 @@
 
                 function sortDatabase(index) {
                     SearchDatabaseAPI.sortDatabase(index, $scope.page - 1);
+                }
+
+                function changePageSize() {
+                    $scope.page = 1;
+                    SearchDatabaseAPI.changePageSize($scope.userPageSize);
                 }
 
                 function entryValue(entry, entries) {
@@ -570,13 +592,13 @@
                             container: 'body',
                             html: true,
                             template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
-                        })
+                        });
                     } else if (elem === 'column') {
                         $('.column_popover').popover({
                             container: 'body',
                             html: true,
                             template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to sort</h3></div>'
-                        })
+                        });
                     }
                 });
 
@@ -597,6 +619,7 @@
                 function copyToClipNotification() {
                     notify.info('Meta information', 'Data has been copied to clipboard');
                 }
+
             }]
         }
     });
@@ -621,6 +644,20 @@
                 }
             )};
     }]);
+
+    application.directive('convertToNumber', function() {
+        return {
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$parsers.push(function(val) {
+                    return val ? parseInt(val, 10) : null;
+                });
+                ngModel.$formatters.push(function(val) {
+                    return val ? '' + val : null;
+                });
+            }
+        };
+    });
 
 }());
 

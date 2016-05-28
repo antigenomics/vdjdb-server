@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class SearchResult {
 
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 25;
 
     private int pageSize = PAGE_SIZE;
     public List<DatabaseSearchResult> results;
@@ -57,6 +57,10 @@ public class SearchResult {
                 }
             }
         });
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     public Integer getMaxPages() {;
