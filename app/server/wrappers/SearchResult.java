@@ -24,8 +24,19 @@ public class SearchResult {
     public List<String> warnings;
 
 
+    public SearchResult() {
+        this.results = GlobalDatabase.search();
+        this.columns = GlobalDatabase.getColumns();
+        this.warnings = new ArrayList<>();
+    }
 
     public SearchResult(ArrayList<TextFilter> textFilters, ArrayList<SequenceFilter> sequenceFilters, ArrayList<String> warnings) {
+        this.results = GlobalDatabase.search(textFilters, sequenceFilters);
+        this.columns = GlobalDatabase.getColumns();
+        this.warnings = warnings;
+    }
+
+    public void reinit(ArrayList<TextFilter> textFilters, ArrayList<SequenceFilter> sequenceFilters, ArrayList<String> warnings) {
         this.results = GlobalDatabase.search(textFilters, sequenceFilters);
         this.columns = GlobalDatabase.getColumns();
         this.warnings = warnings;

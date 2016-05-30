@@ -202,8 +202,13 @@
         function changePageSize(newPageSize) {
             if (connected && !loading) {
                 pageLoading = true;
+                var message = 'size';
+                if (!isDataFound()) {
+                    message = 'reinit_size';
+                    pageLoading = false;
+                }
                 connection.send({
-                    message: 'size',
+                    message: message,
                     filtersRequest: filters.getFiltersRequest(),
                     page: newPageSize,
                     sortRule: sortRule

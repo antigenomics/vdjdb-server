@@ -71,7 +71,7 @@ object SearchAPI extends Controller {
   def searchWebSocket = WebSocket.using[JsValue] { request =>
     //Concurrent.broadcast returns (Enumerator, Concurrent.Channel)
     val (out,channel) = Concurrent.broadcast[JsValue]
-    var searchResults : SearchResult = null
+    var searchResults : SearchResult = new SearchResult()
     var filters : FiltersParser = null
 
     //log the message to stdout and send response back to client
@@ -82,7 +82,7 @@ object SearchAPI extends Controller {
           searchRequest.message match {
             case "search" =>
               filters = FiltersParser.parse(searchRequest.filtersRequest.textFilters, searchRequest.filtersRequest.sequenceFilters)
-              searchResults = new SearchResult(filters.textFilters, filters.sequenceFilters, filters.warnings)
+              searchResults.reinit(filters.textFilters, filters.sequenceFilters, filters.warnings)
               val data = searchResults.getPage(0)
               channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), 0, searchResults.getMaxPages,
                 searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
@@ -102,13 +102,16 @@ object SearchAPI extends Controller {
               searchResults.setPageSize(searchRequest.page)
               val data = searchResults.getPage(0)
               channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), 0, searchResults.getMaxPages,
-                searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
+                  searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
+            case "reinit_size" =>
+              searchResults.setPageSize(searchRequest.page)
             case _ =>
 
           }
         } catch {
           case e : Exception =>
-            channel push Json.toJson(SearchWebSocketResponse("error", "Server error", "{}", 0, 0, 0, 0, null))
+            e.printStackTrace()
+            channel push Json.toJson(SearchWebSocketResponse("error", "Invalid request", "{}", 0, 0, 0, 0, List[String]()))
         }
 
     }

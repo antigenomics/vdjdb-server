@@ -34,6 +34,13 @@ object GlobalDatabase extends SynchronizedAccess {
       db().getDbInstance.search(textFilters, sequenceFilters)
     }
 
+  def search() =
+    synchronizeRead { implicit lock =>
+      val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
+      val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
+      db().getDbInstance.search(textFilters, sequenceFilters)
+    }
+
   def intersect(sample: Sample, parameters: IntersectParametersRequest, textFilters : util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter]) =
     synchronizeRead { implicit lock =>
       //val clonotypeDatabase = db().asClonotypeDatabase()
