@@ -247,8 +247,8 @@ function intersectResultsTable(data, file) {
         columns: columns,
         iDisplayLength: 25,
         order: [
-            [1, 'desc'],
-            [3, 'desc']
+            [3, 'desc'],
+            [1, 'desc']
         ],
         oLanguage: {
             sEmptyTable: "No records found in database"
