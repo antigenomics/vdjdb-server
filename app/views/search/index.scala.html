@@ -65,9 +65,6 @@
                         <div id="table_wrapper" class="box-body" ng-show="!isLoading()">
                             <div class="block_background" ng-if="isPageLoading()"></div>
                             <div class="block_processing" ng-if="isPageLoading()"><h3>Loading...</h3></div>
-                            <div class="text-center" ng-if="!isSearchStarted()">
-                                <h4>Click search button to start</h4>
-                            </div>
                             <div class="text-center" ng-if="isConnectionBroken()">
                                 <h4>No connection to database. Please refresh the page.</h4>
                             </div>

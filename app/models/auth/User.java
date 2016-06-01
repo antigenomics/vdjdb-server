@@ -16,6 +16,7 @@ import javax.persistence.OneToMany;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by bvdmitri on 10.02.16.
@@ -151,6 +152,10 @@ public class User extends Model {
         save();
     }
 
+    public Boolean isDemoUser() {
+        return Objects.equals(uuid, "demo");
+    }
+
     public void logInfo(String message) {
         ServerLogger.userInfo(this, message);
     }
@@ -161,6 +166,14 @@ public class User extends Model {
 
     static public synchronized Model.Finder<String, User> find() {
         return new Model.Finder<>(String.class, User.class);
+    }
+
+    static public synchronized Boolean isUserExistByUUID(String uuid) {
+        return findByUUID(uuid) != null;
+    }
+
+    static public synchronized Boolean isUserExistByEmail(String email) {
+        return findByEmail(email) != null;
     }
 
     static public synchronized User findByUUID(String uuid) {

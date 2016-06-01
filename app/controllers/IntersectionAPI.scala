@@ -120,6 +120,8 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
       val checks = false
       checks match {
+        case _ if user.isDemoUser =>
+          BadRequest(toJson(ServerResponse("Uploading is not allowed in demo mode")))
         case _ if user.isMaxFilesCountExceeded =>
           BadRequest(toJson(ServerResponse("Exceeded the limit of the number of files")))
         case _ if user.isMaxFileSizeExceeded(file.ref.file.length() / 1024) =>
@@ -172,24 +174,28 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
   def delete = SecuredAction(parse.json) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
-    request.body.validate[DeleteRequest].map {
-      case DeleteRequest(fileName, action) =>
-        action match {
-          case "delete" =>
-            val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
-            if (file == null) {
-              BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
-            } else {
-              ServerFile.deleteFile(file)
-              Ok(toJson(ServerResponse("File " + fileName + " have been deleted")))
-            }
-          case "deleteAll" =>
-            user.getFiles.toList.foreach(file => ServerFile.deleteFile(file))
-            Ok(toJson(ServerResponse("All files have been deleted")))
-          case _ => BadRequest(toJson(ServerResponse("Unknown delete action")))
-        }
-    }.getOrElse {
-      BadRequest(toJson(ServerResponse("Invalid delete request")))
+    if (user.isDemoUser) {
+      BadRequest(toJson(ServerResponse("Deleting is not allowed in demo mode")))
+    } else {
+      request.body.validate[DeleteRequest].map {
+        case DeleteRequest(fileName, action) =>
+          action match {
+            case "delete" =>
+              val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
+              if (file == null) {
+                BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
+              } else {
+                ServerFile.deleteFile(file)
+                Ok(toJson(ServerResponse("File " + fileName + " have been deleted")))
+              }
+            case "deleteAll" =>
+              user.getFiles.toList.foreach(file => ServerFile.deleteFile(file))
+              Ok(toJson(ServerResponse("All files have been deleted")))
+            case _ => BadRequest(toJson(ServerResponse("Unknown delete action")))
+          }
+      }.getOrElse {
+        BadRequest(toJson(ServerResponse("Invalid delete request")))
+      }
     }
   }
 
@@ -212,6 +218,8 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
         val checks = false
         checks match {
+          case _ if user.isDemoUser =>
+            BadRequest(toJson(ServerResponse("Creating branches is not allowed in demo mode")))
           case _ if defBranchName.equals("") =>
             BadRequest(toJson(ServerResponse("Invalid branch name")))
           case _ if user.isMaxFilesCountExceeded =>

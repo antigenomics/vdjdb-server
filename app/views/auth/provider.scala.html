@@ -2,6 +2,7 @@
 @import play.api.Logger
 @import securesocial.core.AuthenticationMethod._
 @import securesocial.core.{IdentityProvider, Registry}
+@import server.Configuration
 @import securesocial.core.providers.utils.RoutesHelper
 @import views.html.helper._
 @implicitFieldConstructor = @{
@@ -31,6 +32,20 @@
                 <button class="btn btn-block btn-flat bg-purple">Sign in<i class="fa fa-fw fa-sign-in"></i></button>
             </fieldset>
         </form>
+        @if(Configuration.createDemoAccount){
+        <hr class="wide">
+        <form action = "@securesocial.core.providers.utils.RoutesHelper.authenticateByPost("userpass").absoluteURL(IdentityProvider.sslEnabled)(request)" method="POST" role="form">
+            <fieldset>
+                <div class="form-group hidden">
+                    <input class="form-control" placeholder="E-mail" name="username" value="demo" type="email">
+                </div>
+                <div class="form-group hidden">
+                    <input class="form-control" placeholder="Password" name="password" value="demo" type="password">
+                </div>
+                <button class="btn btn-block btn-flat bg-olive">Demo mode<i class="fa fa-fw fa-sign-in"></i></button>
+            </fieldset>
+        </form>
+        }
     }
     <hr class="wide">
     <p>Don't have an account? <a href="@securesocial.core.providers.utils.RoutesHelper.startSignUp()">Sign up </a> now!</p>

@@ -289,12 +289,7 @@
                                         filter.allowNegative = column.allowNegative;
                                         filter.defaultFilterType = column.defaultFilterType;
                                         filter.initialized = true;
-                                        //todo not working ?
-                                        if (column.allowNegative === false) {
-                                            filter.negative = true;
-                                        } else {
-                                            filter.negative = false;
-                                        }
+                                        filter.negative = false;
                                         var new_f = filters.copyFilter(filter);
                                         filterId = new_f.filterId;
                                     }

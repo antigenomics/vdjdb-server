@@ -7,13 +7,15 @@ import play.api.{Play}
   */
   
 object Configuration {
-  def uploadPath : String = Play.current.configuration.getString("uploadPath").getOrElse("/tmp")
-  def maxFilesCount : Int = Play.current.configuration.getInt("maxFilesCount").getOrElse(0)
-  def maxFileSize : Int = Play.current.configuration.getInt("maxFileSize").getOrElse(0)
-  def allowGitRequest : Boolean = Play.current.configuration.getBoolean("allowGitRequest").getOrElse(false)
-  def deleteAfter : Int = Play.current.configuration.getInt("deleteAfter").getOrElse(0)
-  def automaticDatabaseUpdate : Boolean = Play.current.configuration.getBoolean("automaticDatabaseUpdate").getOrElse(true)
-  def useLocalDatabase : Boolean = Play.current.configuration.getBoolean("useLocalDatabase").getOrElse(false)
-  def databasePath : String = Play.current.configuration.getString("databasePath").getOrElse("~/database/")
-
+  private def conf = Play.current.configuration
+  def uploadPath : String = conf.getString("uploadPath").getOrElse("/tmp")
+  def maxFilesCount : Int = conf.getInt("maxFilesCount").getOrElse(0)
+  def maxFileSize : Int = conf.getInt("maxFileSize").getOrElse(0)
+  def allowGitRequest : Boolean = conf.getBoolean("allowGitRequest").getOrElse(false)
+  def deleteAfter : Int = conf.getInt("deleteAfter").getOrElse(0)
+  def automaticDatabaseUpdate : Boolean = conf.getBoolean("automaticDatabaseUpdate").getOrElse(true)
+  def useLocalDatabase : Boolean = conf.getBoolean("useLocalDatabase").getOrElse(false)
+  def databasePath : String = conf.getString("databasePath").getOrElse("database/")
+  def createDemoAccount : Boolean = conf.getBoolean("createDemoAccount").getOrElse(false)
+  def demoDatasetPath : String = conf.getString("demoDatasetPath").getOrElse("demo-dataset/")
 }
