@@ -451,7 +451,7 @@
                 var searchStarted  = false;
 
                 $scope.page = 1;
-                $scope.userPageSize = 25;
+                $scope.userPageSize = 100;
                 $scope.maxPages = SearchDatabaseAPI.getMaxPages;
                 $scope.totalItems = SearchDatabaseAPI.getTotalItems;
                 $scope.pageSize = SearchDatabaseAPI.getPageSize;
