@@ -532,6 +532,17 @@
                             value = vRegion + otherRegion + jRegion;
                         }
                     }
+                    if (entry.column.metadata.name === 'gene') {
+                        switch (value) {
+                            case 'TRA':
+                                value = '<text class="tra_text_color">' + value + '</text>';
+                                break;
+                            case 'TRB':
+                                value = '<text class="trb_text_color">' + value + '</text>';
+                                break;
+                            default:
+                        }
+                    }
                     if (dataType === 'url') {
                         if (value.indexOf('PMID') >= 0) {
                             var id = value.substring(5, value.length);

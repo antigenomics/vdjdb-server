@@ -348,5 +348,13 @@ tr.shown td.details-control:before {
     z-index: 26;
 }
 
+.tra_text_color {
+    color: #1a9641;
+}
+
+.trb_text_color {
+    color: #d7191c;
+}
+
 
 

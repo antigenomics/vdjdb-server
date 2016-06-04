@@ -72,6 +72,10 @@ public class ServerFile extends Model {
 
     public static void deleteFile(ServerFile file) {
         File fileDir = new File(file.directoryPath);
+        if (!fileDir.exists()) {
+            Ebean.delete(file);
+            return;
+        }
         File[] files = fileDir.listFiles();
         if (files == null) {
             fileDir.delete();
