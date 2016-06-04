@@ -73,6 +73,7 @@
                             max-size="10" class="pagination-sm" boundary-links="true"
                             rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
                             </pagination>
+                            <div id="table_scroll_wrapper">
                             <table class="table table-hover compact" ng-if="isSearchStarted()">
                                 <thead>
                                     <tr>
@@ -97,6 +98,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
+                            </div>
                             <pagination total-items="totalItems()"
                                 items-per-page="pageSize()" ng-model="page"
                                 max-size="10" class="pagination-sm" boundary-links="true"

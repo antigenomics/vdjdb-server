@@ -321,6 +321,7 @@ tr.shown td.details-control:before {
 #table_wrapper {
     position: relative;
     padding-top: 20px;
+    width: 100%;
 }
 
 #table_wrapper > .block_background {
@@ -346,6 +347,11 @@ tr.shown td.details-control:before {
     width: 20%;
     text-align: center;
     z-index: 26;
+}
+
+#table_scroll_wrapper {
+    width: 100%;
+    overflow: scroll;
 }
 
 .tra_text_color {
