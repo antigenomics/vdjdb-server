@@ -84,9 +84,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="data in getData()" on-last-repeat="row">
-                                        <td ng-repeat="entry in ::data.row.entries" ng-if="isColumnVisible(entry)" compile="::entryValue(entry, data.row.entries)">
-                                        </td>
+                                    <tr ng-repeat="(dataIndex, data) in getData()" on-last-repeat="row" ng-class="{'complex_parent':data.complexFound, 'complex_child':data.complex}">
+                                        <td ng-repeat="(entryIndex, entry) in ::data.row.entries" ng-if="isColumnVisible(entry)" compile="::entryValue(entry, data.row.entries)" ng-click="clickEntry(dataIndex, entry, data)"></td>
                                     </tr>
                                 </tbody>
                                 <tfoot>

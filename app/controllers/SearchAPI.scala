@@ -95,7 +95,7 @@ object SearchAPI extends Controller {
                 ))
               }
             case "get_page" =>
-              val page = requestData.\("page").as[Int]
+              val page = (requestData \ "page").asOpt[Int].getOrElse(0)
               val data = searchResults.getPage(page)
               channel push Json.toJson(Map(
                 "status" ->  toJson("success"),
@@ -104,9 +104,9 @@ object SearchAPI extends Controller {
                 "page" -> toJson(page)
               ))
             case "sort" =>
-              val columnId = requestData.\("columnId").as[Int]
-              val sortType = requestData.\("sortType").as[String]
-              val page = requestData.\("page").as[Int]
+              val columnId = (requestData \ "columnId").asOpt[Int].getOrElse(1)
+              val sortType = (requestData \ "sortType").asOpt[String].getOrElse("asc")
+              val page = (requestData \ "page").asOpt[Int].getOrElse(0)
               searchResults.sort(columnId, sortType)
               val data = searchResults.getPage(page)
               channel push Json.toJson(Map(
@@ -115,8 +115,8 @@ object SearchAPI extends Controller {
                 "rows" -> Json.toJson(JsonUtil.convert(data))
               ))
             case "change_size" =>
-              val size = requestData.\("size").as[Int]
-              val init = requestData.\("init").as[Boolean]
+              val size = (requestData \ "size").asOpt[Int].getOrElse(100)
+              val init = (requestData \ "init").asOpt[Boolean].getOrElse(true)
               searchResults.setPageSize(size)
               channel push Json.toJson(Map(
                 "status" ->  toJson("success"),
@@ -125,6 +125,27 @@ object SearchAPI extends Controller {
                 "rows" -> toJson(if (init) null else JsonUtil.convert(searchResults.getPage(0))),
                 "pageSize" -> toJson(searchResults.getPageSize.toInt)
               ))
+            case "complex" =>
+              val complexId = (requestData \ "complexId").asOpt[String].getOrElse("-1")
+              val gene = (requestData \ "gene").asOpt[String].getOrElse("null")
+              val index = (requestData \ "index").asOpt[Int].getOrElse(-1)
+              if (gene.equals("TRA") || gene.equals("TRB")) {
+                val complexes = GlobalDatabase.findComplexes(complexId, gene)
+                channel push Json.toJson(Map(
+                  "status" -> toJson("success"),
+                  "action" -> toJson("complex"),
+                  "rows" -> toJson(JsonUtil.convert(complexes)),
+                  "complexId" -> toJson(complexId),
+                  "gene" -> toJson(gene),
+                  "index" -> toJson(index)
+                ))
+              } else {
+                channel push Json.toJson(Map(
+                  "status" -> toJson("error"),
+                  "action" -> toJson("complex"),
+                  "message" -> toJson("Invalid request")
+                ))
+              }
             case _ =>
           }
         } catch {

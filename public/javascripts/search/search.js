@@ -66,12 +66,37 @@
                                 data.splice(0, data.length);
                                 angular.extend(data, responseData);
                             }
-
+                            break;
+                        case "complex":
+                            responseData = JSON.parse(response.rows);
+                            var found = false;
+                            angular.forEach(responseData, function (d) {
+                                if (d.row.entries[1].value !== response.gene) {
+                                    d.complex = true;
+                                    found = true;
+                                    data[response.index].complexFound = true;
+                                    data.splice(response.index + 1, 0, d);
+                                    setTimeout(function () {
+                                        $('.row_popover').popover({
+                                            container: 'body',
+                                            html: true,
+                                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
+                                        });
+                                    }, 100)
+                                }
+                            });
+                            if (!found) {
+                                notify.notice('Search', 'Complex not found');
+                            }
+                            break;
+                        default:
+                            notify.notice('Search', 'Invalid response');
+                            break;
                     }
                     break;
                 case 'warn':
                     angular.forEach(response.warnings, function(warning) {
-                        notify.info('Search', warning);
+                        notify.notice('Search', warning);
                     });
                     break;
                 case 'error':
@@ -211,10 +236,26 @@
             if (connected && !loading) {
                 pageLoading = true;
                 connection.send({
-                    action: "change_size",
+                    action: 'change_size',
                     data: {
                         size: newPageSize,
                         init: !isDataFound()
+                    }
+                })
+            } else if (loading) {
+                notify.info('Search', 'Loading...');
+            }
+        }
+
+        function findComplexes(complexId, gene, index) {
+            if (connected && !loading) {
+                pageLoading = true;
+                connection.send({
+                    action: 'complex',
+                    data: {
+                        complexId: complexId,
+                        gene: gene,
+                        index: index
                     }
                 })
             } else if (loading) {
@@ -242,6 +283,7 @@
             getTotalItems: getTotalItems,
             getPageSize: getPageSize,
             changePage: changePage,
+            findComplexes: findComplexes,
             isConnected: isConnected,
             isConnectionBroken: isConnectionBroken,
             isLoading: isLoading,
@@ -427,11 +469,11 @@
                                 html: true,
                                 template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
                             }).on('click', function(e) {
-                                if ($(this).prop("tagName") === 'I') {
+                                if ($(this).prop('tagName') === 'I') {
                                     var content = $(this).attr('data-content');
                                     content = content.replace(/<p>/gm, " ");
                                     content = content.replace(/(<([^>]+)>)/ig, "\n");
-                                    window.prompt("Copy to clipboard: Ctrl+C, Enter\nUse arrows to navigate", content);
+                                    window.prompt('Copy to clipboard: Ctrl+C, Enter\nUse arrows to navigate', content);
                                 }
                                 e.preventDefault();
                             });
@@ -471,6 +513,7 @@
                 $scope.searchWS = search;
                 $scope.sortDatabase = sortDatabase;
                 $scope.isSearchStarted = isSearchStarted;
+                $scope.clickEntry = clickEntry;
                 $scope.entryValue = entryValue;
                 $scope.columnHeader = columnHeader;
                 $scope.isColumnVisible = isColumnVisible;
@@ -507,6 +550,16 @@
                 function changePageSize() {
                     $scope.page = 1;
                     SearchDatabaseAPI.changePageSize($scope.userPageSize);
+                }
+
+                function clickEntry(dataIndex, entry, data) {
+                    if (data.hasOwnProperty("complex") && data.complex) return;
+                    if (data.hasOwnProperty("complexFound") && data.complexFound) return;
+                    if (entry.column.name === 'gene') {
+                        var complexId = data.row.entries[0].value;
+                        var gene = entry.value;
+                        SearchDatabaseAPI.findComplexes(complexId, gene, dataIndex);
+                    }
                 }
 
                 function entryValue(entry, entries) {

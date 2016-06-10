@@ -8,7 +8,7 @@ import com.antigenomics.vdjdb.db.{Column, Database, DatabaseSearchResult, Search
 import com.antigenomics.vdjdb.Util.checkDatabase
 import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
 import com.antigenomics.vdjdb.sequence.SequenceFilter
-import com.antigenomics.vdjdb.text.TextFilter
+import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
 import controllers.IntersectionAPI.IntersectParametersRequest
 import controllers.SearchAPI.FiltersRequest
@@ -41,10 +41,17 @@ object GlobalDatabase extends SynchronizedAccess {
       db().getDbInstance.search(textFilters, sequenceFilters)
     }
 
+  def findComplexes(complexId: String, gene: String) =
+    synchronizeRead { implicit lock =>
+      val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
+      textFilters.add(new ExactTextFilter("complex.id", complexId, false))
+      textFilters.add(new ExactTextFilter("gene", gene, true))
+      val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
+      db().getDbInstance.search(textFilters, sequenceFilters)
+    }
+
   def intersect(sample: Sample, parameters: IntersectParametersRequest, textFilters : util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter]) =
     synchronizeRead { implicit lock =>
-      //val clonotypeDatabase = db().asClonotypeDatabase()
-      //clonotypeDatabase.search(sample)
       val searchResults = db().getDbInstance.search(textFilters, sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
         new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(parameters.matchV, parameters.matchJ,

@@ -74,12 +74,6 @@ public class SearchResult {
         this.pageSize = pageSize;
     }
 
-    public Integer getMaxPages() {;
-        int maxPages = results.size() / pageSize;
-        if (maxPages * pageSize < results.size()) maxPages++;
-        return maxPages;
-    }
-
     public Integer getPageSize() {
         return pageSize;
     }
