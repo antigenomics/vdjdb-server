@@ -32,9 +32,7 @@
             sortType: 'asc'
         });
         var data = [];
-        var actualPage = 0;
-        var maxPages = -1;
-        var pageSize = -1;
+        var pageSize = 100;
         var totalItems = -1;
         var loading = false;
         var pageLoading = false;
@@ -47,17 +45,29 @@
 
         connection.onMessage(function(message) {
             var response = JSON.parse(message.data);
+            var responseData;
             loading = false;
             pageLoading = false;
             switch (response.status) {
-                case 'ok':
-                    var responseData = JSON.parse(response.data);
-                    data.splice(0, data.length);
-                    angular.extend(data, responseData);
-                    actualPage = response.page;
-                    maxPages = response.maxPages;
-                    pageSize = response.pageSize;
-                    totalItems = response.totalItems;
+                case 'success':
+                    switch (response.action) {
+                        case 'search':
+                            totalItems = response.totalItems;
+                        case 'get_page':
+                        case 'sort':
+                            responseData = JSON.parse(response.rows);
+                            data.splice(0, data.length);
+                            angular.extend(data, responseData);
+                            break;
+                        case "change_size":
+                            pageSize = response.pageSize;
+                            if (!response.init) {
+                                responseData = JSON.parse(response.rows);
+                                data.splice(0, data.length);
+                                angular.extend(data, responseData);
+                            }
+
+                    }
                     break;
                 case 'warn':
                     angular.forEach(response.warnings, function(warning) {
@@ -90,10 +100,8 @@
             loading = false;
             pingWebSocket = setInterval(function() {
                 connection.send({
-                    message: 'ping',
-                    filtersRequest: filters.getFiltersRequest(),
-                    page: 0,
-                    sortRule: sortRule
+                    action: 'ping',
+                    data: {}
                 });
             }, 10000)
         });
@@ -153,10 +161,8 @@
                 sortRule.columnId = defaultSortRule.columnId;
                 sortRule.sortType = defaultSortRule.sortType;
                 connection.send({
-                    message: 'search',
-                    filtersRequest: filters.getFiltersRequest(),
-                    page: 0,
-                    sortRule: sortRule
+                    action: 'search',
+                    data: filters.getFiltersRequest()
                 });
             } else if (loading) {
                 notify.info('Search', 'Loading...');
@@ -168,10 +174,10 @@
                 $("[data-toggle='popover']").popover('destroy');
                 pageLoading = true;
                 connection.send({
-                    message: 'page',
-                    filtersRequest: filters.getFiltersRequest(),
-                    page: page,
-                    sortRule: sortRule
+                    action: 'get_page',
+                    data: {
+                        page: page
+                    }
                 })
             } else if (loading) {
                 notify.info('Search', 'Loading...');
@@ -189,10 +195,12 @@
                 }
                 sortRule.columnId = index;
                 connection.send({
-                    message: 'sort',
-                    filtersRequest: filters.getFiltersRequest(),
-                    page: page,
-                    sortRule: sortRule
+                    action: 'sort',
+                    data: {
+                        page: page,
+                        columnId: sortRule.columnId,
+                        sortType: sortRule.sortType
+                    }
                 })
             } else if (loading) {
                 notify.info('Search', 'Loading...');
@@ -202,16 +210,12 @@
         function changePageSize(newPageSize) {
             if (connected && !loading) {
                 pageLoading = true;
-                var message = 'size';
-                if (!isDataFound()) {
-                    message = 'reinit_size';
-                    pageLoading = false;
-                }
                 connection.send({
-                    message: message,
-                    filtersRequest: filters.getFiltersRequest(),
-                    page: newPageSize,
-                    sortRule: sortRule
+                    action: "change_size",
+                    data: {
+                        size: newPageSize,
+                        init: !isDataFound()
+                    }
                 })
             } else if (loading) {
                 notify.info('Search', 'Loading...');
@@ -236,7 +240,6 @@
             getData: getData,
             isDataFound: isDataFound,
             getTotalItems: getTotalItems,
-            getMaxPages: getMaxPages,
             getPageSize: getPageSize,
             changePage: changePage,
             isConnected: isConnected,
@@ -452,7 +455,6 @@
 
                 $scope.page = 1;
                 $scope.userPageSize = 100;
-                $scope.maxPages = SearchDatabaseAPI.getMaxPages;
                 $scope.totalItems = SearchDatabaseAPI.getTotalItems;
                 $scope.pageSize = SearchDatabaseAPI.getPageSize;
                 $scope.getData = SearchDatabaseAPI.getData;
@@ -481,7 +483,7 @@
 
                 function isShowPagination() {
                     if (!SearchDatabaseAPI.isDataFound() || SearchDatabaseAPI.isLoading()) return false;
-                    return $scope.maxPages() > 1;
+                    return $scope.totalItems() > 0;
                 }
 
                 function isSearchStarted() {

@@ -3,19 +3,16 @@ package controllers
 
 import java.util
 
-import com.antigenomics.vdjdb.sequence.SequenceFilter
-import com.antigenomics.vdjdb.text._
-import com.milaboratory.core.tree.TreeSearchParameters
 import play.api.libs.iteratee.{Concurrent, Iteratee}
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json._
 import play.api.mvc._
 import server.wrappers.{ColumnsInfo, SearchResult}
-import server.{FiltersParser, GlobalDatabase, ServerLogger, ServerResponse}
+import server.{FiltersParser, GlobalDatabase, ServerResponse}
 import utils.JsonUtil.sendJson
 import play.api.libs.json.Json.toJson
-import play.api.mvc.WebSocket.FrameFormatter
 import utils.JsonUtil
 
+import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -59,59 +56,84 @@ object SearchAPI extends Controller {
     }
   }
 
-  case class DatabaseSortRule(columnId: Int, sortType: String)
-  implicit val databaseSortRuleReader = Json.reads[DatabaseSortRule]
-
-  case class SearchWebSocketRequest(message: String, filtersRequest: FiltersRequest, page: Int, sortRule: DatabaseSortRule)
+  case class SearchWebSocketRequest(action: String, data: JsValue)
   implicit val searchWebSocketRequestReader = Json.reads[SearchWebSocketRequest]
 
-  case class SearchWebSocketResponse(status: String, message: String, data: String, page: Int, maxPages: Int, pageSize: Int, totalItems: Int, warnings: List[String])
+  case class SearchWebSocketResponse(status: String, action: String, data: JsValue)
   implicit val searchWebSocketResponseWriter = Json.writes[SearchWebSocketResponse]
 
+  case class SearchWebSocketData(rows: String, page: Int, maxPages: Int, pageSize: Int, totalItems: Int)
+  implicit val searchWebSocketDataWriter = Json.writes[SearchWebSocketData]
+
   def searchWebSocket = WebSocket.using[JsValue] { request =>
-    //Concurrent.broadcast returns (Enumerator, Concurrent.Channel)
     val (out,channel) = Concurrent.broadcast[JsValue]
     var searchResults : SearchResult = new SearchResult()
     var filters : FiltersParser = null
 
-    //log the message to stdout and send response back to client
     val in = Iteratee.foreach[JsValue] {
       websocketMessage  =>
         try {
           val searchRequest = Json.fromJson[SearchWebSocketRequest](websocketMessage).get
-          searchRequest.message match {
-            case "search" =>
-              filters = FiltersParser.parse(searchRequest.filtersRequest.textFilters, searchRequest.filtersRequest.sequenceFilters)
+          val requestData = searchRequest.data
+          searchRequest.action match {
+            case "search"  =>
+              val filtersRequest = Json.fromJson[FiltersRequest](requestData).get
+              filters = FiltersParser.parse(filtersRequest.textFilters, filtersRequest.sequenceFilters)
               searchResults.reinit(filters.textFilters, filters.sequenceFilters, filters.warnings)
               val data = searchResults.getPage(0)
-              channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), 0, searchResults.getMaxPages,
-                searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
+              channel push Json.toJson(Map(
+                "status" -> toJson("success"),
+                "action" -> toJson("search"),
+                "rows" -> Json.toJson(JsonUtil.convert(data)),
+                "totalItems" -> toJson(searchResults.getTotalItems.toInt)
+              ))
               if (filters.warnings.size() != 0) {
-                channel push Json.toJson(SearchWebSocketResponse("warn", "", "{}", 0, 0, 0, 0, filters.getWarnings))
+                channel push Json.toJson(Map(
+                  "status" -> toJson("warn"),
+                  "action" ->  toJson("search"),
+                  "warnings" -> toJson(searchResults.warnings.toList)
+                ))
               }
-            case "page" =>
-              val data = searchResults.getPage(searchRequest.page)
-              channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), searchRequest.page,
-                searchResults.getMaxPages, searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
+            case "get_page" =>
+              val page = requestData.\("page").as[Int]
+              val data = searchResults.getPage(page)
+              channel push Json.toJson(Map(
+                "status" ->  toJson("success"),
+                "action" ->  toJson("get_page"),
+                "rows" -> Json.toJson(JsonUtil.convert(data)),
+                "page" -> toJson(page)
+              ))
             case "sort" =>
-              searchResults.sort(searchRequest.sortRule.columnId, searchRequest.sortRule.sortType)
-              val data = searchResults.getPage(searchRequest.page)
-              channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), searchRequest.page,
-                searchResults.getMaxPages, searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
-            case "size" =>
-              searchResults.setPageSize(searchRequest.page)
-              val data = searchResults.getPage(0)
-              channel push Json.toJson(SearchWebSocketResponse("ok", "", JsonUtil.convert(data), 0, searchResults.getMaxPages,
-                  searchResults.getPageSize, searchResults.getTotalItems, List[String]()))
-            case "reinit_size" =>
-              searchResults.setPageSize(searchRequest.page)
+              val columnId = requestData.\("columnId").as[Int]
+              val sortType = requestData.\("sortType").as[String]
+              val page = requestData.\("page").as[Int]
+              searchResults.sort(columnId, sortType)
+              val data = searchResults.getPage(page)
+              channel push Json.toJson(Map(
+                "status" ->  toJson("success"),
+                "action" ->  toJson("sort"),
+                "rows" -> Json.toJson(JsonUtil.convert(data))
+              ))
+            case "change_size" =>
+              val size = requestData.\("size").as[Int]
+              val init = requestData.\("init").as[Boolean]
+              searchResults.setPageSize(size)
+              channel push Json.toJson(Map(
+                "status" ->  toJson("success"),
+                "action" ->  toJson("change_size"),
+                "init" -> toJson(init),
+                "rows" -> toJson(if (init) null else JsonUtil.convert(searchResults.getPage(0))),
+                "pageSize" -> toJson(searchResults.getPageSize.toInt)
+              ))
             case _ =>
-
           }
         } catch {
           case e : Exception =>
             e.printStackTrace()
-            channel push Json.toJson(SearchWebSocketResponse("error", "Invalid request", "{}", 0, 0, 0, 0, List[String]()))
+            channel push Json.toJson(Map(
+              "status" ->  toJson("error"),
+              "message" ->  toJson("Invalid request")
+            ))
         }
 
     }

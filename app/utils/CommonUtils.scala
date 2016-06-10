@@ -32,7 +32,7 @@ object CommonUtils {
   def createDir(dir: String): Unit = {
     val d = new File(dir)
     if (!d.exists) {
-      d.mkdir()
+      d.mkdirs()
     }
   }
 }
