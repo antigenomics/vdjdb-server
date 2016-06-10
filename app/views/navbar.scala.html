@@ -1,21 +1,26 @@
 @(logoutButton: Boolean)
+<script>
+    function navbarLink(link) {
+        window.location.href = link;
+    }
+</script>
 <div class="index_navbar_background"></div>
 <div class="index_navbar">
-    <div class="navbar_cell">
-        <a href="@routes.Application.index()">Home</a>
+    <div class="navbar_cell" onclick="navbarLink('@routes.Application.index()')">
+        <a>Home</a>
     </div>
-    <div class="navbar_cell">
-        <a href="@routes.SearchAPI.index()">Browse</a>
+    <div class="navbar_cell" onclick="navbarLink('@routes.SearchAPI.index()')">
+        <a>Browse</a>
     </div>
-    <div class="navbar_cell">
-        <a href="@routes.IntersectionAPI.index()">Annotate</a>
+    <div class="navbar_cell" onclick="navbarLink('@routes.IntersectionAPI.index()')">
+        <a>Annotate</a>
     </div>
     @if(logoutButton) {
         <div class="navbar_cell pull-right">
             <a href="/logout">Logout</a>
         </div>
     }
-    <div class="navbar_cell pull-right">
-        <a href="@routes.Application.about()">About</a>
+    <div class="navbar_cell pull-right" onclick="navbarLink('@routes.Application.about()')">
+        <a>About</a>
     </div>
 </div>

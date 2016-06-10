@@ -321,7 +321,8 @@ tr.shown td.details-control:before {
 #table_wrapper {
     position: relative;
     padding-top: 20px;
-    width: 100%;
+    width: 98%;
+    left: 1%;
 }
 
 #table_wrapper > .block_background {
@@ -363,13 +364,13 @@ tr.shown td.details-control:before {
 }
 
 .complex_parent {
-    border-top: 2px solid #605ca8 !important;
-    border-left: 2px solid #605ca8;
+    border-top: 2px solid #605ca8;
+    border-left: 3px solid #605ca8;
     border-right: 2px solid #605ca8;
 }
 
 .complex_child {
-    border-left: 2px solid #605ca8;
+    border-left: 3px solid #605ca8;
     border-right: 2px solid #605ca8;
     border-bottom: 2px solid #605ca8;
 }

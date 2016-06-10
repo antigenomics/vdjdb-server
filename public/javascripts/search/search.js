@@ -513,7 +513,7 @@
                 $scope.searchWS = search;
                 $scope.sortDatabase = sortDatabase;
                 $scope.isSearchStarted = isSearchStarted;
-                $scope.clickEntry = clickEntry;
+                $scope.clickRow = clickRow;
                 $scope.entryValue = entryValue;
                 $scope.columnHeader = columnHeader;
                 $scope.isColumnVisible = isColumnVisible;
@@ -552,14 +552,12 @@
                     SearchDatabaseAPI.changePageSize($scope.userPageSize);
                 }
 
-                function clickEntry(dataIndex, entry, data) {
+                function clickRow(dataIndex, data) {
                     if (data.hasOwnProperty("complex") && data.complex) return;
                     if (data.hasOwnProperty("complexFound") && data.complexFound) return;
-                    if (entry.column.name === 'gene') {
-                        var complexId = data.row.entries[0].value;
-                        var gene = entry.value;
-                        SearchDatabaseAPI.findComplexes(complexId, gene, dataIndex);
-                    }
+                    var complexId = data.row.entries[0].value;
+                    var gene = data.row.entries[1].value;
+                    SearchDatabaseAPI.findComplexes(complexId, gene, dataIndex);
                 }
 
                 function entryValue(entry, entries) {
@@ -705,13 +703,14 @@
 
     application.directive('compile', ['$compile', function ($compile) {
         return function(scope, element, attrs) {
-            scope.$watch(
+            var unregister = scope.$watch(
                 function(scope) {
                     return scope.$eval(attrs.compile);
                 },
                 function(value) {
                     element.html(value);
                     $compile(element.contents())(scope);
+                    unregister();
                 }
             )};
     }]);

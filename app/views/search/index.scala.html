@@ -78,20 +78,20 @@
                                 <thead>
                                     <tr>
                                         <th class="column_header" ng-repeat="(index, entry) in getData()[0].row.entries"
-                                        ng-if="isColumnVisible(entry)" ng-bind-html="columnHeader(entry)" on-last-repeat="column"
+                                        ng-if="isColumnVisible(entry)" compile="columnHeader(entry)" on-last-repeat="column"
                                         ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="(dataIndex, data) in getData()" on-last-repeat="row" ng-class="{'complex_parent':data.complexFound, 'complex_child':data.complex}">
-                                        <td ng-repeat="(entryIndex, entry) in ::data.row.entries" ng-if="isColumnVisible(entry)" compile="::entryValue(entry, data.row.entries)" ng-click="clickEntry(dataIndex, entry, data)"></td>
+                                    <tr ng-repeat="(dataIndex, data) in getData()" on-last-repeat="row" ng-class="{'complex_parent':data.complexFound, 'complex_child':data.complex}" ng-click="::clickRow(dataIndex, data)">
+                                        <td ng-repeat="entry in ::data.row.entries" ng-if="isColumnVisible(entry)" compile="::entryValue(entry, data.row.entries)"></td>
                                     </tr>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <th class="column_header" ng-repeat="(index, entry) in getData()[0].row.entries"
-                                        ng-if="isColumnVisible(entry)" ng-bind-html="columnHeader(entry)" on-last-repeat="column"
+                                        ng-if="isColumnVisible(entry)" compile="columnHeader(entry)" on-last-repeat="column"
                                         ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
                                         </th>
                                     </tr>

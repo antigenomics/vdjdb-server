@@ -284,10 +284,6 @@ function intersectResultsTable(data, file) {
                                 if (comment[propertyName] !== "")
                                     text += '<p>' + propertyName + ' : ' + comment[propertyName] + '</p>';
                             });
-                            angular.forEach(comment, function (value, key) {
-                                if (value !== "")
-                                    text += '<p>' + key + ' : ' + value + '</p>';
-                            });
                             var color_i = 'black';
                             if (meta['name'] === 'cdr3fix') {
                                 if (comment['fixNeeded'] === false && comment['good'] === true) {
