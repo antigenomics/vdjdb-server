@@ -8,7 +8,7 @@ For example
 curl -X GET https://vdjdb.cdr3.net/search/columns
 ```
 will return
-```json
+```
     {
         "columns": [
             ...
@@ -38,7 +38,7 @@ will return
 You can query the database by sending a POST request with a specific JSON content to ``https://vdjdb.cdr3.net/search``.
 
 The structure of JSON query is the following:
-```json
+```
     {
         "textFilters": [
             ...
@@ -50,7 +50,7 @@ The structure of JSON query is the following:
     
 ```
 Where the **text filter** structure is
-```json
+```
     {
         "columnId": "(string)",     //Column name
         "value": "(string)",        //Search value
@@ -79,7 +79,7 @@ curl -H "Content-Type: application/json" -X POST -d '{ "textFilters" : [{"column
 
 will produce
 
-```json
+```
     {
         "pageSize": 100,
         "results": [
