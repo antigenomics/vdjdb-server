@@ -73,8 +73,10 @@
                             angular.forEach(responseData, function (d) {
                                 if (d.row.entries[1].value !== response.gene) {
                                     d.complex = true;
+                                    d.row.entries[1].complex = true;
                                     found = true;
                                     data[response.index].complexFound = true;
+                                    data[response.index].row.entries[1].complexFound = true;
                                     data.splice(response.index + 1, 0, d);
                                     setTimeout(function () {
                                         $('.row_popover').popover({
@@ -88,6 +90,18 @@
                             if (!found) {
                                 notify.notice('Search', 'Complex not found');
                             }
+                            break;
+                        case "export":
+                            var elem = document.createElement('a');
+                            var link = response.link;
+                            var exportType = response.exportType;
+                            elem.href = '/search/doc/' + exportType + '/' + link;
+                            //elem.target = '_blank';
+                            //elem.style.targetNew = 'new';
+                            console.log(elem.href);
+                            document.body.appendChild(elem);
+                            elem.click();
+                            //document.removeChild(elem);
                             break;
                         default:
                             notify.notice('Search', 'Invalid response');
@@ -263,6 +277,24 @@
             }
         }
 
+        function exportDocument(exportType) {
+            if (connected && !loading) {
+                pageLoading = true;
+                connection.send({
+                    action: 'export',
+                    data: {
+                        exportType: exportType
+                    }
+                })
+            } else if (loading) {
+                notify.info('Search', 'Loading...');
+            }
+        }
+
+        function deleteRow(dataIndex) {
+            data.splice(dataIndex, 1);
+        }
+
         function isColumnAscSorted(index) {
             if (sortRule.columnId === index && sortRule.sortType === 'asc') return true;
             return false;
@@ -284,12 +316,14 @@
             getPageSize: getPageSize,
             changePage: changePage,
             findComplexes: findComplexes,
+            exportDocument: exportDocument,
             isConnected: isConnected,
             isConnectionBroken: isConnectionBroken,
             isLoading: isLoading,
             isPageLoading: isPageLoading,
             isColumnAscSorted: isColumnAscSorted,
-            isColumnDescSorted: isColumnDescSorted
+            isColumnDescSorted: isColumnDescSorted,
+            deleteRow: deleteRow
         }
     }]);
     
@@ -505,6 +539,7 @@
                 $scope.isConnectionBroken = SearchDatabaseAPI.isConnectionBroken;
                 $scope.isPageLoading = SearchDatabaseAPI.isPageLoading;
                 $scope.isLoading = SearchDatabaseAPI.isLoading;
+                $scope.exportDocument = SearchDatabaseAPI.exportDocument;
 
                 $scope.isColumnAscSorted = SearchDatabaseAPI.isColumnAscSorted;
                 $scope.isColumnDescSorted = SearchDatabaseAPI.isColumnDescSorted;
@@ -519,6 +554,8 @@
                 $scope.isColumnVisible = isColumnVisible;
                 $scope.isShowPagination = isShowPagination;
                 $scope.changePageSize = changePageSize;
+                $scope.isComplex = isComplex;
+                $scope.isComplexParent = isComplexParent;
 
                 $scope.clipNoFlash = clipNoFlash;
                 $scope.copyToClip = copyToClip;
@@ -554,10 +591,27 @@
 
                 function clickRow(dataIndex, data) {
                     if (data.hasOwnProperty("complex") && data.complex) return;
-                    if (data.hasOwnProperty("complexFound") && data.complexFound) return;
+                    if (data.hasOwnProperty("complexFound") && data.complexFound) {
+                        data.complexFound = false;
+                        data.row.entries[1].complexFound = false;
+                        SearchDatabaseAPI.deleteRow(dataIndex + 1);
+                        return;
+                    }
                     var complexId = data.row.entries[0].value;
                     var gene = data.row.entries[1].value;
-                    SearchDatabaseAPI.findComplexes(complexId, gene, dataIndex);
+                    if (complexId != 0) {
+                        SearchDatabaseAPI.findComplexes(complexId, gene, dataIndex);
+                    } else {
+                        notify.notice('Search', 'Complex not found');
+                    }
+                }
+
+                function isComplex(entry) {
+                    return entry.hasOwnProperty('complex') && entry.complex;
+                }
+
+                function isComplexParent(entry) {
+                    return entry.hasOwnProperty('complexFound') && entry.complexFound;
                 }
 
                 function entryValue(entry, entries) {
@@ -586,12 +640,20 @@
                         }
                     }
                     if (entry.column.metadata.name === 'gene') {
+                        var prefix = '';
+                        if (entries[0].value != 0) {
+                            prefix = '<i class="fa cursor_pointer" ng-class="{\'fa-plus\':!isComplexParent(entry) && !isComplex(entry), \'fa-minus\':isComplexParent(entry)}" aria-hidden="true" ' +
+                                'ng-click="::clickRow(dataIndex, data)"></i>';
+                        } else {
+                            prefix = '<i class="fa fa-plus cursor_pointer" style="color: #D3D3D3;" ng-click="::clickRow(dataIndex, data)""></i>'
+                        }
+
                         switch (value) {
                             case 'TRA':
-                                value = '<text class="tra_text_color">' + value + '</text>';
+                                value = prefix + '<text class="tra_text_color">\t' + value + '</text>';
                                 break;
                             case 'TRB':
-                                value = '<text class="trb_text_color">' + value + '</text>';
+                                value = prefix + '<text class="trb_text_color">\t ' + value + '</text>';
                                 break;
                             default:
                         }

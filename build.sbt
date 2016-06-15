@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % "2.7.1",
   "org.eclipse.jgit" % "org.eclipse.jgit" % "4.2.0.201601211800-r",
   "mysql" % "mysql-connector-java" % "5.1.18",
+  "org.apache.poi" % "poi" % "3.9",
   javaJdbc,
   cache,
   javaEbean

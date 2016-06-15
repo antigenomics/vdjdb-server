@@ -7,10 +7,11 @@ GET     /                           controllers.Application.index
 GET     /about                      controllers.Application.about
 
 # Search api
-GET     /search                     controllers.SearchAPI.index
-GET     /search/columns             controllers.SearchAPI.columns
-POST    /search                     controllers.SearchAPI.search
-GET     /search/connect             controllers.SearchAPI.searchWebSocket
+GET     /search                         controllers.SearchAPI.index
+GET     /search/columns                 controllers.SearchAPI.columns
+POST    /search                         controllers.SearchAPI.search
+GET     /search/connect                 controllers.SearchAPI.searchWebSocket
+GET     /search/doc/:exportType/:link   controllers.SearchAPI.downloadDocument(exportType, link)
 
 # Annotations api
 GET     /intersection                controllers.IntersectionAPI.index

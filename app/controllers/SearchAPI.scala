@@ -3,14 +3,14 @@ package controllers
 
 import java.util
 
-import play.api.libs.iteratee.{Concurrent, Iteratee}
+import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import play.api.libs.json._
 import play.api.mvc._
 import server.wrappers.{ColumnsInfo, SearchResult}
 import server.{FiltersParser, GlobalDatabase, ServerResponse}
 import utils.JsonUtil.sendJson
 import play.api.libs.json.Json.toJson
-import utils.JsonUtil
+import utils.{CommonUtils, DocumentConverter, JsonUtil}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,9 +29,28 @@ object SearchAPI extends Controller {
     sendJson(GlobalDatabase.getDatabase())
   }
 
-
   def columns = Action {
     sendJson(new ColumnsInfo(GlobalDatabase.getColumns()))
+  }
+
+  def downloadDocument(exportType: String, link: String) = Action {
+    val folder = new java.io.File("/tmp/" + link + "/")
+    val doc = new java.io.File(folder.getAbsolutePath + "/" + "SearchResults" + DocumentConverter.getTypeExtension(exportType))
+    println(doc.getAbsolutePath)
+    if (folder.exists() && doc.exists()) {
+      val docContent: Enumerator[Array[Byte]] = Enumerator.fromFile(doc)
+      doc.delete()
+      folder.delete()
+      SimpleResult(
+        header = ResponseHeader(200, Map(
+          CONTENT_DISPOSITION -> ("attachment; filename=SearchResults" + DocumentConverter.getTypeExtension(exportType)),
+          CONTENT_TYPE -> "application/x-download"
+        )),
+        body = docContent
+      )
+    } else {
+      BadRequest("Invalid request")
+    }
   }
 
   case class DatabaseTextFilter(columnId: String, value: String, filterType: String, negative: Boolean)
@@ -144,6 +163,23 @@ object SearchAPI extends Controller {
                   "status" -> toJson("error"),
                   "action" -> toJson("complex"),
                   "message" -> toJson("Invalid request")
+                ))
+              }
+            case "export" =>
+              val exportType = (requestData \ "exportType").asOpt[String].getOrElse("excel")
+              val link = new DocumentConverter(exportType).convert(searchResults.results)
+              if (link != null) {
+                channel push Json.toJson(Map(
+                  "status" -> toJson("success"),
+                  "action" -> toJson("export"),
+                  "exportType" -> toJson(exportType),
+                  "link" -> toJson(link)
+                ))
+              } else {
+                channel push Json.toJson(Map(
+                  "status" -> toJson("success"),
+                  "action" -> toJson("export"),
+                  "message" -> toJson("Export failed")
                 ))
               }
             case _ =>

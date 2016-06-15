@@ -5,7 +5,7 @@
     <link href="@routes.Assets.at("lib/jquery/jquery-ui.structure.min.css")" rel="stylesheet">
     <link href="@routes.Assets.at("lib/jquery/jquery-ui.theme.min.css")" rel="stylesheet">
 
-    <!-- Select styling -->
+        <!-- Select styling -->
     <script src="@routes.Assets.at("lib/select/js/select.js")" type="text/javascript"></script>
     <link href="@routes.Assets.at("lib/select/css/style.css")" rel="stylesheet">
 
@@ -54,7 +54,7 @@
                                 <option value="50">50</option>
                                 <option value="100">100</option>
                             </select>
-                            <label class="pull-right"  for="selectPageSize">Page Size:</label>
+                            <label class="pull-right" for="selectPageSize">Page Size:</label>
                         </div>
                         <div class="box-body" ng-show="isLoading()">
                             <div class="spinner">
@@ -68,43 +68,46 @@
                             <div class="text-center" ng-if="isConnectionBroken()">
                                 <h4>No connection to database. Please refresh the page.</h4>
                             </div>
-                            <pagination total-items="totalItems()"
-                            items-per-page="pageSize()" ng-model="page"
-                            max-size="10" class="pagination-sm" boundary-links="true"
-                            rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                            </pagination>
-                            <div id="table_scroll_wrapper">
-                            <table class="table table-hover compact" ng-if="isSearchStarted()">
-                                <thead>
-                                    <tr>
-                                        <th class="column_header" ng-repeat="(index, entry) in getData()[0].row.entries"
-                                        ng-if="isColumnVisible(entry)" compile="columnHeader(entry)" on-last-repeat="column"
-                                        ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr ng-repeat="(dataIndex, data) in getData()" on-last-repeat="row" ng-class="{'complex_parent':data.complexFound, 'complex_child':data.complex}" ng-click="::clickRow(dataIndex, data)">
-                                        <td ng-repeat="entry in ::data.row.entries" ng-if="isColumnVisible(entry)" compile="::entryValue(entry, data.row.entries)"></td>
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th class="column_header" ng-repeat="(index, entry) in getData()[0].row.entries"
-                                        ng-if="isColumnVisible(entry)" compile="columnHeader(entry)" on-last-repeat="column"
-                                        ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
-                                        </th>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                            </div>
-                            <pagination total-items="totalItems()"
+                            <div ng-if="isSearchStarted()">
+                                <pagination total-items="totalItems()"
                                 items-per-page="pageSize()" ng-model="page"
                                 max-size="10" class="pagination-sm" boundary-links="true"
                                 rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                            </pagination>
-                            <div class="text-center" ng-if="!isDataFound() && isSearchStarted()">
-                                <h4>No data found</h4>
+                                </pagination>
+                                <button class="btn btn-flat btn-default pull-right" ng-click="exportDocument('excel')">Export to Excel</button>
+                                <div id="table_scroll_wrapper">
+                                    <table class="table table-hover compact">
+                                        <thead>
+                                            <tr>
+                                                <th class="column_header" ng-repeat="(index, entry) in getData()[0].row.entries"
+                                                ng-if="isColumnVisible(entry)" compile="columnHeader(entry)" on-last-repeat="column"
+                                                ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="(dataIndex, data) in getData()" on-last-repeat="row" ng-class="{'complex_parent':data.complexFound, 'complex_child':data.complex}">
+                                                <td ng-repeat="entry in ::data.row.entries" ng-if="isColumnVisible(entry)" compile="::entryValue(entry, data.row.entries)"></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th class="column_header" ng-repeat="(index, entry) in getData()[0].row.entries"
+                                                ng-if="isColumnVisible(entry)" compile="columnHeader(entry)" on-last-repeat="column"
+                                                ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <pagination total-items="totalItems()"
+                                items-per-page="pageSize()" ng-model="page"
+                                max-size="10" class="pagination-sm" boundary-links="true"
+                                rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                </pagination>
+                                <div class="text-center" ng-if="!isDataFound()">
+                                    <h4>No data found</h4>
+                                </div>
                             </div>
                         </div>
                     </div>

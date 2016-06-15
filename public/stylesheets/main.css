@@ -375,5 +375,9 @@ tr.shown td.details-control:before {
     border-bottom: 2px solid #605ca8;
 }
 
+.cursor_pointer {
+    cursor: pointer;
+}
+
 
 
