@@ -169,8 +169,7 @@
                 mismatches: 2,
                 insertions: 1,
                 deletions: 1,
-                mutations: 2,
-                depth: -1
+                mutations: 2
             });
         }
 

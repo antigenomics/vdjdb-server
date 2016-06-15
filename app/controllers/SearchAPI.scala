@@ -3,17 +3,20 @@ package controllers
 
 import java.util
 
+import play.api.Play
+import play.api.libs.concurrent.Akka
 import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import play.api.libs.json._
 import play.api.mvc._
 import server.wrappers.{ColumnsInfo, SearchResult}
-import server.{FiltersParser, GlobalDatabase, ServerResponse}
+import server.{FiltersParser, GlobalDatabase, ServerLogger, ServerResponse}
 import utils.JsonUtil.sendJson
 import play.api.libs.json.Json.toJson
 import utils.{CommonUtils, DocumentConverter, JsonUtil}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 /**
   * Created by bvdmitri on 16.02.16.
@@ -21,58 +24,84 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object SearchAPI extends Controller {
 
-  def index = Action {
+  val MAX_REQUESTS_PER_HOUR = 1000
+  val ipMap = CommonUtils.createMutableMap[String, Int]
+
+  Akka.system(Play.current).scheduler.schedule(60 minutes, 60 minutes, new Runnable {
+      override def run(): Unit = {
+        ipMap.clear()
+      }
+  })
+
+  def checkIp(ipAddress: String): Boolean = {
+    ipMap.get(ipAddress) match {
+      case None => ipMap(ipAddress) = 0
+      case Some(v) => ipMap(ipAddress) = v + 1
+    }
+    ipMap(ipAddress) < MAX_REQUESTS_PER_HOUR
+  }
+
+  def index = Action { implicit request =>
     Ok(views.html.search.index())
   }
 
-  def database = Action {
-    sendJson(GlobalDatabase.getDatabase())
-  }
-
-  def columns = Action {
-    sendJson(new ColumnsInfo(GlobalDatabase.getColumns()))
-  }
-
-  def downloadDocument(exportType: String, link: String) = Action {
-    val folder = new java.io.File("/tmp/" + link + "/")
-    val doc = new java.io.File(folder.getAbsolutePath + "/" + "SearchResults" + DocumentConverter.getTypeExtension(exportType))
-    println(doc.getAbsolutePath)
-    if (folder.exists() && doc.exists()) {
-      val docContent: Enumerator[Array[Byte]] = Enumerator.fromFile(doc)
-      doc.delete()
-      folder.delete()
-      SimpleResult(
-        header = ResponseHeader(200, Map(
-          CONTENT_DISPOSITION -> ("attachment; filename=SearchResults" + DocumentConverter.getTypeExtension(exportType)),
-          CONTENT_TYPE -> "application/x-download"
-        )),
-        body = docContent
-      )
+  def columns = Action { implicit request =>
+    if (checkIp(request.remoteAddress)) {
+      sendJson(new ColumnsInfo(GlobalDatabase.getColumns()))
     } else {
-      BadRequest("Invalid request")
+      BadRequest("Too many requests")
+    }
+  }
+
+  def downloadDocument(exportType: String, link: String) = Action { implicit request =>
+    if (checkIp(request.remoteAddress)) {
+      val folder = new java.io.File("/tmp/" + link + "/")
+      val doc = new java.io.File(folder.getAbsolutePath + "/" + "SearchResults" + DocumentConverter.getTypeExtension(exportType))
+      println(doc.getAbsolutePath)
+      if (folder.exists() && doc.exists()) {
+        val docContent: Enumerator[Array[Byte]] = Enumerator.fromFile(doc)
+        doc.delete()
+        folder.delete()
+        SimpleResult(
+          header = ResponseHeader(200, Map(
+            CONTENT_DISPOSITION -> ("attachment; filename=SearchResults" + DocumentConverter.getTypeExtension(exportType)),
+            CONTENT_TYPE -> "application/x-download"
+          )),
+          body = docContent
+        )
+      } else {
+        BadRequest("Invalid request")
+      }
+    } else {
+      BadRequest("Too many requests")
     }
   }
 
   case class DatabaseTextFilter(columnId: String, value: String, filterType: String, negative: Boolean)
   implicit val databaseTextFilterRead = Json.reads[DatabaseTextFilter]
 
-  case class DatabaseSequenceFilter(columnId: String, query: String, mismatches: Int, insertions: Int, deletions: Int, mutations: Int, depth: Int)
+  case class DatabaseSequenceFilter(columnId: String, query: String, mismatches: Int, insertions: Int, deletions: Int, mutations: Int)
   implicit val databaseSequenceFilterRead = Json.reads[DatabaseSequenceFilter]
 
   case class FiltersRequest(textFilters: List[DatabaseTextFilter], sequenceFilters: List[DatabaseSequenceFilter])
   implicit val filtersRequestRead = Json.reads[FiltersRequest]
 
-  def search = Action(parse.json) { request =>
-    request.body.validate[FiltersRequest].map {
-      case FiltersRequest(requestTextFilters, requestSequenceFilters) =>
-        val warnings : util.ArrayList[String] = new util.ArrayList[String]()
-        val columns = GlobalDatabase.getDatabase().getHeader
-        val filters = FiltersParser.parse(requestTextFilters, requestSequenceFilters)
-        sendJson(new SearchResult(filters.textFilters, filters.sequenceFilters, filters.warnings))
-    }.recoverTotal {
+  def search = Action(parse.json) { implicit request =>
+    if (checkIp(request.remoteAddress)) {
+      request.body.validate[FiltersRequest].map {
+        case FiltersRequest(requestTextFilters, requestSequenceFilters) =>
+          val warnings : util.ArrayList[String] = new util.ArrayList[String]()
+          val columns = GlobalDatabase.getDatabase().getHeader
+          val filters = FiltersParser.parse(requestTextFilters, requestSequenceFilters)
+          sendJson(new SearchResult(filters.textFilters, filters.sequenceFilters, filters.warnings))
+      }.recoverTotal {
         e => print(e)
-        BadRequest(toJson(ServerResponse("Invalid search request")))
+          BadRequest(toJson(ServerResponse("Invalid search request")))
+      }
+    } else {
+      BadRequest("Too many requests")
     }
+
   }
 
   case class SearchWebSocketRequest(action: String, data: JsValue)

@@ -51,7 +51,7 @@ object FiltersParser {
               warnings.add("Sequence filter ignored for " + filter.columnId + ": empty query field")
             case _ =>
               val parameters : TreeSearchParameters = new TreeSearchParameters(filter.mismatches, filter.insertions, filter.deletions, filter.mutations)
-              sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters))
+              sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, parameters, -1))
           }
         case _  =>
           warnings.add("Sequence filter ignored : please select column name")

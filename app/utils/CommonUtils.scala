@@ -5,6 +5,12 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.Files.copy
 import java.nio.file.Paths.get
 
+import play.api.libs.concurrent.Akka
+import server.{GlobalDatabase, ServerLogger}
+
+import scala.collection.mutable
+import scala.collection.mutable.{HashMap, Map, SynchronizedMap}
+import scala.concurrent.duration.FiniteDuration
 import scala.reflect.io.Path
 import scala.util.Random
 
@@ -12,9 +18,13 @@ import scala.util.Random
   * Created by bvdmitri on 23.02.16.
   */
 object CommonUtils {
+
   def randomAlphaNumericString(length: Int) : String = Random.alphanumeric.take(length).mkString
+
   def randomAlphabetString(alphabet: String)(length: Int) : String = Stream.continually(Random.nextInt(alphabet.length)).map(alphabet).take(length).mkString
+
   def randomAlphaString(length: Int) : String  = randomAlphabetString("abcdefghijklmnopqrstuvwxyz")(length)
+
   def getListOfFiles(dir: String) : List[File] = {
     val d = new File(dir)
     if (d.exists && d.isDirectory) {
@@ -35,4 +45,10 @@ object CommonUtils {
       d.mkdirs()
     }
   }
+
+  def createMutableMap[K, V]: scala.collection.mutable.Map[K, V] = {
+    new scala.collection.mutable.HashMap[K, V] with scala.collection.mutable.SynchronizedMap[K, V] {
+    }
+  }
+
 }
