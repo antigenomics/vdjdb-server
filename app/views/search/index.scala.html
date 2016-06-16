@@ -70,7 +70,7 @@
                             </div>
                             <div ng-if="isSearchStarted()">
                                 <pagination total-items="totalItems()"
-                                items-per-page="pageSize()" ng-model="page"
+                                items-per-page="pageSize()" ng-model="page.currentPage"
                                 max-size="10" class="pagination-sm" boundary-links="true"
                                 rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
                                 </pagination>
@@ -101,7 +101,7 @@
                                     </table>
                                 </div>
                                 <pagination total-items="totalItems()"
-                                items-per-page="pageSize()" ng-model="page"
+                                items-per-page="pageSize()" ng-model="page.currentPage"
                                 max-size="10" class="pagination-sm" boundary-links="true"
                                 rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
                                 </pagination>

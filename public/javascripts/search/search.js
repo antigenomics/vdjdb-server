@@ -208,14 +208,14 @@
             }
         }
 
-        function changePage(page) {
+        function changePage(pageV) {
             if (connected && !loading) {
                 $("[data-toggle='popover']").popover('destroy');
                 pageLoading = true;
                 connection.send({
                     action: 'get_page',
                     data: {
-                        page: page
+                        page: pageV
                     }
                 })
             } else if (loading) {
@@ -529,7 +529,9 @@
             controller: ['$scope', 'SearchDatabaseAPI', '$sce', 'notify', function($scope, SearchDatabaseAPI, $sce, notify) {
                 var searchStarted  = false;
 
-                $scope.page = 1;
+                $scope.page = {
+                    currentPage: 1
+                };
                 $scope.userPageSize = 100;
                 $scope.totalItems = SearchDatabaseAPI.getTotalItems;
                 $scope.pageSize = SearchDatabaseAPI.getPageSize;
@@ -571,21 +573,21 @@
                 }
 
                 function search() {
-                    $scope.page = 0;
+                    $scope.page.currentPage = 1;
                     searchStarted = true;
                     SearchDatabaseAPI.searchWS();
                 }
 
                 function pageChanged() {
-                    SearchDatabaseAPI.changePage($scope.page - 1);
+                    SearchDatabaseAPI.changePage($scope.page.currentPage - 1);
                 }
 
                 function sortDatabase(index) {
-                    SearchDatabaseAPI.sortDatabase(index, $scope.page - 1);
+                    SearchDatabaseAPI.sortDatabase(index, $scope.page.currentPage - 1);
                 }
 
                 function changePageSize() {
-                    $scope.page = 1;
+                    $scope.page.currentPage = 1;
                     SearchDatabaseAPI.changePageSize($scope.userPageSize);
                 }
 
@@ -645,15 +647,14 @@
                             prefix = '<i class="fa cursor_pointer" ng-class="{\'fa-plus\':!isComplexParent(entry) && !isComplex(entry), \'fa-minus\':isComplexParent(entry)}" aria-hidden="true" ' +
                                 'ng-click="::clickRow(dataIndex, data)"></i>';
                         } else {
-                            prefix = '<i class="fa fa-plus cursor_pointer" style="color: #D3D3D3;" ng-click="::clickRow(dataIndex, data)""></i>'
+                            prefix = '<i class="fa fa-plus cursor_pointer" style="color: #D3D3D3;" ng-click="::clickRow(dataIndex, data)"></i>'
                         }
-
                         switch (value) {
                             case 'TRA':
-                                value = prefix + '<text class="tra_text_color">\t' + value + '</text>';
+                                value = prefix + '<text class="tra_text_color">' + value + '</text>';
                                 break;
                             case 'TRB':
-                                value = prefix + '<text class="trb_text_color">\t ' + value + '</text>';
+                                value = prefix + '<text class="trb_text_color"> ' + value + '</text>';
                                 break;
                             default:
                         }
@@ -707,9 +708,8 @@
 
                 function columnHeader(entry) {
                     var column = entry.column;
-                    var header = '<text class="column_popover" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="' +
-                    column.metadata.comment + '">' + column.metadata.title +  '</text>';
-                    return $sce.trustAsHtml(header);
+                    return '<text class="column_popover" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="' +
+                        column.metadata.comment + '">' + column.metadata.title + '</text>';
                 }
 
                 function isColumnVisible(entry) {
