@@ -1,14 +1,11 @@
 package controllers
 
-import java.io.{File, PrintWriter}
+import java.io.File
 import java.util
-
-import play.api.Play
 
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits._
 
-import scala.concurrent.Future
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
 import models.auth.User
@@ -17,23 +14,12 @@ import server.wrappers.IntersectResult
 
 import scala.collection.JavaConversions._
 import play.api.mvc._
-import server._
+import server.{Filters, Configuration, ServerResponse, GlobalDatabase}
 import utils.CommonUtils
 import utils.JsonUtil._
 import play.api.libs.json.Json.toJson
-import java.util.ArrayList
-
-import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
-import com.antigenomics.vdjdb.sequence.SequenceFilter
-import com.antigenomics.vdjdb.text._
-import com.antigenomics.vdjtools.sample.Clonotype
-import com.milaboratory.core.tree.TreeSearchParameters
 import controllers.SearchAPI.FiltersRequest
 import models.file.{BranchFile, FileFinder, IntersectionFile, ServerFile}
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.internal.storage.file.FileRepository
-import org.eclipse.jgit.lib.Repository
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import play.api.libs.concurrent.Akka
 
 object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
@@ -69,22 +55,21 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     val user = User.findByUUID(request.user.identityId.userId)
     request.body.validate[IntersectRequest].map {
       case IntersectRequest(fileName, parameters, filters) =>
-        println(filters)
         val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
         if (file == null) {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
-        } else {
+        } else if (GlobalDatabase.isParametersValid(parameters)) {
           try {
-            val columns = GlobalDatabase.getDatabase().getHeader
-            val filtersJava = FiltersParser.parse(filters.textFilters, filters.sequenceFilters)
+            val filtersJava = Filters.parse(filters)
             val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
-            val results = GlobalDatabase.intersect(sample, parameters, filtersJava.textFilters, filtersJava.sequenceFilters)
+            val results = GlobalDatabase.intersect(sample, parameters, filtersJava)
             val convertedResults : util.ArrayList[IntersectResult] = new util.ArrayList[IntersectResult]()
-            if (results != null) {
-              results.keySet().toList.foreach(clonotype => {
+            results match {
+              case Some(r) => r.keySet().toList.foreach(clonotype => {
                 convertedResults.add(new IntersectResult(clonotype, results.get(clonotype)))
               })
+              case None =>
             }
             sendJson(convertedResults)
           } catch {
@@ -95,6 +80,8 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
                 print(e)
                 BadRequest(toJson(ServerResponse("Error while intersecting")))
           }
+        } else {
+          BadRequest(toJson(ServerResponse("Invalid intersection parameters")))
         }
     }.recoverTotal {
       e =>

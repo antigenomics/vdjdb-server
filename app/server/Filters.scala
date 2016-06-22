@@ -7,19 +7,23 @@ import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
 import controllers.SearchAPI
+import controllers.SearchAPI.FiltersRequest
 
 /**
   * Created by bvdmitri on 27.05.16.
   */
-case class FiltersParser(textFilters: util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter], warnings: util.ArrayList[String]) {
-
+case class Filters(textFilters: util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter], warnings: util.ArrayList[String]) {
   def getWarnings : List[String] = {
     warnings.toList
   }
 }
 
-object FiltersParser {
-  def parse(text: List[SearchAPI.DatabaseTextFilter], sequence: List[SearchAPI.DatabaseSequenceFilter]) = {
+object Filters {
+  def parse(filters: FiltersRequest) : Filters = {
+    parse(filters.textFilters, filters.sequenceFilters)
+  }
+
+  def parse(text: List[SearchAPI.DatabaseTextFilter], sequence: List[SearchAPI.DatabaseSequenceFilter]) : Filters = {
     val warnings : util.ArrayList[String] = new util.ArrayList[String]()
     val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
     val columns = GlobalDatabase.getDatabase().getHeader
@@ -57,6 +61,6 @@ object FiltersParser {
           warnings.add("Sequence filter ignored : please select column name")
       }
     })
-    FiltersParser(textFilters, sequenceFilters, warnings)
+    Filters(textFilters, sequenceFilters, warnings)
   }
 }

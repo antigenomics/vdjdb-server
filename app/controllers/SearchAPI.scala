@@ -9,7 +9,7 @@ import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import play.api.libs.json._
 import play.api.mvc._
 import server.wrappers.{ColumnsInfo, SearchResult}
-import server.{FiltersParser, GlobalDatabase, ServerLogger, ServerResponse}
+import server.{Filters, GlobalDatabase, ServerLogger, ServerResponse}
 import utils.JsonUtil.sendJson
 import play.api.libs.json.Json.toJson
 import utils.{CommonUtils, DocumentConverter, JsonUtil}
@@ -57,7 +57,6 @@ object SearchAPI extends Controller {
     if (checkIp(request.remoteAddress)) {
       val folder = new java.io.File("/tmp/" + link + "/")
       val doc = new java.io.File(folder.getAbsolutePath + "/" + "SearchResults" + DocumentConverter.getTypeExtension(exportType))
-      println(doc.getAbsolutePath)
       if (folder.exists() && doc.exists()) {
         val docContent: Enumerator[Array[Byte]] = Enumerator.fromFile(doc)
         doc.delete()
@@ -90,9 +89,7 @@ object SearchAPI extends Controller {
     if (checkIp(request.remoteAddress)) {
       request.body.validate[FiltersRequest].map {
         case FiltersRequest(requestTextFilters, requestSequenceFilters) =>
-          val warnings : util.ArrayList[String] = new util.ArrayList[String]()
-          val columns = GlobalDatabase.getDatabase().getHeader
-          val filters = FiltersParser.parse(requestTextFilters, requestSequenceFilters)
+          val filters = Filters.parse(requestTextFilters, requestSequenceFilters)
           sendJson(new SearchResult(filters.textFilters, filters.sequenceFilters, filters.warnings))
       }.recoverTotal {
         e => print(e)
@@ -115,8 +112,8 @@ object SearchAPI extends Controller {
 
   def searchWebSocket = WebSocket.using[JsValue] { request =>
     val (out,channel) = Concurrent.broadcast[JsValue]
-    var searchResults : SearchResult = new SearchResult()
-    var filters : FiltersParser = null
+    val searchResults : SearchResult = new SearchResult()
+    var filters : Filters = null
 
     val in = Iteratee.foreach[JsValue] {
       websocketMessage  =>
@@ -126,7 +123,7 @@ object SearchAPI extends Controller {
           searchRequest.action match {
             case "search"  =>
               val filtersRequest = Json.fromJson[FiltersRequest](requestData).get
-              filters = FiltersParser.parse(filtersRequest.textFilters, filtersRequest.sequenceFilters)
+              filters = Filters.parse(filtersRequest.textFilters, filtersRequest.sequenceFilters)
               searchResults.reinit(filters.textFilters, filters.sequenceFilters, filters.warnings)
               val data = searchResults.getPage(0)
               channel push Json.toJson(Map(
