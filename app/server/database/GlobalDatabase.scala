@@ -1,18 +1,21 @@
-package server
+package server.database
 
 import java.io.FileInputStream
 import java.util
 
-import com.antigenomics.vdjdb.VdjdbInstance
-import com.antigenomics.vdjdb.db.{Column, Database, DatabaseSearchResult, SearchResult}
 import com.antigenomics.vdjdb.Util.checkDatabase
-import com.antigenomics.vdjdb.impl.ClonotypeSearchResult
+import com.antigenomics.vdjdb.VdjdbInstance
+import com.antigenomics.vdjdb.db.{Database, SearchResult}
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
-import com.antigenomics.vdjtools.sample.{Clonotype, Sample}
+import com.antigenomics.vdjtools.sample.Sample
 import controllers.IntersectionAPI.IntersectParametersRequest
-import controllers.SearchAPI.FiltersRequest
-import utils.SynchronizedAccess
+import server.wrappers.database.{ColumnWrapper, IntersectWrapper, RowWrapper}
+import server.Configuration
+import server.wrappers.Filters
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by bvdmitri on 16.03.16.
@@ -29,36 +32,43 @@ object GlobalDatabase extends SynchronizedAccess {
     }
   }
 
-  def search(textFilters : util.ArrayList[TextFilter], sequenceFilters: util.ArrayList[SequenceFilter]) =
+  def search(filters: Filters) : List[RowWrapper] =
     synchronizeRead { implicit lock =>
-      db().getDbInstance.search(textFilters, sequenceFilters)
+      val results = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters)
+      val buffer = new ListBuffer[RowWrapper]
+      results.toList.foreach(result => {
+        buffer += RowWrapper.wrap(result.getRow)
+      })
+      buffer.toList
     }
 
-  def search() =
+  def search() : List[RowWrapper] =
     synchronizeRead { implicit lock =>
-      val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
-      val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
-      db().getDbInstance.search(textFilters, sequenceFilters)
+      search(new Filters())
     }
 
-  def findComplexes(complexId: String, gene: String) =
+  def findComplex(complexId: String, gene: String) : Option[RowWrapper] =
     synchronizeRead { implicit lock =>
       val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
       textFilters.add(new ExactTextFilter("complex.id", complexId, false))
       textFilters.add(new ExactTextFilter("gene", gene, true))
       val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
-      db().getDbInstance.search(textFilters, sequenceFilters)
+      val results = search(new Filters(textFilters, sequenceFilters, List()))
+      results.headOption
     }
 
-  def intersect(sample: Sample, parameters: IntersectParametersRequest, filters: Filters) =
+  def intersect(sample: Sample, parameters: IntersectParametersRequest, filters: Filters) : List[IntersectWrapper] =
     synchronizeRead { implicit lock =>
+      val buffer = new ListBuffer[IntersectWrapper]()
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
-        Some(new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(parameters.matchV, parameters.matchJ,
-          parameters.maxMismatches, parameters.maxInsertions, parameters.maxDeletions, parameters.maxMutations).search(sample))
-      } else {
-        None
+        val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(parameters.matchV, parameters.matchJ,
+          parameters.maxMismatches, parameters.maxInsertions, parameters.maxDeletions, parameters.maxMutations).search(sample)
+        instance.keySet().toList.foreach(clonotype => {
+          buffer += IntersectWrapper.wrap(clonotype, instance.get(clonotype))
+        })
       }
+      buffer.toList
     }
 
   def isParametersValid(parameters: IntersectParametersRequest): Boolean = {
@@ -82,14 +92,13 @@ object GlobalDatabase extends SynchronizedAccess {
       }
   }
 
-  def getDatabase() =
+  def getColumns() : List[ColumnWrapper] =
     synchronizeRead { implicit lock =>
-      db().getDbInstance
-    }
-
-  def getColumns() =
-    synchronizeRead { implicit lock =>
-      db().getDbInstance.getColumns
+      var buffer = ListBuffer[ColumnWrapper]()
+      db().getDbInstance.getColumns.toList.foreach(column => {
+        buffer += ColumnWrapper.wrap(column)
+      })
+      buffer.toList
     }
 
   def update() =

@@ -7,12 +7,13 @@ import play.api._
 import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.libs.concurrent.Akka
-import server.{GlobalDatabase, ServerLogger}
+import server.ServerLogger
 
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits._
 import securesocial.core._
 import server.Configuration
+import server.database.GlobalDatabase
 import service.AuthService
 import utils.CommonUtils
 

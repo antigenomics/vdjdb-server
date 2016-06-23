@@ -1,4 +1,4 @@
-package server
+package server.wrappers
 
 import play.api.libs.json.Json
 

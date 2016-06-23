@@ -25,18 +25,13 @@ import java.util.Objects;
 @Entity
 public class User extends Model {
     @Id
-    @JsonIgnore
     private String uuid;
-    @JsonIgnore
     private String provider;
     private String email;
-    @JsonIgnore
     private String password;
-    @JsonIgnore
     private String directoryPath;
     private Integer maxFilesCount;
     private Integer maxFileSize;
-    @JsonIgnore
     private Boolean privelegies = false;
 
     @OneToMany(mappedBy = "user")

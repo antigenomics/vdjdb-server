@@ -1,8 +1,6 @@
 package models.file;
 
-import com.antigenomics.vdjtools.misc.Software;
 import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.auth.User;
 import org.apache.commons.io.FileDeleteStrategy;
 import org.joda.time.DateTime;
@@ -17,24 +15,13 @@ import java.io.File;
 @Entity
 public class ServerFile extends Model {
     @Id
-    @JsonIgnore
     protected Long id;
-
     @ManyToOne
-    @JsonIgnore
     protected User user;
-
     protected String fileName;
-
-    @JsonIgnore
     protected String uniqueName;
-
     protected DateTime createdAt;
-
-    @JsonIgnore
     protected String directoryPath;
-
-    @JsonIgnore
     protected String filePath;
 
     public ServerFile(User user, String fileName, String uniqueName, String directoryPath, String filePath) {

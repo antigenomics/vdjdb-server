@@ -4,7 +4,8 @@
     application.factory('user', ['$http', 'notify', 'blockPageFactory', function($http, notify, block) {
         var user = {
             files: [],
-            branches: []
+            maxFileSize: 0,
+            maxFilesCount: 0
         };
 
         var uid = 0;
@@ -15,9 +16,6 @@
                 angular.forEach(userInfo.files, function(file) {
                     file.nameWithoutExt =  file.fileName.substr(0, file.fileName.lastIndexOf('.')) || file.fileName;
                     file.uid = uid++;
-                });
-                angular.forEach(userInfo.branches, function(branch) {
-                    branch.uid = buid++;
                 });
                 angular.extend(user, userInfo);
                 block.unblock();
@@ -67,14 +65,9 @@
             return user.files;
         }
 
-        function getBranches() {
-            return user.branches;
-        }
-
         return {
             getUser: getUser,
             getFiles: getFiles,
-            getBranches: getBranches,
             getMaxFileSize: getMaxFileSize,
             getMaxFilesCount: getMaxFilesCount,
             deleteFile: deleteFile,

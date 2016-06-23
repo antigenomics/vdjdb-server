@@ -3,9 +3,8 @@ import org.specs2.runner._
 import org.junit.runner._
 import play.api.test._
 import play.api.test.Helpers._
+import server.database.SynchronizedAccess
 
-
-import utils.SynchronizedAccess
 
 /**
   * Created by bvdmitri on 18.03.16.

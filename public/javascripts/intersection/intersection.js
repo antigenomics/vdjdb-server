@@ -130,6 +130,7 @@
                 }})
                     .success(function(data) {
                         intersectResultsTable(data, file);
+                        console.log(data);
                         loaded.push(file.uid);
                         loading = false;
                         //angular.copy(data, intersectData);

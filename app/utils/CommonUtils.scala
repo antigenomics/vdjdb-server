@@ -6,7 +6,7 @@ import java.nio.file.Files.copy
 import java.nio.file.Paths.get
 
 import play.api.libs.concurrent.Akka
-import server.{GlobalDatabase, ServerLogger}
+import server.ServerLogger
 
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, Map, SynchronizedMap}

@@ -1,7 +1,7 @@
 (function() {
     var application = angular.module('filters', []);
 
-    application.factory('filters', ['$http', 'notify', function ($http, notify) {
+    application.factory('filters', function () {
         var textFilters = [];
         var sequenceFilters = [];
         var textFilterIndex = 0;
@@ -20,63 +20,53 @@
             { name: 'level', title: 'Level', allowNegative: false}
         ]);
 
-        $http.get('/search/columns')
-            .success(function(columnsInfo) {
-                var columns = columnsInfo.columns;
-                angular.forEach(columns, function(columnInfo) {
-                    var column = columnInfo.column;
-                    if (column.metadata.searchable == 1) {
-                        if (column.metadata.type === 'txt') {
-                            textFiltersColumns.push({
-                                name: column.name,
-                                title: column.metadata.title,
-                                types: (function() {
-                                    if (column.metadata['data.type'] === 'uint')
-                                        return [3];
-                                    return [0, 1, 2]
-                                }()),
-                                allowNegative: (function() {
-                                    return column.metadata['data.type'] !== 'uint';
-                                }()),
-                                autocomplete: columnInfo.autocomplete,
-                                values: columnInfo.values,
-                                defaultFilterType: (function() {
-                                    if (column.metadata['data.type'] === 'uint')
-                                        return textFiltersTypes[3];
-                                    return textFiltersTypes[1];
-                                }())
-                            })
-                        } else if (column.metadata.type === 'seq') {
-                            textFiltersColumns.push({
-                                name: column.name,
-                                title: column.metadata.title,
-                                types: [0, 1, 2],
-                                allowNegative: true,
-                                autocomplete: false,
-                                values: [],
-                                defaultFilterType: textFiltersTypes[1]
-                            });
-                            sequenceFiltersColumns.push({
-                                name: column.name,
-                                title: column.metadata.title,
-                                types: [0, 1, 2],
-                                allowNegative: true,
-                                autocomplete: false,
-                                values: []
-                            })
-                        }
+        function initialize(columns) {
+            angular.forEach(columns, function(column) {
+                var meta = column.metadata;
+                if (meta.searchable === '1') {
+                    if (meta.columnType === 'txt') {
+                        textFiltersColumns.push({
+                            name: column.name,
+                            title: meta.title,
+                            types: (function() {
+                                if (meta.dataType === 'uint')
+                                    return [3];
+                                return [0, 1, 2]
+                            }()),
+                            allowNegative: (function() {
+                                return meta.dataType !== 'uint';
+                            }()),
+                            autocomplete: column.autocomplete,
+                            values: column.values,
+                            defaultFilterType: (function() {
+                                if (meta.dataType === 'uint')
+                                    return textFiltersTypes[3];
+                                return textFiltersTypes[1];
+                            }())
+                        })
+                    } else if (meta.columnType === 'seq') {
+                        textFiltersColumns.push({
+                            name: column.name,
+                            title: meta.title,
+                            types: [0, 1, 2],
+                            allowNegative: true,
+                            autocomplete: false,
+                            values: [],
+                            defaultFilterType: textFiltersTypes[1]
+                        });
+                        sequenceFiltersColumns.push({
+                            name: column.name,
+                            title: meta.title,
+                            types: [0, 1, 2],
+                            allowNegative: true,
+                            autocomplete: false,
+                            values: []
+                        })
                     }
-                });
-                loading = false;
-
-            })
-            .error(function() {
-                notify.error('Filters', 'Error while loading filters');
-                error = true;
-                loading = false;
+                }
             });
-
-
+            loading = false;
+        }
 
 
         function pickFiltersSelectData() {
@@ -209,6 +199,7 @@
         }
 
         return {
+            initialize: initialize,
             getTextFiltersColumns: getTextFiltersColumns,
             getTextFiltersTypes: getTextFiltersTypes,
             getTextFilters: getTextFilters,
@@ -227,7 +218,7 @@
             getDefaultFilterTypes: getDefaultFilterTypes,
             getFiltersRequest: getFiltersRequest
         }
-    }]);
+    });
 
     application.directive('filters', function () {
         return {
@@ -261,9 +252,6 @@
                     if (a === b) return true;
                     if (a == null || b == null) return false;
                     if (a.length != b.length) return false;
-
-                    // If you don't care about the order of the elements inside
-                    // the array, you should sort both arrays here.
 
                     for (var i = 0; i < a.length; ++i) {
                         if (a[i] !== b[i]) return false;

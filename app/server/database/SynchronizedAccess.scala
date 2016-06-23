@@ -1,7 +1,6 @@
-package utils
+package server.database
 
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReentrantReadWriteLock
+import java.util.concurrent.locks.{Lock, ReentrantReadWriteLock}
 
 trait SynchronizedAccess {
 
