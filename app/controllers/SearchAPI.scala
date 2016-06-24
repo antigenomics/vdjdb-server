@@ -10,6 +10,7 @@ import server.search.SearchResults
 import server.wrappers.Filters
 import utils.converter.DocumentConverter
 import scala.concurrent.ExecutionContext.Implicits.global
+import server.websocket._
 import server.websocket.WebSocketSearchMessages._
 
 
@@ -68,51 +69,44 @@ object SearchAPI extends Controller {
     val in = Iteratee.foreach[JsValue] {
       websocketMessage  =>
         if (!LimitedAction.allow(request.remoteAddress)) {
-          channel push Json.toJson(Map(
-            "status" -> "error",
-            "message" -> "Too many requests"
-          ))
+          channel push LimitedAction.LimitErrorMessage
         } else try {
           val searchRequest = Json.fromJson[SearchWebSocketRequest](websocketMessage).get
           val requestData = searchRequest.data
           searchRequest.action match {
             case "columns" =>
-              channel push Json.toJson(Map(
-                "status" -> toJson("success"),
-                "action" -> toJson("columns"),
-                "columns" -> toJson(GlobalDatabase.getColumns())
-              ))
+              channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns()))
             case "search"  =>
               val filtersRequest = Json.fromJson[FiltersRequest](requestData).get
               filters = Filters.parse(filtersRequest.textFilters, filtersRequest.sequenceFilters)
               searchResults.reinit(filters)
-              channel push SearchSuccessMessage(searchResults.getPage(0), searchResults.results.size)
+              channel push toJson(SearchSuccessMessage(searchResults.getPage(0), searchResults.results.size))
               if (filters.warnings.nonEmpty) {
-                channel push WarningsMessage(filters.warnings)
+                channel push toJson(WarningsMessage(filters.warnings))
               }
             case "get_page" =>
               val page = (requestData \ "page").asOpt[Int].getOrElse(0)
-              channel push GetPageSuccessMessage(searchResults.getPage(page), page)
+              channel push toJson(GetPageSuccessMessage(searchResults.getPage(page), page))
             case "sort" =>
               val columnId = (requestData \ "columnId").asOpt[Int].getOrElse(1)
               val sortType = (requestData \ "sortType").asOpt[String].getOrElse("asc")
               val page = (requestData \ "page").asOpt[Int].getOrElse(0)
               searchResults.sort(columnId, sortType)
-              channel push SortSuccessMessage(searchResults.getPage(page))
+              channel push toJson(SortSuccessMessage(searchResults.getPage(page)))
             case "change_size" =>
               val size = (requestData \ "size").asOpt[Int].getOrElse(100)
               val init = (requestData \ "init").asOpt[Boolean].getOrElse(true)
               searchResults.pageSize = size
-              channel push ChangeSizeSuccessMessage(init, if (init) null else searchResults.getPage(0), size)
+              channel push toJson(ChangeSizeSuccessMessage(init, if (init) List() else searchResults.getPage(0), size))
             case "complex" =>
               val complexId = (requestData \ "complexId").asOpt[String].getOrElse("-1")
               val gene = (requestData \ "gene").asOpt[String].getOrElse("null")
               val index = (requestData \ "index").asOpt[Int].getOrElse(-1)
               if (gene.equals("TRA") || gene.equals("TRB")) {
                 val complex = GlobalDatabase.findComplex(complexId, gene)
-                channel push FindComplexSuccessMessage(complex.get, complexId, gene, index)
+                channel push toJson(FindComplexSuccessMessage(complex.get, complexId, gene, index))
               } else {
-                channel push FindComplexErrorMessage()
+                channel push toJson(ErrorMessage("complex", "Complex not found"))
               }
             case "export" =>
               val exportType = (requestData \ "exportType").asOpt[String].getOrElse("excel")
@@ -122,19 +116,19 @@ object SearchAPI extends Controller {
                   val link = c.convert(searchResults.results)
                   link match {
                     case Some(l) =>
-                      channel push ConverterSuccessMessage(exportType, l)
+                      channel push toJson(ConverterSuccessMessage(exportType, l))
                     case _ =>
-                      channel push ConverterExportFailed()
+                      channel push toJson(ErrorMessage("export", "Export failed"))
                   }
                 case None =>
-                  channel push ConverterInvalidTypeMessage()
+                  channel push toJson(ErrorMessage("export", "Export invalid type"))
               }
             case _ =>
           }
         } catch {
           case e : Exception =>
             e.printStackTrace()
-            channel push InvalidSearchRequest()
+            channel push toJson(ErrorMessage("search", "Invalid request"))
         }
     }
 

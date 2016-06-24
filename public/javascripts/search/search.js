@@ -138,17 +138,6 @@
             }, 10000)
         });
 
-        function search() {
-            filters.pickFiltersSelectData();
-            return $http.post('/search', {
-                textFilters: filters.getTextFilters(),
-                sequenceFilters: filters.getSequenceFilters()
-            }).then(function (response) {
-                console.log(response);
-                return response
-            })
-        }
-
         function isConnected() {
             return connected;
         }
@@ -182,7 +171,6 @@
         }
 
         function searchWS() {
-            filters.pickFiltersSelectData();
             if (connected && !loading) {
                 $("[data-toggle='popover']").popover('destroy');
                 loading = true;
@@ -306,7 +294,6 @@
         }
 
         return {
-            search: search,
             searchWS: searchWS,
             sortDatabase: sortDatabase,
             changePageSize: changePageSize,
@@ -433,6 +420,7 @@
                         var vend = cdr3fix['vEnd'];
                         var jstart = cdr3fix['jStart'];
                         var vRegion = '', jRegion = '', otherRegion = '';
+
                         if (vend > 0 && jstart <= 0) {
                             vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
                             otherRegion = value.substring(vend, value.length);
@@ -443,7 +431,8 @@
                             otherRegion = value.substring(0, jstart - 1);
                             value = otherRegion + jRegion;
                         }
-                        if (vend > 0 && jstart > 0) {
+
+                        if (vend > 0 && jstart > 0 && jstart >= vend) {
                             vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
                             otherRegion = value.substring(vend, jstart - 1);
                             jRegion = '<text style="color: #377eb8">' + value.substring(jstart - 1, value.length) + '</text>';

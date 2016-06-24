@@ -15,10 +15,12 @@
             <tbody>
                 <tr ng-repeat="filter in sequenceFilters" on-last-repeat="">
                     <td width="30%">
-                        <select class="dropdown" id="{{ ::filter.filterId }}" name="columnId">
-                            <option>Please select column name:</option>
-                            <option ng-repeat="column in sequenceFiltersColumns" value="{{ ::column.name }}">{{ ::column.title }}</option>
-                        </select>
+                        <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
+                        <div class="select_drop_container">
+                            <ul ng-class="{'select_dropdown_hidden':!isColumnActive(filter), 'select_dropdown_visible':isColumnActive(filter)}">
+                                <li ng-repeat="column in sequenceFiltersColumns" ng-click="clickSequenceColumn(filter, column)"><a>{{ ::column.title }}</a></li>
+                            </ul>
+                        </div>
                     </td>
                     <td width="30%">
                         <input class="form-control input-sm" type="text" placeholder="Query" ng-model="filter.query">

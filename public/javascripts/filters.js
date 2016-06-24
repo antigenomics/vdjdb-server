@@ -1,4 +1,5 @@
 (function() {
+    "use strict";
     var application = angular.module('filters', []);
 
     application.factory('filters', function () {
@@ -68,23 +69,6 @@
             loading = false;
         }
 
-
-        function pickFiltersSelectData() {
-            angular.forEach(textFilters, function (filter) {
-                var list = document.getElementsByClassName(filter.filterId);
-                angular.forEach(list, function (el) {
-                    filter[el.name] = el.value;
-                });
-                filter.value = $('#input_'+filter.filterId).val();
-            });
-            angular.forEach(sequenceFilters, function (filter) {
-                var list = document.getElementsByClassName(filter.filterId);
-                angular.forEach(list, function (el) {
-                    filter[el.name] = el.value;
-                });
-            })
-        }
-
         function getTextFiltersColumns() {
             return textFiltersColumns;
         }
@@ -98,44 +82,19 @@
         }
 
         function addTextFilter() {
-            if (textFilters.length === 0 || textFilters[textFilters.length - 1].initialized) {
+            if (!error && !loading) {
                 textFilters.push({
-                    index: textFilterIndex,
-                    filterId: 'text_filter_' + textFilterIndex++,
-                    columnId: 'Please select column name:',
+                    columnId: '',
                     columnTitle: 'Please select column name:',
                     value: '',
-                    filterType: '',
+                    filterType: textFiltersTypes[1],
                     negative: false,
-                    allowNegative: true,
                     types: [0, 1, 2, 3],
-                    initialized: false,
-                    defaultFilterType: textFiltersTypes[1]
+                    activeColumn: false,
+                    activeType: false
                 });
             }
         }
-
-        function copyFilter(f) {
-            var deleted = deleteTextFilter(f);
-            var index = textFilterIndex;
-            if (deleted > -1) index = f.index;
-            var new_f = {
-                index: index,
-                filterId: 'text_filter_' + textFilterIndex++,
-                columnId: f.columnId,
-                columnTitle: f.columnTitle,
-                value: f.value,
-                filterType: '',
-                negative: f.negative,
-                allowNegative: f.allowNegative,
-                types: f.types,
-                initialized: f.initialized,
-                defaultFilterType: f.defaultFilterType
-            };
-            textFilters.push(new_f);
-            return new_f;
-        }
-
 
         function deleteTextFilter(filter) {
             var index = textFilters.indexOf(filter);
@@ -153,21 +112,15 @@
 
         function addSequenceFilter() {
             sequenceFilters.push({
-                filterId: 'sequence_filter_' + sequenceFilterIndex++,
+                columnTitle: 'Please select column name: ',
                 columnId: '',
                 query: '',
                 mismatches: 2,
                 insertions: 1,
                 deletions: 1,
-                mutations: 2
+                mutations: 2,
+                columnActive: false
             });
-        }
-
-        function findFilter(id) {
-            for (var i = 0; i < textFilters.length; i++) {
-                if (textFilters[i].filterId === id) return textFilters[i];
-            }
-            return null;
         }
 
         function deleteSequenceFilter(filter) {
@@ -183,18 +136,25 @@
             return error;
         }
 
-        function changeFilterSearchTypes(id, types) {
-            textFilters[id].types = types;
-        }
-
         function getDefaultFilterTypes() {
             return textFiltersTypes;
         }
 
         function getFiltersRequest() {
+            var textFiltersRequest = [];
+
+            angular.forEach(textFilters, function(filter) {
+                textFiltersRequest.push({
+                    columnId: filter.columnId,
+                    value: filter.value,
+                    filterType: filter.filterType.name,
+                    negative: filter.negative
+                })
+            });
+
             return {
-                textFilters: getTextFilters(),
-                sequenceFilters: getSequenceFilters()
+                textFilters: textFiltersRequest,
+                sequenceFilters: sequenceFilters
             }
         }
 
@@ -209,12 +169,8 @@
             getSequenceFilters: getSequenceFilters,
             addSequenceFilter: addSequenceFilter,
             deleteSequenceFilter: deleteSequenceFilter,
-            pickFiltersSelectData: pickFiltersSelectData,
             isFiltersLoaded: isFiltersLoaded,
             isFiltersError: isFiltersError,
-            changeFilterSearchTypes: changeFilterSearchTypes,
-            copyFilter: copyFilter,
-            findFilter: findFilter,
             getDefaultFilterTypes: getDefaultFilterTypes,
             getFiltersRequest: getFiltersRequest
         }
@@ -231,76 +187,61 @@
                 $scope.addTextFilter = filters.addTextFilter;
                 $scope.deleteTextFilter = filters.deleteTextFilter;
 
-                $scope.isTextFiltersExist = function () {
-                    return $scope.textFilters.length > 0;
-                };
-
-
                 $scope.sequenceFilters = filters.getSequenceFilters();
                 $scope.sequenceFiltersColumns = filters.getSequenceFiltersColumns();
                 $scope.addSequenceFilter = filters.addSequenceFilter;
                 $scope.deleteSequenceFilter = filters.deleteSequenceFilter;
 
+                $scope.isFiltersLoaded = filters.isFiltersLoaded;
+                $scope.isFiltersError = filters.isFiltersError;
+
+                $scope.isTextFiltersExist = function () {
+                    return $scope.textFilters.length > 0;
+                };
+
+
                 $scope.isSequenceFiltersExist = function() {
                     return $scope.sequenceFilters.length > 0;
                 };
 
-                $scope.isFiltersLoaded = filters.isFiltersLoaded;
-                $scope.isFiltersError = filters.isFiltersError;
+                $scope.switchColumnVisible = function(filter) {
+                    filter.activeColumn = !filter.activeColumn;
+                };
 
-                function arraysEqual(a, b) {
-                    if (a === b) return true;
-                    if (a == null || b == null) return false;
-                    if (a.length != b.length) return false;
+                $scope.isColumnActive = function(filter) {
+                    return filter.activeColumn;
+                };
 
-                    for (var i = 0; i < a.length; ++i) {
-                        if (a[i] !== b[i]) return false;
-                    }
-                    return true;
-                }
+                $scope.clickTextColumn = function(filter, column) {
+                    filter.columnId = column.name;
+                    filter.columnTitle = column.title;
+                    filter.types = column.types;
+                    filter.filterType = column.defaultFilterType;
+                    filter.negative = false;
+                    filter.activeColumn = false;
+                };
 
-                $scope.$on('onRepeatLast', function () {
-                    $('[data-toggle="tooltip"]').tooltip({
-                        container: 'body'
-                    });
-                    applySelectTheme(function(id, name, title) {
-                        $scope.$apply(function() {
-                            angular.forEach(filters.getTextFiltersColumns(), function (column) {
-                                if (column.name === name) {
-                                    var filter = filters.findFilter(id);
-                                    var filterId = id;
-                                    if (!arraysEqual(filter.types, column.types)) {
-                                        filter.types = column.types;
-                                        filter.columnId = column.name;
-                                        filter.columnTitle = column.title;
-                                        filter.allowNegative = column.allowNegative;
-                                        filter.defaultFilterType = column.defaultFilterType;
-                                        filter.initialized = true;
-                                        filter.negative = false;
-                                        var new_f = filters.copyFilter(filter);
-                                        filterId = new_f.filterId;
-                                    }
-                                    setTimeout(function() {
-                                        $( "#input_" + filterId ).autocomplete({
-                                            source: column.values,
-                                            minLength: 0
-                                        });
-                                    }, 100)
-                                }
-                            });
-                        })
-                    });
-                });
+                $scope.clickSequenceColumn = function(filter, column) {
+                    filter.columnId = column.name;
+                    filter.columnTitle = column.title;
+                    filter.activeColumn = false;
+                };
+
+                $scope.switchTypeVisible = function(filter) {
+                    filter.activeType = !filter.activeType;
+                };
+
+                $scope.isTypeActive = function(filter) {
+                    return filter.activeType;
+                };
+
+                $scope.clickType = function(filter, typeIndex) {
+                    filter.filterType = $scope.textFiltersTypes[typeIndex];
+                    filter.activeType = false;
+                };
+
             }]
         }
-    });
-
-    application.directive('onLastRepeat', function () {
-        return function (scope, element, attrs) {
-            if (scope.$last) setTimeout(function () {
-                scope.$emit('onRepeatLast', element, attrs);
-            }, 1);
-        };
     });
 
 }());

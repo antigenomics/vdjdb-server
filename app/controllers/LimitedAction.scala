@@ -3,13 +3,13 @@ package controllers
 import play.api.Play
 import play.api.libs.concurrent.Akka
 import play.api.libs.iteratee.Enumerator
+import play.api.libs.json.Json._
 import play.api.mvc.{ActionBuilder, Request, ResponseHeader, SimpleResult}
 import server.Configuration
 import utils.CommonUtils
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-
 import scala.concurrent.Future
 
 /**
@@ -20,6 +20,11 @@ object LimitedAction extends ActionBuilder[Request] {
   val maxRequestsPerHour = Configuration.maxRequestsPerHour
   val clearInterval = Configuration.requestsClearInterval
   val ipMap = CommonUtils.createMutableMap[String, Int]
+
+  val LimitErrorMessage = toJson(Map(
+    "status" -> toJson("error"),
+    "message" -> toJson("Too many requests")
+  ))
 
   Akka.system(Play.current).scheduler.schedule(0 minutes, clearInterval minutes, new Runnable {
     override def run(): Unit = {
