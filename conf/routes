@@ -3,8 +3,8 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
-GET     /about                      controllers.Application.about
+GET     /                               controllers.Application.index
+GET     /about                          controllers.Application.about
 
 # Search api
 GET     /search                         controllers.SearchAPI.index
@@ -13,17 +13,17 @@ GET     /search/connect                 controllers.SearchAPI.searchWebSocket
 GET     /search/doc/:exportType/:link   controllers.SearchAPI.downloadDocument(exportType, link)
 
 # Annotations api
-GET     /intersection                controllers.IntersectionAPI.index
-POST    /intersection                controllers.IntersectionAPI.intersect
-GET     /intersection/upload         controllers.IntersectionAPI.uploadPage
+GET     /intersection                   controllers.IntersectionAPI.index
+GET     /intersection/connect           controllers.IntersectionAPI.intersectWebSocket
+GET     /intersection/upload            controllers.IntersectionAPI.uploadPage
 
-GET     /api/userinfo               controllers.IntersectionAPI.userInformation
-POST    /api/upload                 controllers.IntersectionAPI.upload
-POST    /api/delete                 controllers.IntersectionAPI.delete
+GET     /api/userinfo                   controllers.IntersectionAPI.userInformation
+POST    /api/upload                     controllers.IntersectionAPI.upload
+POST    /api/delete                     controllers.IntersectionAPI.delete
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file                   controllers.Assets.at(path="/public", file)
 
 # Auth routes
 GET         /signin                                           securesocial.controllers.LoginPage.login

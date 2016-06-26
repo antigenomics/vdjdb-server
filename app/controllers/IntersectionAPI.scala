@@ -1,28 +1,44 @@
 package controllers
 
 import java.io.File
-import java.util
 
 import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits._
 import com.antigenomics.vdjtools.io.SampleFileConnection
 import com.antigenomics.vdjtools.misc.Software
 import models.auth.User
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import server.wrappers.ServerResponse
 
 import scala.collection.JavaConversions._
 import play.api.mvc._
-import server.{Configuration, wrappers}
+import server.Configuration
+import server.wrappers.Filters
 import utils.CommonUtils
 import play.api.libs.json.Json.toJson
 import controllers.SearchAPI.FiltersRequest
 import models.file.{FileFinder, IntersectionFile, ServerFile}
 import play.api.libs.concurrent.Akka
+import play.api.libs.iteratee.{Concurrent, Iteratee}
+import securesocial.core.{SecureSocial, UserService}
 import server.database.GlobalDatabase
+import server.results.IntersectResults
+import server.websocket.ErrorMessage
+import server.websocket.intersection._
+import server.websocket.intersection.WebSocketIntersectionMessages._
 import server.wrappers.models.UserWrapper
 
 object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
+
+  def getUser(req: RequestHeader): Option[User] = {
+    val authenticator = SecureSocial.authenticatorFromRequest(req)
+    if (authenticator.isEmpty) {
+      None
+    } else {
+      val auth = UserService.find(authenticator.get.identityId)
+      Some(User.findByUUID(auth.get.identityId.userId))
+    }
+  }
 
   def index = SecuredAction {
     Ok(views.html.intersection.index())
@@ -37,11 +53,62 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
     Ok(toJson(UserWrapper.wrap(user)))
   }
 
+  case class IntersectWebSocketRequest(action: String, data: JsValue)
   case class IntersectRequest(fileName: String, parameters: IntersectParametersRequest, filters: FiltersRequest)
   case class IntersectParametersRequest(matchV: Boolean, matchJ: Boolean, maxMismatches: Int, maxInsertions: Int, maxDeletions: Int, maxMutations: Int)
 
+  implicit val intersectWebSocketRequestReads = Json.reads[IntersectWebSocketRequest]
   implicit val intersectParametersRequestRead = Json.reads[IntersectParametersRequest]
   implicit val intersectRequestRead = Json.reads[IntersectRequest]
+
+  def intersectWebSocket = WebSocket.using[JsValue] { request =>
+    val (out,channel) = Concurrent.broadcast[JsValue]
+    val user = getUser(request)
+    val intersectResults = new IntersectResults()
+
+    if (user.isEmpty) {
+      channel push toJson(ErrorMessage("Access denied"))
+      channel.eofAndEnd()
+    }
+
+    val in = Iteratee.foreach[JsValue] {
+      websocketMessage  =>
+        if (!LimitedAction.allow(request.remoteAddress)) {
+          channel push LimitedAction.LimitErrorMessage
+        } else try {
+          val websocketRequest = Json.fromJson[IntersectWebSocketRequest](websocketMessage).get
+          val dataRequest = websocketRequest.data
+          websocketRequest.action match {
+            case "columns" =>
+              channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns()))
+            case "intersect" =>
+              val intersectRequest = Json.fromJson[IntersectRequest](dataRequest).get
+              val filters = Filters.parse(intersectRequest.filters)
+              val file = Some(new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user.get, intersectRequest.fileName))
+              file match {
+                case Some(f) =>
+                  val sampleFileConnection = new SampleFileConnection(f.getFilePath, f.getSoftware)
+                  val sample = sampleFileConnection.getSample
+                  intersectResults.reinit(sample, intersectRequest.parameters, filters)
+                  channel push toJson(IntersectSuccessMessage(intersectResults.getPage(0)))
+                  if (filters.warnings.nonEmpty) {
+                    channel push toJson(WarningListMessage(filters.warnings))
+                  }
+                case _ =>
+                  channel push toJson(ErrorMessage("You have no file named " + intersectRequest.fileName))
+              }
+
+            case _ =>
+          }
+        } catch {
+          case e: Exception =>
+            e.printStackTrace()
+            //channel push toJson(ErrorMessage("search", "Invalid request"))
+        }
+    }
+
+    (in,out)
+  }
 
   def intersect = SecuredAction(parse.json) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
@@ -52,7 +119,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
         } else if (GlobalDatabase.isParametersValid(parameters)) {
           try {
-            val filtersJava = wrappers.Filters.parse(filters)
+            val filtersJava = Filters.parse(filters)
             val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
             Ok(toJson(GlobalDatabase.intersect(sample, parameters, filtersJava)))
@@ -123,8 +190,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               if (Configuration.deleteAfter > 0) {
                 Akka.system(play.api.Play.current).scheduler.scheduleOnce(Configuration.deleteAfter hours, new Runnable {
                   override def run(): Unit = {
-                    val id = newFile.getUniqueName
-                    val file = new FileFinder(classOf[IntersectionFile]).findByUniqueNameAndUser(user, uniqueName);
+                    val file = new FileFinder(classOf[IntersectionFile]).findByUniqueNameAndUser(user, uniqueName)
                     if (file != null) {
                       ServerFile.deleteFile(file)
                     }

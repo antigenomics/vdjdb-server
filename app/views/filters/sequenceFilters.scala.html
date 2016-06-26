@@ -17,7 +17,7 @@
                     <td width="30%">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
                         <div class="select_drop_container">
-                            <ul ng-class="{'select_dropdown_hidden':!isColumnActive(filter), 'select_dropdown_visible':isColumnActive(filter)}">
+                            <ul ng-show="isColumnActive(filter)">
                                 <li ng-repeat="column in sequenceFiltersColumns" ng-click="clickSequenceColumn(filter, column)"><a>{{ ::column.title }}</a></li>
                             </ul>
                         </div>

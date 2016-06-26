@@ -16,7 +16,7 @@
             });
             if (!contain) {
                 angular.forEach(newFiles, function(file) {
-                    if (isWaitForUpload(file) && file.fileName == fileName || isFileUploaded(file)) {
+                    if ((isWaitForUpload(file) || isFileUploaded(file)) && file.fileName == fileName) {
                         contain = true;
                     }
                 })
@@ -61,10 +61,6 @@
             return newFiles;
         }
 
-        function getUserFiles() {
-            return userInfo.getFiles();
-        }
-
         function updateTooltip(file, tooltip) {
             file.tooltip = tooltip;
         }
@@ -79,26 +75,18 @@
         }
 
         function uploadFile(file) {
-            if (isWaitForUpload(file) && isNameValid(file) && isReady(file)) {
+            if (isWaitForUpload(file) && isNameValid(file)) {
                 updateTooltip(file, "Uploading");
-                var softwareNode = document.getElementById('software_file_' + file.uid);
-                file.softwareType = softwareNode.value;
                 file.data.formData = {
                     fileName: file.fileName + '.' + file.fileExtension,
                     uid: file.uid,
-                    softwareType: softwareNode.value
+                    softwareType: file.softwareType
                 };
                 file.waitForUpload = false;
                 file.data.submit();
             } else if (isWaitForUpload(file) && !isNameValid(file)) {
                 notify.notice('Invalid name', file.fileName);
-            } else if (isWaitForUpload(file) && !isReady(file)) {
-                notify.notice('Software type', 'Please select software type for file ' + file.fileName);
             }
-        }
-
-        function isReady(file) {
-            return file.ready;
         }
 
         function uploadAll() {
@@ -123,6 +111,9 @@
                 uploaded: false,
                 removed: false,
                 ready: false,
+                showSoftwareTypeSelection: false,
+                softwareType: 'vdjtools',
+                softwareTypeTitle: 'VDJtools',
                 waitForUpload: (function () {
                     return !(isFilesCountExcedeed() || isContain(originalFileName) || isSizeExceeded(file));
                 })(),
@@ -175,8 +166,7 @@
             uploadAll: uploadAll,
             isNewFilesExists: isNewFilesExists,
             isWaitForUpload: isWaitForUpload,
-            isNameValid: isNameValid,
-            isReady: isReady
+            isNameValid: isNameValid
         }
     }]);
 
@@ -190,15 +180,21 @@
 
                 $scope.newFiles = upload.getNewFiles();
 
-                $scope.softwareTypes = Object.freeze([
-                    { dbName: 'vdjtools', clientName: 'VDJtools'},
-                    { dbName: 'migec', clientName: 'MiGec' },
-                    { dbName: 'mitcr', clientName: 'MiTcr' },
-                    { dbName: 'mixcr', clientName: 'MiXcr' },
-                    { dbName: 'migmap', clientName: 'MigMap' },
-                    { dbName: 'immunoseq', clientName: 'ImmunoSeq' },
-                    { dbName: 'imgthighvquest', clientName: 'ImgtHighVQuest' }
-                ]);
+                $scope.softwareTypes = [
+                    { name: 'vdjtools', title: 'VDJtools'},
+                    { name: 'migec', title: 'MiGec' },
+                    { name: 'mitcr', title: 'MiTcr' },
+                    { name: 'mixcr', title: 'MiXcr' },
+                    { name: 'migmap', title: 'MigMap' },
+                    { name: 'immunoseq', title: 'ImmunoSeq' },
+                    { name: 'imgthighvquest', title: 'ImgtHighVQuest' }
+                ];
+
+                $scope.commonSoftwareType = {
+                    name: 'vdjtools',
+                    title: 'VDJtools',
+                    visible: false
+                };
 
                 //Public Functions
                 $scope.removeFile = upload.removeFile;
@@ -215,7 +211,14 @@
                 $scope.isSuccess = isSuccess;
                 $scope.isUploadedFilesExists = isUploadedFilesExists;
                 $scope.isWaitingExists = isWaitingExists;
-                $scope.isUploadValid = isUploadValid;
+
+                $scope.softwareTypeSwitch = softwareTypeSwitch;
+                $scope.isShowSoftwareTypeSelection = isShowSoftwareTypeSelection;
+                $scope.changeFileSoftwareType = changeFileSoftwareType;
+
+                $scope.clickCommonSoftwareType = clickCommonSoftwareType;
+                $scope.isShowCommonSoftwareType = isShowCommonSoftwareType;
+                $scope.changeCommonSoftwareType = changeCommonSoftwareType;
 
                 function isWaitingExists() {
                     var exist = false;
@@ -225,10 +228,6 @@
                         }
                     });
                     return exist;
-                }
-
-                function isUploadValid(file) {
-                    return upload.isNameValid(file) && upload.isReady(file);
                 }
 
                 function isRemoved(file) {
@@ -247,16 +246,46 @@
                     return file.result === 'success';
                 }
 
-                function addNewButtonClick() {
-                    $("form input[type=file]").click();
-                }
-
                 function isUploadedFilesExists() {
                     return uploadedFilesExists;
                 }
 
                 function addNewButtonClick() {
                     $("form input[type=file]").click();
+                }
+
+                function softwareTypeSwitch(file) {
+                    file.showSoftwareTypeSelection = !file.showSoftwareTypeSelection;
+                }
+
+                function isShowSoftwareTypeSelection(file) {
+                    return file.showSoftwareTypeSelection;
+                }
+
+                function changeFileSoftwareType(file, software) {
+                    file.softwareType = software.name;
+                    file.softwareTypeTitle = software.title;
+                    file.showSoftwareTypeSelection = false;
+                }
+
+                function clickCommonSoftwareType() {
+                    $scope.commonSoftwareType.visible = !$scope.commonSoftwareType.visible;
+                }
+
+                function isShowCommonSoftwareType() {
+                    return $scope.commonSoftwareType.visible;
+                }
+
+                function changeCommonSoftwareType(software) {
+                    $scope.commonSoftwareType.title = software.title;
+                    $scope.commonSoftwareType.name = software.name;
+                    $scope.commonSoftwareType.visible = false;
+                    angular.forEach($scope.newFiles, function(file) {
+                        if (!file.uploaded && !file.removed) {
+                            file.softwareType = software.name;
+                            file.softwareTypeTitle = software.title;
+                        }
+                    })
                 }
 
                 $('#fileupload').fileupload({
@@ -292,33 +321,8 @@
                     }
                 });
 
-                $scope.$on('onRepeatLast', function () {
-                    applySelectTheme(function(elementId, newValue, nodeValue) {
-                        $scope.$apply(function() {
-                            if (elementId === 'commonSoftwareType') {
-                                angular.forEach($scope.newFiles, function (file) {
-                                    var softwareNode = document.getElementById('software_file_' + file.uid);
-                                    softwareNode.value = newValue;
-                                    softwareNode.nextElementSibling.text = nodeValue;
-                                    file.ready = true;
-                                })
-                            } else {
-                                var fileId = elementId.substring(14, elementId.length);
-                                $scope.newFiles[fileId].ready = true;
-                            }
-                        });
-                    });
-                });
             }]
         }
-    });
-
-    application.directive('onLastRepeat', function () {
-        return function (scope, element, attrs) {
-            if (scope.$last) setTimeout(function () {
-                scope.$emit('onRepeatLast', element, attrs);
-            }, 1);
-        };
     });
 
 }());

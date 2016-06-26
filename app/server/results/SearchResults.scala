@@ -1,4 +1,4 @@
-package server.search
+package server.results
 
 import play.api.libs.json.Json
 import server.database.GlobalDatabase
@@ -8,7 +8,7 @@ import server.wrappers.database.RowWrapper
 /**
   * Created by bvdmitri on 22.06.16.
   */
-case class SearchResults(var pageSize: Int, var results: List[RowWrapper]) {
+class SearchResults(var pageSize: Int, var results: List[RowWrapper]) {
   def this() {
     this(SearchResults.DEFAULT_PAGE_SIZE, List())
   }
@@ -45,6 +45,5 @@ case class SearchResults(var pageSize: Int, var results: List[RowWrapper]) {
 }
 
 object SearchResults {
-  implicit val searchResultsWrites = Json.writes[SearchResults]
   val DEFAULT_PAGE_SIZE : Int = 100
 }

@@ -23,14 +23,14 @@
         }
     }]);
 
-    application.factory('SearchDatabaseAPI', ['$http', 'filters', '$websocket', 'notify', 'LoggerService', function ($http, filters, $websocket, notify, LoggerService) {
+    application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'notify', 'LoggerService', function ($websocket, filters, notify, LoggerService) {
 
         var connected = false;
         var connection = $websocket('ws://' + location.host + '/search/connect');
-        var defaultSortRule = Object.freeze({
+        var defaultSortRule = {
             columnId: 0,
             sortType: 'asc'
-        });
+        };
         var data = [];
         var pageSize = 100;
         var totalItems = -1;

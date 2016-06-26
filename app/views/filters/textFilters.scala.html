@@ -15,24 +15,24 @@
                     <td width="30%">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
                         <div class="select_drop_container">
-                            <ul ng-class="{'select_dropdown_hidden':!isColumnActive(filter), 'select_dropdown_visible':isColumnActive(filter)}">
+                            <ul ng-show="isColumnActive(filter)">
                                 <li ng-repeat="column in textFiltersColumns" ng-click="clickTextColumn(filter, column)"><a>{{ ::column.title }}</a></li>
                             </ul>
                         </div>
                     </td>
                     <td width="30%">
-                        <input class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
+                        <input id="text_filter_{{ ::filter.id }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
                     </td>
                     <td width="30%">
                         <a class="select_trigger" ng-click="switchTypeVisible(filter)">{{ filter.filterType.title }}</a>
                         <div class="select_drop_container">
-                            <ul ng-class="{'select_dropdown_hidden':!isTypeActive(filter), 'select_dropdown_visible':isTypeActive(filter)}">
-                                <li ng-repeat="typeIndex in filter.types" ng-click="clickType(filter, typeIndex)"><a>{{ textFiltersTypes[typeIndex].title }}</a></li>
+                            <ul ng-show="isTypeActive(filter)">
+                                <li ng-repeat="typeIndex in filter.types" ng-click="clickType(filter, typeIndex)"><a>{{ ::textFiltersTypes[typeIndex].title }}</a></li>
                             </ul>
                         </div>
                     </td>
                     <td width="5%">
-                        <input type="checkbox" ng-model="filter.negative" ng-show="filter.filterType.allowNegative">
+                        <input  type="checkbox" ng-model="filter.negative" ng-show="filter.filterType.allowNegative">
                     </td>
                     <td width="5%">
                         <i class="fa fa-trash" ng-click="deleteTextFilter(filter)" style="cursor: pointer ;"></i>

@@ -6,12 +6,14 @@ import play.api.libs.json._
 import play.api.mvc._
 import play.api.libs.json.Json.toJson
 import server.database.GlobalDatabase
-import server.search.SearchResults
-import server.wrappers.Filters
+import server.results.SearchResults
+import server.wrappers.{Filters, ServerResponse}
 import utils.converter.DocumentConverter
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import server.websocket._
-import server.websocket.WebSocketSearchMessages._
+import server.websocket.search._
+import server.websocket.search.WebSocketSearchMessages._
 
 
 
@@ -45,7 +47,7 @@ object SearchAPI extends Controller {
         body = docContent
       )
     } else {
-      BadRequest("Invalid request")
+      BadRequest(toJson(ServerResponse("Invalid request")))
     }
   }
 
@@ -61,10 +63,20 @@ object SearchAPI extends Controller {
   case class SearchWebSocketRequest(action: String, data: JsValue)
   implicit val searchWebSocketRequestReader = Json.reads[SearchWebSocketRequest]
 
+  def search = LimitedAction(parse.json) { implicit request =>
+    request.body.validate[FiltersRequest].map {
+      case filtersRequest =>
+        val filters = Filters.parse(filtersRequest)
+        Ok(toJson(GlobalDatabase.search(filters)))
+    }.recoverTotal {
+      e =>
+        BadRequest(toJson(ServerResponse("Invalid request")))
+    }
+  }
+
   def searchWebSocket = WebSocket.using[JsValue] { request =>
     val (out,channel) = Concurrent.broadcast[JsValue]
     val searchResults : SearchResults = new SearchResults()
-    var filters : Filters = null
 
     val in = Iteratee.foreach[JsValue] {
       websocketMessage  =>
@@ -78,11 +90,11 @@ object SearchAPI extends Controller {
               channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns()))
             case "search"  =>
               val filtersRequest = Json.fromJson[FiltersRequest](requestData).get
-              filters = Filters.parse(filtersRequest.textFilters, filtersRequest.sequenceFilters)
+              val filters = Filters.parse(filtersRequest.textFilters, filtersRequest.sequenceFilters)
               searchResults.reinit(filters)
               channel push toJson(SearchSuccessMessage(searchResults.getPage(0), searchResults.results.size))
               if (filters.warnings.nonEmpty) {
-                channel push toJson(WarningsMessage(filters.warnings))
+                channel push toJson(WarningListMessage(filters.warnings))
               }
             case "get_page" =>
               val page = (requestData \ "page").asOpt[Int].getOrElse(0)
@@ -106,7 +118,7 @@ object SearchAPI extends Controller {
                 val complex = GlobalDatabase.findComplex(complexId, gene)
                 channel push toJson(FindComplexSuccessMessage(complex.get, complexId, gene, index))
               } else {
-                channel push toJson(ErrorMessage("complex", "Complex not found"))
+                channel push toJson(ErrorMessage("Complex not found"))
               }
             case "export" =>
               val exportType = (requestData \ "exportType").asOpt[String].getOrElse("excel")
@@ -118,17 +130,17 @@ object SearchAPI extends Controller {
                     case Some(l) =>
                       channel push toJson(ConverterSuccessMessage(exportType, l))
                     case _ =>
-                      channel push toJson(ErrorMessage("export", "Export failed"))
+                      channel push toJson(ErrorMessage("Export failed"))
                   }
                 case None =>
-                  channel push toJson(ErrorMessage("export", "Export invalid type"))
+                  channel push toJson(ErrorMessage("Export invalid type"))
               }
             case _ =>
           }
         } catch {
           case e : Exception =>
             e.printStackTrace()
-            channel push toJson(ErrorMessage("search", "Invalid request"))
+            channel push toJson(ErrorMessage("Invalid request"))
         }
     }
 

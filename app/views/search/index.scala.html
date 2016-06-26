@@ -63,7 +63,7 @@
                                         </thead>
                                         <tbody>
                                             <tr ng-repeat="(rowIndex, row) in getData()" on-last-repeat="row" ng-class="{'complex_parent':row.complexFound, 'complex_child':row.complex}">
-                                                <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="::entryValue(entry, row.entries)"></td>
+                                                <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, row.entries)"></td>
                                             </tr>
                                         </tbody>
                                         <tfoot>

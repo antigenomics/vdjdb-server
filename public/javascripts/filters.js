@@ -5,8 +5,7 @@
     application.factory('filters', function () {
         var textFilters = [];
         var sequenceFilters = [];
-        var textFilterIndex = 0;
-        var sequenceFilterIndex = 0;
+        var textFilterID = 0;
 
         var loading = true;
         var error = false;
@@ -84,6 +83,7 @@
         function addTextFilter() {
             if (!error && !loading) {
                 textFilters.push({
+                    id: textFilterID++,
                     columnId: '',
                     columnTitle: 'Please select column name:',
                     value: '',
@@ -219,6 +219,12 @@
                     filter.filterType = column.defaultFilterType;
                     filter.negative = false;
                     filter.activeColumn = false;
+                    if (column.autocomplete) {
+                        $("#text_filter_" + filter.id).autocomplete({
+                            source: column.values,
+                            minLength: 0
+                        });
+                    }
                 };
 
                 $scope.clickSequenceColumn = function(filter, column) {

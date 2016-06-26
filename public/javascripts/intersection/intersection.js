@@ -1,5 +1,5 @@
 (function() {
-    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters']);
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket']);
 
     application.factory('sidebar', ['user', function(userInfo) {
         var user = userInfo.getUser();
@@ -16,7 +16,6 @@
         function deleteFile(file) {
             userInfo.deleteFile(file);
             if (file.uid === selectedFileUID) selectedFileUID = -1;
-            //selectedFileUID = -1;
         }
 
         function deleteAllFiles() {
@@ -71,85 +70,84 @@
         }
     });
 
-    application.factory('intersection', ['$http', 'sidebar', 'notify', 'filters', function($http, sidebar, notify, filters) {
+    application.factory('intersection', ['$websocket', 'sidebar', 'notify', 'filters', function($websocket, sidebar, notify, filters) {
+
+        var connected = false;
+        var connectionError = false;
+        var pingWebSocket = null;
+        var connection = $websocket('ws://' + location.host + '/intersection/connect');
 
         var loading = false;
-        var loaded = [];
 
-        filters.copyFilter({
-            columnId: 'species',
-            columnTitle: 'Species',
-            value: 'HomoSapiens',
-            filterType: 'exact',
-            negative: false,
-            allowNegative: true,
-            types: [0, 1, 2],
-            initialized: true,
-            defaultFilterType: filters.getDefaultFilterTypes()[1]
-        });
+        connection.onMessage(function(message) {
+            var response = JSON.parse(message.data);
+            loading = false;
+            switch (response.status) {
+                case 'success':
+                    switch (response.action) {
+                        case 'intersect':
+                            console.log(response.rows);
+                            break;
+                        case 'columns':
+                            filters.initialize(response.columns);
+                            break;
+                        default:
+                            notify.error('Intersection', 'Unknown action')
+                    }
+                    break;
+                case 'warn':
+                    angular.forEach(response.warnings, function(warning) {
+                        notify.notice('Intersection', warning);
+                    });
+                    break;
+                case 'error':
+                    notify.error('Intersection', response.message);
+                    break;
 
-        filters.copyFilter({
-            columnId: 'gene',
-            columnTitle: 'Gene',
-            value: 'TRB',
-            filterType: 'exact',
-            negative: false,
-            allowNegative: true,
-            types: [0, 1, 2],
-            initialized: true,
-            defaultFilterType: filters.getDefaultFilterTypes()[1]
-        });
-
-        filters.copyFilter({
-            columnId: 'vdjdb.score',
-            columnTitle: 'score',
-            value: '2',
-            filterType: 'exact',
-            negative: false,
-            allowNegative: false,
-            types: [3],
-            initialized: true,
-            defaultFilterType: filters.getDefaultFilterTypes()[3]
-        });
-
-        function isFileLoaded(file) {
-            return loaded.indexOf(file.uid) >= 0;
-        }
-
-        function intersect(parameters) {
-            if (loading) {
-                notify.info('Intersection', 'Please wait until server intersect previous one');
-                return;
             }
-            if (sidebar.isFileSelected()) {
-                var file = sidebar.getSelectedFile();
-                loading = true;
-                filters.pickFiltersSelectData();
-                $http.post('/intersection', { fileName: file.fileName, parameters: parameters, filters: {
-                    textFilters: filters.getTextFilters(), sequenceFilters: filters.getSequenceFilters()
-                }})
-                    .success(function(data) {
-                        intersectResultsTable(data, file);
-                        console.log(data);
-                        loaded.push(file.uid);
-                        loading = false;
-                        //angular.copy(data, intersectData);
-                    })
-                    .error(function(response) {
-                        notify.error('Intersect', response.message);
-                        loading = false;
-                    })
-            }
-        }
+        });
 
-        function isFileLoading() {
-            return loading;
+        connection.onError(function() {
+            notify.error('Database', 'Connection error');
+            connected = false;
+            connectionError = true;
+            clearInterval(pingWebSocket);
+        });
+
+        connection.onClose(function() {
+            notify.error('Database', 'Connection closed');
+            connected = false;
+            connectionError = true;
+            clearInterval(pingWebSocket);
+        });
+
+        connection.onOpen(function() {
+            connected = true;
+            connection.send({
+                action: 'columns',
+                data: {}
+            });
+            pingWebSocket = setInterval(function() {
+                connection.send({
+                    action: 'ping',
+                    data: {}
+                });
+            }, 10000)
+        });
+
+        function intersect(file, parameters) {
+            connection.send({
+                action: 'intersect',
+                data: {
+                    filters: filters.getFiltersRequest(),
+                    parameters: parameters,
+                    fileName: file.fileName
+                }
+            })
         }
 
         return {
-            intersect: intersect,
-            isFileLoading: isFileLoading,
-            isFileLoaded: isFileLoaded
+            intersect: intersect
         }
     }]);
 
@@ -166,17 +164,12 @@
                     maxMutations: 1
                 };
 
-                $scope.files = sidebar.files;
-                $scope.isFileSelected = sidebar.isFileSelected;
-                $scope.isFile = sidebar.isFile;
-                $scope.selectedFile = sidebar.getSelectedFile;
-                $scope.intersect = function() {
-                    intersection.intersect($scope.parameters);
-                };
-                $scope.isFileLoading = intersection.isFileLoading;
-                $scope.isFileLoaded = intersection.isFileLoaded;
+                $scope.intersect = intersect;
 
-
+                function intersect() {
+                    console.log('intersecting')
+                    intersection.intersect(sidebar.getSelectedFile(), $scope.parameters)
+                }
             }]
         }
     })

@@ -63,6 +63,9 @@
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+    height: auto;
+    max-height: 117px;
+    overflow-y: scroll;
 }
 
 .select_drop_container ul li {
@@ -82,14 +85,4 @@
 
 .select_drop_container ul li:last-child {
     border-bottom: none;
-}
-
-.select_dropdown_hidden {
-    display: none;
-}
-
-.select_dropdown_visible {
-    height: auto;
-    max-height: 117px;
-    overflow-y: scroll;
 }

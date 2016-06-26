@@ -1,19 +1,14 @@
 @main("VDJdb: annotations: upload") {
 
-    <!-- Select styling -->
-    <script src="@routes.Assets.at("lib/select/js/select.js")" type="text/javascript"></script>
-    <link href="@routes.Assets.at("lib/select/css/style.css")" rel="stylesheet">
-
     <script src="@routes.Assets.at("lib/FileUpload/jquery.ui.widget.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("lib/FileUpload/jquery.iframe-transport.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("lib/FileUpload/jquery.fileupload.js")" type="text/javascript"></script>
-
-
 
     <script src="@routes.Assets.at("javascripts/user.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/blockpage.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/intersection/upload.js")" type="text/javascript"></script>
 
+    <link href="@routes.Assets.at("stylesheets/select.css")" rel="stylesheet">
     @navbar(true)
     <div class="wrapper" ng-app="uploadPage">
         <block></block>
@@ -38,11 +33,13 @@
                                 <tbody>
                                     <tr>
                                         <td></td>
-                                        <td ng-click="commonSoftwareType()">
-                                            <select class="dropdown" id="commonSoftwareType" name="commonSoftwareId">
-                                                <option>Select software type for all uploads</option>
-                                                <option ng-repeat="software in softwareTypes" value="{{ software.dbName }}">{{ software.clientName }}</option>
-                                            </select>
+                                        <td>
+                                            <a class="select_trigger" ng-click="clickCommonSoftwareType()">{{ commonSoftwareType.title }}</a>
+                                            <div class="select_drop_container">
+                                                <ul ng-show="isShowCommonSoftwareType()">
+                                                    <li ng-repeat="software in ::softwareTypes" ng-click="changeCommonSoftwareType(software)"><a>{{ ::software.title }}</a></li>
+                                                </ul>
+                                            </div>
                                         </td>
                                         <td></td>
                                         <td></td>
@@ -53,23 +50,25 @@
                                             ng-class="{'input_invalid_name':!isNameValid(file)}" tooltip="Name tooltip" tooltip-placement="top">
                                             <text ng-hide="isWaitForUpload(file)">{{ file.fileName }}</text>
                                         </td>
-                                        <td width="30%">
+                                        <td width="15%">
                                             <div ng-show="isWaitForUpload(file)">
-                                            <select class="dropdown" id="software_file_{{ file.uid }}" name="fileSoftwareId">
-                                                <option>Select software type</option>
-                                                <option ng-repeat="software in softwareTypes" value="{{ software.dbName }}">{{ software.clientName }}</option>
-                                            </select>
+                                                <a class="select_trigger" ng-click="softwareTypeSwitch(file)">{{ file.softwareTypeTitle }}</a>
+                                                <div class="select_drop_container">
+                                                    <ul ng-show="isShowSoftwareTypeSelection(file)">
+                                                        <li ng-repeat="software in ::softwareTypes" ng-click="changeFileSoftwareType(file, software)"><a>{{ ::software.title }}</a></li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                             <text ng-hide="isWaitForUpload(file)">{{ file.softwareType }}</text>
                                         </td>
-                                        <td width="30%">
+                                        <td width="35%">
                                             <div class="progress progress-sm mbn" ng-show="isOk(file) && !isRemoved(file)">
                                                 <div role="progressbar" style="width: {{ file.progress }}%" class="progress-bar progress-bar-success"></div>
                                             </div>
                                             <text ng-show="isError(file)">{{ file.errorTooltip }}</text>
                                             <text ng-hide="isWaitForUpload(file) || isError(file)">{{ file.tooltip }}</text>
                                         </td>
-                                        <td width="10%">
+                                        <td width="20%">
                                             <button class="btn btn-flat btn-sm bg-purple" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file)">Upload</button>
                                             <button class="btn btn-flat btn-sm bg-purple" ng-click="removeFile(file)" ng-show="isWaitForUpload(file)">X</button>
                                         </td>
