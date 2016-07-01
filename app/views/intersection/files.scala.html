@@ -4,7 +4,7 @@
             <h3 class="box-title">Samples</h3>
         </div>
         <div class="box-body">
-            <p ng-if="!isFilesExist()">You have no samples uploaded..</p>
+            <p ng-if="!isFilesExist()">Click upload button to start</p>
             <div class="file_cell" ng-repeat="file in files() | orderBy:'nameWithoutExt'" ng-class="{'selected_file':isFile(file)}" ng-click="select(file)">
                 {{ ::file.nameWithoutExt }}
                 <i class="fa fa-trash sidebar_file_delete" ng-click="deleteFile(file); $event.stopPropagation();"></i>
