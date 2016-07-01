@@ -20,7 +20,7 @@
             { name: 'level', title: 'Level', allowNegative: false}
         ]);
 
-        function initialize(columns) {
+        function initialize(columns, callback) {
             angular.forEach(columns, function(column) {
                 var meta = column.metadata;
                 if (meta.searchable === '1') {
@@ -66,6 +66,9 @@
                 }
             });
             loading = false;
+            if (callback) {
+                callback(textFilters, sequenceFilters)
+            }
         }
 
         function getTextFiltersColumns() {

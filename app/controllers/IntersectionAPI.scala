@@ -64,7 +64,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
   def intersectWebSocket = WebSocket.using[JsValue] { request =>
     val (out,channel) = Concurrent.broadcast[JsValue]
     val user = getUser(request)
-    val intersectResults = new IntersectResults()
+    val intersectResults  = new IntersectResults()
 
     if (user.isEmpty) {
       channel push toJson(ErrorMessage("Access denied"))
@@ -83,27 +83,46 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns()))
             case "intersect" =>
               val intersectRequest = Json.fromJson[IntersectRequest](dataRequest).get
-              val filters = Filters.parse(intersectRequest.filters)
-              val file = Some(new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user.get, intersectRequest.fileName))
-              file match {
-                case Some(f) =>
-                  val sampleFileConnection = new SampleFileConnection(f.getFilePath, f.getSoftware)
-                  val sample = sampleFileConnection.getSample
-                  intersectResults.reinit(sample, intersectRequest.parameters, filters)
-                  channel push toJson(IntersectSuccessMessage(intersectResults.getPage(0)))
-                  if (filters.warnings.nonEmpty) {
-                    channel push toJson(WarningListMessage(filters.warnings))
-                  }
-                case _ =>
-                  channel push toJson(ErrorMessage("You have no file named " + intersectRequest.fileName))
+              if (GlobalDatabase.isParametersValid(intersectRequest.parameters)) {
+                val filters = Filters.parse(intersectRequest.filters)
+                val file = Some(new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user.get, intersectRequest.fileName))
+                file match {
+                  case Some(f) =>
+                    val sampleFileConnection = new SampleFileConnection(f.getFilePath, f.getSoftware)
+                    val sample = sampleFileConnection.getSample
+                    val fileName = intersectRequest.fileName
+                    intersectResults.reinit(fileName, sample, intersectRequest.parameters, filters)
+                    intersectResults.defaultSort(fileName)
+                    channel push toJson(IntersectSuccessMessage(fileName, intersectResults.getTotalItems(fileName), intersectResults.getPage(fileName, 0)))
+                    if (filters.warnings.nonEmpty) {
+                      channel push toJson(WarningListMessage(filters.warnings))
+                    }
+                  case _ =>
+                    channel push toJson(ErrorMessage("You have no file named " + intersectRequest.fileName))
+                }
+              } else {
+                channel push toJson(ErrorMessage("Invalid intersection parameters"))
               }
-
+            case "get_page" =>
+              val page = (dataRequest \ "page").asOpt[Int].getOrElse(0)
+              val fileName = (dataRequest \ "fileName").asOpt[String].getOrElse("<invalidName>")
+              channel push toJson(GetPageSuccessMessage(fileName, page, intersectResults.getPage(fileName, page)))
+            case "sort" =>
+              val fileName = (dataRequest \ "fileName").asOpt[String].getOrElse("<invalidName>")
+              val column = (dataRequest \ "column").asOpt[String].getOrElse("cdr3aa")
+              val sortType = (dataRequest \ "sortType").asOpt[String].getOrElse("asc")
+              intersectResults.sort(fileName, column, sortType)
+              channel push toJson(SortSuccessMessage(fileName, column, sortType, intersectResults.getPage(fileName, 0)))
+            case "helper_list" =>
+              val fileName = (dataRequest \ "fileName").asOpt[String].getOrElse("<invalidName>")
+              val id = (dataRequest \ "id").asOpt[Int].getOrElse(-1)
+              channel push toJson(HelperListSuccessMessage(fileName, id, intersectResults.getHelperList(fileName, id)))
             case _ =>
           }
         } catch {
           case e: Exception =>
             e.printStackTrace()
-            //channel push toJson(ErrorMessage("search", "Invalid request"))
+            channel push toJson(ErrorMessage("Invalid request"))
         }
     }
 

@@ -207,7 +207,7 @@
                 if (sortRule.columnId === index) {
                     sortRule.sortType = sortRule.sortType === 'asc' ? 'desc' : 'asc';
                 } else {
-                    sortRule.sortType = 'asc';
+                    sortRule.sortType = 'desc';
                 }
                 sortRule.columnId = index;
                 connection.send({

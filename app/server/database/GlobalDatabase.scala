@@ -64,8 +64,10 @@ object GlobalDatabase extends SynchronizedAccess {
       if (searchResults.size() != 0) {
         val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(parameters.matchV, parameters.matchJ,
           parameters.maxMismatches, parameters.maxInsertions, parameters.maxDeletions, parameters.maxMutations).search(sample)
+        var id = 0
         instance.keySet().toList.foreach(clonotype => {
-          buffer += IntersectWrapper.wrap(clonotype, instance.get(clonotype))
+          buffer += IntersectWrapper.wrap(id, clonotype, instance.get(clonotype))
+          id += 1
         })
       }
       buffer.toList

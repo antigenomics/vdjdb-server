@@ -1,7 +1,34 @@
 (function() {
-    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket']);
+    "use strict";
+    
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap']);
 
     application.factory('sidebar', ['user', function(userInfo) {
+
+        userInfo.initialize(function(files) {
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                file.rows = [];
+                file.intersected = false;
+                file.loading = false;
+                file.totalItems = 0;
+                file.page = 0;
+                file.pageSize = 25;
+                file.sort = {
+                    column: 'count',
+                    type: 'desc'
+                };
+                file.parameters  = {
+                    matchV: false,
+                    matchJ: false,
+                    maxMismatches: 1,
+                    maxInsertions: 0,
+                    maxDeletions: 0,
+                    maxMutations: 1
+                };
+            }
+        });
+
         var user = userInfo.getUser();
         var selectedFileUID = -1;
 
@@ -28,8 +55,15 @@
         }
 
         function getSelectedFile() {
-            if (selectedFileUID < 0) return null;
+            if (selectedFileUID < 0) return {};
             return user.files[selectedFileUID];
+        }
+
+        function getFileByFilename(fileName) {
+            for (var i = 0; i < user.files.length; i++) {
+                if (user.files[i].fileName === fileName) return user.files[i];
+            }
+            return {};
         }
 
         function isFileSelected() {
@@ -47,6 +81,7 @@
             deleteAllFiles: deleteAllFiles,
             select: select,
             getSelectedFile: getSelectedFile,
+            getFileByFileName: getFileByFilename,
             isFileSelected: isFileSelected,
             isFile: isFile
         }
@@ -81,15 +116,64 @@
 
         connection.onMessage(function(message) {
             var response = JSON.parse(message.data);
+            var file = {};
             loading = false;
             switch (response.status) {
                 case 'success':
                     switch (response.action) {
-                        case 'intersect':
-                            console.log(response.rows);
-                            break;
                         case 'columns':
-                            filters.initialize(response.columns);
+                            filters.initialize(response.columns, filtersCallback);
+                            break;
+                        case 'intersect':
+                            file = sidebar.getFileByFileName(response.fileName);
+                            if (file.hasOwnProperty('fileName')) {
+                                file.rows.splice(0, file.rows.length);
+                                file.totalItems = response.totalItems;
+                                file.page = 1;
+                                angular.extend(file.rows, response.rows);
+                                file.loading = false;
+
+                            } else {
+                                notify.notice('Intersection', 'You have no file named ' + response.fileName)
+                            }
+                            break;
+                        case 'get_page':
+                            file = sidebar.getFileByFileName(response.fileName);
+                            if (file.hasOwnProperty('fileName')) {
+                                file.rows.splice(0, file.rows.length);
+                                angular.extend(file.rows, response.rows);
+                                file.loading = false;
+                            } else {
+                                notify.notice('Intersection', 'You have no file named ' + response.fileName)
+                            }
+                            break;
+                        case 'sort':
+                            file = sidebar.getFileByFileName(response.fileName);
+                            if (file.hasOwnProperty('fileName')) {
+                                file.sort.column = response.column;
+                                file.sort.type = response.sortType;
+                                file.rows.splice(0, file.rows.length);
+                                angular.extend(file.rows, response.rows);
+                                file.page = 1;
+                                file.loading = false;
+                            }
+                            break;
+                        case 'helper_list':
+                            file = sidebar.getFileByFileName(response.fileName);
+                            if (file.hasOwnProperty('fileName')) {
+                                file.rows.forEach(function(row) {
+                                    if (row.id === response.id) {
+                                        if (row.hasOwnProperty('helpers')) {
+                                            row.helpers.splice(0, row.helpers.length);
+                                        } else {
+                                            row.helpers = [];
+                                        }
+                                        angular.extend(row.helpers, response.helpers);
+                                        row.showHelpers = true;
+                                    }
+                                });
+                                file.loading = false;
+                            }
                             break;
                         default:
                             notify.error('Intersection', 'Unknown action')
@@ -135,19 +219,123 @@
             }, 10000)
         });
 
-        function intersect(file, parameters) {
-            connection.send({
-                action: 'intersect',
-                data: {
-                    filters: filters.getFiltersRequest(),
-                    parameters: parameters,
-                    fileName: file.fileName
+        function intersect(file) {
+            checkFile(file, function() {
+                connection.send({
+                    action: 'intersect',
+                    data: {
+                        filters: filters.getFiltersRequest(),
+                        parameters: file.parameters,
+                        fileName: file.fileName
+                    }
+                })
+            })
+        }
+
+        function changePage(file) {
+            checkFile(file, function() {
+                connection.send({
+                    action: 'get_page',
+                    data: {
+                        fileName: file.fileName,
+                        page: file.page - 1
+                    }
+                })
+            })
+        }
+
+        function sort(file, column) {
+            checkFile(file, function() {
+                if (file.sort.column === column) {
+                    file.sort.type = file.sort.type === 'asc' ? 'desc' : 'asc';
+                } else {
+                    file.sort.column = column;
+                    file.sort.type = 'desc';
                 }
+                connection.send({
+                    action: 'sort',
+                    data: {
+                        fileName: file.fileName,
+                        column: file.sort.column,
+                        sortType: file.sort.type
+                    }
+                })
+            })
+        }
+
+        function helperList(file, row) {
+            if (!row.hasOwnProperty('helpers')) {
+                checkFile(file, function () {
+                    connection.send({
+                        action: 'helper_list',
+                        data: {
+                            fileName: file.fileName,
+                            id: row.id
+                        }
+                    });
+                })
+            } else {
+                row.showHelpers = !row.showHelpers;
+            }
+        }
+
+        function checkFile(file, callback) {
+            if (!connected) {
+                notify.notice('Intersection', 'Connecting');
+                return;
+            }
+            if (file.hasOwnProperty('fileName') && !file.loading) {
+                file.intersected = true;
+                file.loading = true;
+                callback()
+            } else if (file.loading) {
+                notify.notice('Intersection', 'Loading..')
+            } else {
+                notify.notice('Intersection', 'Please select a sample to annotate')
+            }
+        }
+
+        function filtersCallback(textFilters, sequenceFilters) {
+            var types = filters.getTextFiltersTypes();
+            textFilters.push({
+                id: -3,
+                columnId: 'species',
+                columnTitle: 'Species',
+                value: 'HomoSapiens',
+                filterType: types[1],
+                negative: false,
+                types: [0, 1, 2],
+                activeColumn: false,
+                activeType: false
+            });
+            textFilters.push({
+                id: -2,
+                columnId: 'gene',
+                columnTitle: 'Gene',
+                value: 'TRB',
+                filterType: types[1],
+                negative: false,
+                types: [0, 1, 2],
+                activeColumn: false,
+                activeType: false
+            });
+            textFilters.push({
+                columnId: 'vdjdb.score',
+                columnTitle: 'score',
+                value: '2',
+                filterType: types[3],
+                negative: false,
+                types: [3],
+                activeColumn: false,
+                activeType: false
             })
         }
 
         return {
-            intersect: intersect
+            intersect: intersect,
+            changePage: changePage,
+            sort: sort,
+            helperList: helperList
         }
     }]);
 
@@ -155,21 +343,40 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'sidebar', 'intersection', function($scope, sidebar, intersection) {
-                $scope.parameters  = {
-                    matchV: false,
-                    matchJ: false,
-                    maxMismatches: 1,
-                    maxInsertions: 0,
-                    maxDeletions: 0,
-                    maxMutations: 1
-                };
+                $scope.files = sidebar.files;
+                $scope.isFile = sidebar.isFile;
 
-                $scope.intersect = intersect;
+                $scope.intersect = intersection.intersect;
+                $scope.changePage = intersection.changePage;
+                $scope.sort = intersection.sort;
+                $scope.helperList = intersection.helperList;
 
-                function intersect() {
-                    console.log('intersecting')
-                    intersection.intersect(sidebar.getSelectedFile(), $scope.parameters)
+                $scope.isIntersected = isIntersected;
+                $scope.isResultsLoading = isResultsLoading;
+                $scope.isResultsExist = isResultsExist;
+                $scope.isColumnAscSorted = isColumnAscSorted;
+                $scope.isColumnDescSorted = isColumnDescSorted;
+
+                function isResultsLoading(file) {
+                    return file.loading;
                 }
+
+                function isResultsExist(file) {
+                    return file.rows.length > 0;
+                }
+
+                function isIntersected(file) {
+                    return file.intersected;
+                }
+
+                function isColumnAscSorted(file, column) {
+                    return (file.sort.column === column && file.sort.type === 'asc');
+                }
+
+                function isColumnDescSorted(file, column) {
+                    return (file.sort.column === column && file.sort.type === 'desc');
+                }
+
             }]
         }
     })

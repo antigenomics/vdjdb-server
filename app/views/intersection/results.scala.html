@@ -1,55 +1,115 @@
 <intersection class="col-md-12 col-lg-12">
-    <div class="box box-solid flat">
-        <div class="box-header with-border">
-            <h4>Search parameters</h4>
-        </div>
-        <div class="box-body">
-            <p>Select a sample to annotate..</p>
-            <div>
+    <div ng-repeat="file in files()" >
+        <div class="box box-solid flat" ng-show="isFile(file)">
+            <div class="box-header with-border">
+                <h3 class="box-title">Search parameters</h3>
+            </div>
+            <div class="box-body">
                 <div class="col-lg-2">
                     <div class="form-group">
                         <label for="parameters_maxMismatches">Max substitutions</label>
-                        <input type="number" max="5" min="0" class="form-control" id="parameters_maxMismatches" ng-model="parameters.maxMismatches">
+                        <input type="number" max="5" min="0" class="form-control" id="parameters_maxMismatches" ng-model="file.parameters.maxMismatches">
                     </div>
                 </div>
                 <div class="col-lg-2">
                     <div class="form-group">
                         <label for="parameters_maxInsertions">Max insertions</label>
-                        <input type="number" max="2" min="0" class="form-control" id="parameters_maxInsertions" ng-model="parameters.maxInsertions">
+                        <input type="number" max="2" min="0" class="form-control" id="parameters_maxInsertions" ng-model="file.parameters.maxInsertions">
                     </div>
                 </div>
                 <div class="col-lg-2">
                     <div class="form-group">
                         <label for="parameters_maxDeletions">Max deletions</label>
-                        <input type="number" max="2" min="0" class="form-control" id="parameters_maxDeletions" ng-model="parameters.maxDeletions">
+                        <input type="number" max="2" min="0" class="form-control" id="parameters_maxDeletions" ng-model="file.parameters.maxDeletions">
                     </div>
                 </div>
                 <div class="col-lg-2">
                     <div class="form-group">
                         <label for="parameters_maxMutations">Max mutations</label>
-                        <input type="number" max="5" min="0" class="form-control" id="parameters_maxMutations" ng-model="parameters.maxMutations">
+                        <input type="number" max="5" min="0" class="form-control" id="parameters_maxMutations" ng-model="file.parameters.maxMutations">
                     </div>
                 </div>
                 <div class="col-lg-2">
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" ng-model="parameters.matchV"> Require V match
+                            <input type="checkbox" ng-model="file.parameters.matchV"> Require V match
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" ng-model="parameters.matchJ"> Require J match
+                            <input type="checkbox" ng-model="file.parameters.matchJ"> Require J match
                         </label>
                     </div>
                 </div>
                 <br>
                 <div class="col-lg-12">
-                    <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect()">Annotate</button>
+                    <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect(file)">Annotate</button>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="box box-solid flat">
+        <div class="box" ng-if="isFile(file) && isIntersected(file)">
+            <div class="box-header with-border">
+                <h3 class="box-title">Results for {{ file.fileName }}</h3>
+                <div class="box-tools">
+                    <pagination total-items="file.totalItems"
+                        items-per-page="25" ng-model="file.page"
+                        max-size="10" class="pagination no-margin pagination-sm pull-right" boundary-links="true"
+                        rotate="true" ng-click="changePage(file)">
+                    </pagination>
+                </div>
+            </div>
+            <div id="table_wrapper" class="box-body">
+                <div class="block_background" ng-if="isResultsLoading(file)"></div>
+                <div class="block_processing" ng-if="isResultsLoading(file)"><h3>Loading...</h3></div>
+                <div class="text-center" ng-hide="isResultsExist(file)">
+                    <h4>No data found</h4>
+                </div>
+                <div id="table_scroll_wrapper" ng-show="isResultsExist(file)">
+                    <table class="table table-hover compact">
+                        <thead>
+                            <tr>
+                                <th>Info</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'matches'), 'column_desc_sorted':isColumnDescSorted(file, 'matches')}" ng-click="sort(file, 'matches')"># Matches</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'freq'), 'column_desc_sorted':isColumnDescSorted(file, 'freq')}" ng-click="sort(file, 'freq')">Freq</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'count'), 'column_desc_sorted':isColumnDescSorted(file, 'count')}" ng-click="sort(file, 'count')">Count</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3aa'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3aa')}" ng-click="sort(file, 'cdr3aa')">CDR3aa</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'v'), 'column_desc_sorted':isColumnDescSorted(file, 'v')}" ng-click="sort(file, 'v')">V</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'j'), 'column_desc_sorted':isColumnDescSorted(file, 'j')}" ng-click="sort(file, 'j')">J</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3nt'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3nt')}" ng-click="sort(file, 'cdr3nt')">CDR3nt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat-start="row in file.rows">
+                                <td class="text-center cursor_pointer" ng-click="helperList(file, row)"><i class="fa fa-arrow-down" aria-hidden="true"></i></td>
+                                <td>{{ ::row.matches }}</td>
+                                <td>{{ ::row.clonotype.freq }}</td>
+                                <td>{{ ::row.clonotype.count }}</td>
+                                <td>{{ ::row.clonotype.cdr.cdr3aa }}</td>
+                                <td>{{ ::row.clonotype.v }}</td>
+                                <td>{{ ::row.clonotype.j }}</td>
+                                <td>{{ ::row.clonotype.cdr.cdr3nt }}</td>
+                            </tr>
+                            <tr ng-repeat-end>
+                                <td colspan="8" ng-if="row.showHelpers">
 
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Info</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'matches'), 'column_desc_sorted':isColumnDescSorted(file, 'matches')}" ng-click="sort(file, 'matches')"># Matches</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'freq'), 'column_desc_sorted':isColumnDescSorted(file, 'freq')}" ng-click="sort(file, 'freq')">Freq</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'count'), 'column_desc_sorted':isColumnDescSorted(file, 'count')}" ng-click="sort(file, 'count')">Count</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3aa'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3aa')}" ng-click="sort(file, 'cdr3aa')">CDR3aa</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'v'), 'column_desc_sorted':isColumnDescSorted(file, 'v')}" ng-click="sort(file, 'v')">V</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'j'), 'column_desc_sorted':isColumnDescSorted(file, 'j')}" ng-click="sort(file, 'j')">J</th>
+                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3nt'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3nt')}" ng-click="sort(file, 'cdr3nt')">CDR3nt</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </intersection>

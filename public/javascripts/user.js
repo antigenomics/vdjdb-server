@@ -11,20 +11,23 @@
         var uid = 0;
         var buid = 0;
 
-        $http.get('/api/userinfo')
-            .success(function(userInfo) {
-                angular.forEach(userInfo.files, function(file) {
-                    file.nameWithoutExt =  file.fileName.substr(0, file.fileName.lastIndexOf('.')) || file.fileName;
-                    file.uid = uid++;
+        function initialize(callback) {
+            $http.get('/api/userinfo')
+                .success(function(userInfo) {
+                    angular.forEach(userInfo.files, function(file) {
+                        file.nameWithoutExt =  file.fileName.substr(0, file.fileName.lastIndexOf('.')) || file.fileName;
+                        file.uid = uid++;
+                    });
+                    angular.extend(user, userInfo);
+                    callback(user.files);
+                    block.unblock();
+                })
+                .error(function(error) {
+                    block.setMessage("Error in initializing");
+                    block.block();
+                    console.log(error);
                 });
-                angular.extend(user, userInfo);
-                block.unblock();
-            })
-            .error(function(error) {
-                block.setMessage("Error in initializing");
-                block.block();
-                console.log(error);
-            });
+        }
 
         function deleteFile(file) {
             $http.post('/api/delete', { fileName: file.fileName, action: 'delete' })
@@ -66,6 +69,7 @@
         }
 
         return {
+            initialize: initialize,
             getUser: getUser,
             getFiles: getFiles,
             getMaxFileSize: getMaxFileSize,
