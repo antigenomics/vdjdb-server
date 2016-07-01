@@ -63,31 +63,31 @@ class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, L
           case "cdr3aa" =>
             val v1 = e1.clonotype.cdr.cdr3aa
             val v2 = e2.clonotype.cdr.cdr3aa
-            m = v1 > v2
+            m = v1 >= v2
           case "cdr3nt" =>
             val v1 = e1.clonotype.cdr.cdr3nt
             val v2 = e2.clonotype.cdr.cdr3nt
-            m = v1 > v2
+            m = v1 >= v2
           case "count" =>
             val v1 = e1.clonotype.count
             val v2 = e2.clonotype.count
-            m = v1 > v2
+            m = v1 >= v2
           case "freq" =>
             val v1 = e1.clonotype.freq
             val v2 = e2.clonotype.freq
-            if (!v1.isNaN && !v2.isNaN) m =  v1 > v2
+            m =  v1 >= v2
           case "v" =>
             val v1 = e1.clonotype.v
             val v2 = e2.clonotype.v
-            m = v1 > v2
+            m = v1 >= v2
           case "j" =>
             val v1 = e1.clonotype.j
             val v2 = e2.clonotype.j
-            m = v1 > v2
+            m = v1 >= v2
           case "matches" =>
             val v1 = e1.alignmentHelperList.size
             val v2 = e2.alignmentHelperList.size
-            m = v1 > v2
+            m = v1 >= v2
           case _ =>
         }
         sortType match {

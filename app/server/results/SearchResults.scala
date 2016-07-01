@@ -33,7 +33,7 @@ class SearchResults(var pageSize: Int, var results: List[RowWrapper]) {
     results = results.sortWith((e1, e2) => {
       val v1 = e1.entries(index).value
       val v2 = e2.entries(index).value
-      val m = v1 > v2
+      val m = v1 >= v2
       sortType match {
         case "desc" => m
         case "asc" => !m
