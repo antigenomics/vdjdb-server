@@ -3,6 +3,8 @@
 
     application.factory('upload', ['user', 'notify', function(userInfo, notify) {
 
+        userInfo.initialize(function() {});
+
         var uid = 0;
         var newFiles = [];
         var user = userInfo.getUser();

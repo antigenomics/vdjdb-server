@@ -88,14 +88,23 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
                 val file = Some(new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user.get, intersectRequest.fileName))
                 file match {
                   case Some(f) =>
-                    val sampleFileConnection = new SampleFileConnection(f.getFilePath, f.getSoftware)
-                    val sample = sampleFileConnection.getSample
-                    val fileName = intersectRequest.fileName
-                    intersectResults.reinit(fileName, sample, intersectRequest.parameters, filters)
-                    intersectResults.defaultSort(fileName)
-                    channel push toJson(IntersectSuccessMessage(fileName, intersectResults.getTotalItems(fileName), intersectResults.getPage(fileName, 0)))
-                    if (filters.warnings.nonEmpty) {
-                      channel push toJson(WarningListMessage(filters.warnings))
+                    try {
+                      val sampleFileConnection = new SampleFileConnection(f.getFilePath, f.getSoftware)
+                      val sample = sampleFileConnection.getSample
+                      val fileName = intersectRequest.fileName
+                      intersectResults.reinit(fileName, sample, intersectRequest.parameters, filters)
+                      intersectResults.defaultSort(fileName)
+                      channel push toJson(IntersectSuccessMessage(fileName, intersectResults.getTotalItems(fileName), intersectResults.getPage(fileName, 0)))
+                      if (filters.warnings.nonEmpty) {
+                        channel push toJson(WarningListMessage(filters.warnings))
+                      }
+                    } catch {
+                      case e: Exception =>
+                        if (e.getMessage.contains("Unable to parse")) {
+                          channel push toJson(IntersectionErrorMessage(intersectRequest.fileName, "Wrong file format, unable to parse, " + f.getSoftware.name() + " format expected"))
+                        } else {
+                          channel push toJson(IntersectionErrorMessage(intersectRequest.fileName, "Error while intersecting"))
+                        }
                     }
                   case _ =>
                     channel push toJson(ErrorMessage("You have no file named " + intersectRequest.fileName))

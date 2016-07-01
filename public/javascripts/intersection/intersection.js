@@ -1,7 +1,7 @@
 (function() {
     "use strict";
-    
-    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap']);
+
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
 
     application.factory('sidebar', ['user', function(userInfo) {
 
@@ -105,7 +105,7 @@
         }
     });
 
-    application.factory('intersection', ['$websocket', 'sidebar', 'notify', 'filters', function($websocket, sidebar, notify, filters) {
+    application.factory('intersection', ['$websocket', 'sidebar', 'table', 'notify', 'filters', function($websocket, sidebar, table, notify, filters) {
 
         var connected = false;
         var connectionError = false;
@@ -122,6 +122,7 @@
                 case 'success':
                     switch (response.action) {
                         case 'columns':
+                            table.setColumns(response.columns);
                             filters.initialize(response.columns, filtersCallback);
                             break;
                         case 'intersect':
@@ -185,6 +186,12 @@
                     });
                     break;
                 case 'error':
+                    if (response.hasOwnProperty('fileName')) {
+                        file = sidebar.getFileByFileName(response.fileName);
+                        if (file.hasOwnProperty('fileName')) {
+                            file.loading = false;
+                        }
+                    }
                     notify.error('Intersection', response.message);
                     break;
 
@@ -342,7 +349,7 @@
     application.directive('intersection', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', 'sidebar', 'intersection', function($scope, sidebar, intersection) {
+            controller: ['$scope', 'sidebar', 'intersection', 'table', function($scope, sidebar, intersection, table) {
                 $scope.files = sidebar.files;
                 $scope.isFile = sidebar.isFile;
 
@@ -356,6 +363,17 @@
                 $scope.isResultsExist = isResultsExist;
                 $scope.isColumnAscSorted = isColumnAscSorted;
                 $scope.isColumnDescSorted = isColumnDescSorted;
+
+                $scope.getColumns = table.getColumns;
+                $scope.getColumnsLength = table.getColumnsLength;
+                $scope.entryValue = table.entryValue;
+                $scope.isEntryVisible = table.isEntryVisible;
+                $scope.columnHeader = table.columnHeader;
+                $scope.isColumnVisible = table.isColumnVisible;
+
+                $scope.clipNoFlash = clipNoFlash;
+                $scope.copyToClip = copyToClip;
+                $scope.copyToClipNotification = copyToClipNotification;
 
                 function isResultsLoading(file) {
                     return file.loading;
@@ -377,9 +395,63 @@
                     return (file.sort.column === column && file.sort.type === 'desc');
                 }
 
+                $scope.$on('onRepeatLast', function(element, a, attrs) {
+                    $('.row_popover').popover({
+                        container: 'body',
+                        html: true,
+                        template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
+                    });
+                    $('.column_popover').popover({
+                        container: 'body',
+                        html: true,
+                        template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+                    });
+                });
+
+                function clipNoFlash(text) {
+                    var content = text;
+                    content = content.replace(/<p>/gm, " ");
+                    content = content.replace(/(<([^>]+)>)/ig, "\n");
+                    window.prompt("Copy to clipboard: Ctrl+C, Enter\nUse arrows to navigate", content);
+                }
+
+                function copyToClip(text) {
+                    var content = text;
+                    content = content.replace(/<p>/gm, " ");
+                    content = content.replace(/(<([^>]+)>)/ig, "\n");
+                    return content;
+                }
+
+                function copyToClipNotification() {
+                    notify.info('Meta information', 'Data has been copied to clipboard');
+                }
+
             }]
         }
-    })
+    });
+
+    application.directive('onLastRepeat', function () {
+        return function (scope, element, attrs) {
+            if (scope.$last) setTimeout(function () {
+                scope.$emit('onRepeatLast', element, attrs);
+            }, 1);
+        };
+    });
+
+    application.directive('compile', ['$compile', function ($compile) {
+        return function(scope, element, attrs) {
+            var unregister = scope.$watch(
+                function(scope) {
+                    return scope.$eval(attrs.compile);
+                },
+                function(value) {
+                    element.html(value);
+                    $compile(element.contents())(scope);
+                    unregister();
+                }
+            )};
+    }]);
+
 }());
 
 function reference_wrap(data) {

@@ -58,14 +58,14 @@
                     </pagination>
                 </div>
             </div>
-            <div id="table_wrapper" class="box-body">
+            <div id="table_wrapper" class="box-body" ng-class="{'table_loading':isResultsLoading(file)}">
                 <div class="block_background" ng-if="isResultsLoading(file)"></div>
                 <div class="block_processing" ng-if="isResultsLoading(file)"><h3>Loading...</h3></div>
-                <div class="text-center" ng-hide="isResultsExist(file)">
+                <div class="text-center" ng-hide="isResultsExist(file) || isResultsLoading(file)">
                     <h4>No data found</h4>
                 </div>
                 <div id="table_scroll_wrapper" ng-show="isResultsExist(file)">
-                    <table class="table table-hover compact">
+                    <table class="table compact">
                         <thead>
                             <tr>
                                 <th>Info</th>
@@ -82,16 +82,42 @@
                             <tr ng-repeat-start="row in file.rows">
                                 <td class="text-center cursor_pointer" ng-click="helperList(file, row)"><i class="fa fa-arrow-down" aria-hidden="true"></i></td>
                                 <td>{{ ::row.matches }}</td>
-                                <td>{{ ::row.clonotype.freq }}</td>
+                                <td>{{ ::((row.clonotype.freq * 100).toPrecision(2) + '%') }}</td>
                                 <td>{{ ::row.clonotype.count }}</td>
                                 <td>{{ ::row.clonotype.cdr.cdr3aa }}</td>
                                 <td>{{ ::row.clonotype.v }}</td>
                                 <td>{{ ::row.clonotype.j }}</td>
                                 <td>{{ ::row.clonotype.cdr.cdr3nt }}</td>
                             </tr>
-                            <tr ng-repeat-end>
+                            <tr ng-repeat-end class="helper_tr">
                                 <td colspan="8" ng-if="row.showHelpers">
-
+                                    <div ng-repeat="helper in row.helpers" on-last-repeat>
+                                    <div id="table_wrapper">
+                                        <div id="table_scroll_wrapper">
+                                            <table class="table compact">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Score</th>
+                                                        <th class="column_header" ng-repeat="column in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{ ::helper.score }}</td>
+                                                        <td ng-repeat="entry in ::helper.row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, helper.row.entries, false)"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="alignment_block" colspan="{{ getColumnsLength() + 1 }}">
+                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.seq1String }}</p>
+                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.markup }}</p>
+                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.seq2String }}</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>

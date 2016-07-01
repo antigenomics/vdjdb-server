@@ -299,6 +299,13 @@ body {
     margin-left: 1%;
 }
 
+#table_wrapper.table_loading {
+    min-height: 400px;
+}
+
+.helper_tr {
+    background-color: #ecf0f5;
+}
 
 #table_wrapper > .block_background {
     position: absolute;
