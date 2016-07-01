@@ -129,6 +129,8 @@
                             file = sidebar.getFileByFileName(response.fileName);
                             if (file.hasOwnProperty('fileName')) {
                                 file.rows.splice(0, file.rows.length);
+                                file.sort.column = 'count';
+                                file.sort.type = 'desc';
                                 file.totalItems = response.totalItems;
                                 file.page = 1;
                                 angular.extend(file.rows, response.rows);

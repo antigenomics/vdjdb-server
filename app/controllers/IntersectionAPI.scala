@@ -103,6 +103,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
                         if (e.getMessage.contains("Unable to parse")) {
                           channel push toJson(IntersectionErrorMessage(intersectRequest.fileName, "Wrong file format, unable to parse, " + f.getSoftware.name() + " format expected"))
                         } else {
+                          e.printStackTrace
                           channel push toJson(IntersectionErrorMessage(intersectRequest.fileName, "Error while intersecting"))
                         }
                     }

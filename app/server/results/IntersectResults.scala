@@ -61,33 +61,19 @@ class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, L
         var m : Boolean = false
         column match {
           case "cdr3aa" =>
-            val v1 = e1.clonotype.cdr.cdr3aa
-            val v2 = e2.clonotype.cdr.cdr3aa
-            m = v1 >= v2
+            m = e1.clonotype.cdr.cdr3aa >= e2.clonotype.cdr.cdr3aa
           case "cdr3nt" =>
-            val v1 = e1.clonotype.cdr.cdr3nt
-            val v2 = e2.clonotype.cdr.cdr3nt
-            m = v1 >= v2
+            m = e1.clonotype.cdr.cdr3nt >= e2.clonotype.cdr.cdr3nt
           case "count" =>
-            val v1 = e1.clonotype.count
-            val v2 = e2.clonotype.count
-            m = v1 >= v2
+            m = e1.clonotype.count > e2.clonotype.count
           case "freq" =>
-            val v1 = e1.clonotype.freq
-            val v2 = e2.clonotype.freq
-            m =  v1 >= v2
+            m = e1.clonotype.freq > e2.clonotype.freq
           case "v" =>
-            val v1 = e1.clonotype.v
-            val v2 = e2.clonotype.v
-            m = v1 >= v2
+            m = e1.clonotype.v >= e2.clonotype.v
           case "j" =>
-            val v1 = e1.clonotype.j
-            val v2 = e2.clonotype.j
-            m = v1 >= v2
+            m = e1.clonotype.j >= e2.clonotype.j
           case "matches" =>
-            val v1 = e1.alignmentHelperList.size
-            val v2 = e2.alignmentHelperList.size
-            m = v1 >= v2
+            m = e1.alignmentHelperList.size > e2.alignmentHelperList.size
           case _ =>
         }
         sortType match {
