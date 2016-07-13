@@ -1,6 +1,8 @@
 package server
 
 import play.api.Play
+import java.util.List
+import java.util.Arrays
 
 /**
   * Created by bvdmitri on 23.02.16.
@@ -19,4 +21,6 @@ object Configuration {
   def demoDatasetPath : String = conf.getString("demoDatasetPath").getOrElse("demo-dataset/")
   def maxRequestsPerHour : Int = conf.getInt("maxRequestsPerHour").getOrElse(1000)
   def requestsClearInterval: Int = conf.getInt("requestsClearInterval").getOrElse(60)
+  def dbBrowseSequenceFilterOptions: List[Integer] = conf.getIntList("dbBrowseSequenceFilterOptions").getOrElse(Arrays.asList(5, 2, 2, 7))
+  def annotationsBrowseSequenceFilterOptions: List[Integer] = conf.getIntList("annotationsBrowseSequenceFilterOptions").getOrElse(Arrays.asList(4, 1, 1, 4))
 }

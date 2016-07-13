@@ -8,10 +8,12 @@
         var textFilterID = 0;
 
         var loading = true;
+        var presetsLoading = true;
         var error = false;
 
         var textFiltersColumns = [];
         var sequenceFiltersColumns = [];
+        var sequencePresets = [];
 
         var textFiltersTypes = Object.freeze([
             { name: 'substring', title: 'Substring', allowNegative: true},
@@ -65,10 +67,19 @@
                     }
                 }
             });
-            loading = false;
             if (callback) {
                 callback(textFilters, sequenceFilters)
             }
+            loading = false;
+        }
+
+        function presets(newPresets, callback) {
+            sequencePresets.splice(0, sequencePresets.length);
+            angular.extend(sequencePresets, newPresets);
+            if (callback) {
+                callback(sequencePresets)
+            }
+            presetsLoading = false
         }
 
         function getTextFiltersColumns() {
@@ -118,11 +129,15 @@
                 columnTitle: 'Please select column name: ',
                 columnId: '',
                 query: '',
-                mismatches: 2,
-                insertions: 1,
-                deletions: 1,
-                mutations: 2,
-                columnActive: false
+                preset: sequencePresets[0],
+                presetName: sequencePresets[0].name,
+                mismatches: sequencePresets[0].mismatches,
+                insertions: sequencePresets[0].insertions,
+                deletions: sequencePresets[0].deletions,
+                mutations: sequencePresets[0].mutations,
+                threshold: sequencePresets[0].threshold,
+                activeColumn: false,
+                activePreset: false
             });
         }
 
@@ -132,7 +147,7 @@
         }
 
         function isFiltersLoaded() {
-            return !loading;
+            return !loading && !presetsLoading;
         }
 
         function isFiltersError() {
@@ -161,8 +176,13 @@
             }
         }
 
+        function getPresets() {
+            return sequencePresets;
+        }
+
         return {
             initialize: initialize,
+            presets: presets,
             getTextFiltersColumns: getTextFiltersColumns,
             getTextFiltersTypes: getTextFiltersTypes,
             getTextFilters: getTextFilters,
@@ -175,7 +195,8 @@
             isFiltersLoaded: isFiltersLoaded,
             isFiltersError: isFiltersError,
             getDefaultFilterTypes: getDefaultFilterTypes,
-            getFiltersRequest: getFiltersRequest
+            getFiltersRequest: getFiltersRequest,
+            getPresets: getPresets
         }
     });
 
@@ -183,7 +204,12 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'filters', function ($scope, filters) {
-
+                $scope.sliderOptions = {
+                    min: -2e+4,
+                    max: 2e+4,
+                    step: 1e-1,
+                    value: 1000
+                };
                 $scope.textFilters = filters.getTextFilters();
                 $scope.textFiltersColumns = filters.getTextFiltersColumns();
                 $scope.textFiltersTypes = filters.getTextFiltersTypes();
@@ -194,6 +220,8 @@
                 $scope.sequenceFiltersColumns = filters.getSequenceFiltersColumns();
                 $scope.addSequenceFilter = filters.addSequenceFilter;
                 $scope.deleteSequenceFilter = filters.deleteSequenceFilter;
+
+                $scope.presets = filters.getPresets();
 
                 $scope.isFiltersLoaded = filters.isFiltersLoaded;
                 $scope.isFiltersError = filters.isFiltersError;
@@ -247,6 +275,25 @@
                 $scope.clickType = function(filter, typeIndex) {
                     filter.filterType = $scope.textFiltersTypes[typeIndex];
                     filter.activeType = false;
+                };
+
+                $scope.switchPresetVisible = function(filter) {
+                    filter.activePreset = !filter.activePreset;
+                };
+
+                $scope.isPresetActive = function(filter) {
+                    return filter.activePreset;
+                };
+
+                $scope.clickPreset = function(filter, preset) {
+                    filter.preset = preset;
+                    filter.mismatches = preset.mismatches;
+                    filter.insertions = preset.insertions;
+                    filter.deletions = preset.deletions;
+                    filter.mutations = preset.mutations;
+                    filter.threshold = preset.threshold;
+                    filter.presetName = preset.name;
+                    filter.activePreset = false;
                 };
 
             }]

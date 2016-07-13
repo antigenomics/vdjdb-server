@@ -2,7 +2,7 @@ package server.websocket.search
 
 import play.api.libs.json.Json
 import server.websocket.{SuccessMessage, WarningMessage}
-import server.wrappers.database.{ColumnWrapper, RowWrapper}
+import server.wrappers.database.{ColumnWrapper, PresetWrapper, RowWrapper}
 
 /**
   * Created by bvdmitri on 26.06.16.
@@ -11,6 +11,8 @@ import server.wrappers.database.{ColumnWrapper, RowWrapper}
 case class SearchSuccessMessage(rows: List[RowWrapper], totalItems: Int) extends SuccessMessage("search")
 
 case class ColumnsSuccessMessage(columns: List[ColumnWrapper]) extends SuccessMessage("columns")
+
+case class PresetsSuccessMessage(presets: List[PresetWrapper]) extends SuccessMessage("presets")
 
 case class GetPageSuccessMessage(rows: List[RowWrapper], page: Int) extends SuccessMessage("get_page")
 
@@ -26,6 +28,7 @@ case class WarningListMessage(warnings: List[String]) extends WarningMessage("se
 
 object WebSocketSearchMessages {
   implicit val searchSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[SearchSuccessMessage])
+  implicit val presetsSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[PresetsSuccessMessage])
   implicit val columnsSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[ColumnsSuccessMessage])
   implicit val getPageSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[GetPageSuccessMessage])
   implicit val sortSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[SortSuccessMessage])

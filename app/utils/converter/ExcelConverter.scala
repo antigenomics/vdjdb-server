@@ -19,9 +19,9 @@ class ExcelConverter extends DocumentConverter {
     val headerRow = sheet.createRow(0)
     var cell = 0
 
-    val sizes = new Array[Int](GlobalDatabase.getColumns().size)
+    val sizes = new Array[Int](GlobalDatabase.getColumns.size)
 
-    GlobalDatabase.getColumns().foreach(column => {
+    GlobalDatabase.getColumns.foreach(column => {
       val headerCell = headerRow.createCell(cell)
       headerCell.setCellValue(column.metadata.title)
       sizes(cell) = column.metadata.title.length + 2

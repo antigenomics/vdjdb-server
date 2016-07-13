@@ -9,7 +9,7 @@ import server.wrappers.database.RowWrapper
   */
 case class AlignmentHelperResultWrapper(alignmentHelper: AlignmentHelperWrapper, row: RowWrapper, score: Float) {
   def this(csr: ClonotypeSearchResult) {
-    this(new AlignmentHelperWrapper(csr.getResult.getAlignment.getAlignmentHelper), RowWrapper.wrap(csr.getRow), csr.getResult.getAlignment.getScore)
+    this(new AlignmentHelperWrapper(csr.getResult.getAlignmentHelper), RowWrapper.wrap(csr.getRow), csr.getResult.getScore)
   }
 }
 

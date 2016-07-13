@@ -20,7 +20,7 @@
     <div ng-app="searchPage" class="wrapper">
         <div class="container-fluid">
             @views.html.search.description()
-            @views.html.filters.filters()
+            @views.html.filters.filters(false)
             <search-websocket class="row" ng-hide="isFiltersError() || !isFiltersLoaded()">
                 <div class="col-md-12">
                     <div class="box box-solid with-border">

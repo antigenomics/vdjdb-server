@@ -1,12 +1,17 @@
+@(annotationPage: Boolean)
 <!-- Select styling -->
 <link href="@routes.Assets.at("stylesheets/select.css")" rel="stylesheet">
+<script src="@routes.Assets.at("lib/angular/plugins/slider/b-slider.min.js")" type="text/javascript"></script>
+<link href="@routes.Assets.at("lib/angular/plugins/slider/slider.css")" rel="stylesheet">
+<script src="@routes.Assets.at("lib/angular/plugins/slider/slider.js")" type="text/javascript"></script>
+
 <filters class="row">
     <div class="col-md-12" ng-if="!isFiltersLoaded()">
         @views.html.filters.loadingFilters()
     </div>
     <div class="col-md-12" ng-if="isFiltersLoaded() && !isFiltersError()">
         @views.html.filters.textFilters()
-        @views.html.filters.sequenceFilters()
+        @views.html.filters.sequenceFilters(annotationPage)
     </div>
     <div class="col-md-12" ng-if="isFiltersError()">
         @views.html.filters.errorFilters()

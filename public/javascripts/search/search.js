@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var application = angular.module('searchPage', ['notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
+    var application = angular.module('searchPage', ['notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'ui.bootstrap-slider']);
 
     application.config(['ngClipProvider', function(ngClipProvider) {
         ngClipProvider.setPath('/assets/lib/angular/plugins/zeroclipboard/ZeroClipboard.swf');
@@ -50,13 +50,22 @@
             switch (response.status) {
                 case 'success':
                     switch (response.action) {
+                        case 'presets':
+                            filters.presets(response.presets);
+                            break;
                         case 'columns':
                             filters.initialize(response.columns);
-                            table.setColumns(response.columns)
+                            table.setColumns(response.columns);
                             break;
                         case 'search':
                             totalItems = response.totalItems;
+                            data.splice(0, data.length);
+                            angular.extend(data, response.rows);
+                            break;
                         case 'get_page':
+                            data.splice(0, data.length);
+                            angular.extend(data, response.rows);
+                            break;
                         case 'sort':
                             data.splice(0, data.length);
                             angular.extend(data, response.rows);
@@ -69,11 +78,12 @@
                             }
                             break;
                         case "complex":
-                            var complexRow = response.complex;
+                            data.splice(response.index + 1, 0, response.complex);
                             var complexParent = data[response.index];
-                            complexRow.complex = true;
                             complexParent.complexFound = true;
-                            data.splice(response.index + 1, 0, complexRow);
+
+                            var complexRow = data[response.index + 1];
+                            complexRow.complex = true;
                             setTimeout(function () {
                                 $('.row_popover').popover({
                                     container: 'body',
@@ -127,6 +137,10 @@
             loading = false;
             connection.send({
                 action: 'columns',
+                data: {}
+            });
+            connection.send({
+                action: 'presets',
                 data: {}
             });
             pingWebSocket = setInterval(function() {

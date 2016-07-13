@@ -1,6 +1,7 @@
 package controllers
 
 
+import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
 import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import play.api.libs.json._
 import play.api.mvc._
@@ -14,7 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import server.websocket._
 import server.websocket.search._
 import server.websocket.search.WebSocketSearchMessages._
-
+import scala.collection.JavaConversions._
 
 
 /**
@@ -28,7 +29,11 @@ object SearchAPI extends Controller {
   }
 
   def columns = LimitedAction { implicit request =>
-    Ok(toJson(GlobalDatabase.getColumns()))
+    Ok(toJson(GlobalDatabase.getColumns))
+  }
+
+  def presets = LimitedAction { implicit request =>
+    Ok(toJson(SequenceSearcherPreset.getALLOWED_PRESETS.toList))
   }
 
   def downloadDocument(exportType: String, link: String) = LimitedAction { implicit request =>
@@ -54,7 +59,7 @@ object SearchAPI extends Controller {
   case class DatabaseTextFilter(columnId: String, value: String, filterType: String, negative: Boolean)
   implicit val databaseTextFilterRead = Json.reads[DatabaseTextFilter]
 
-  case class DatabaseSequenceFilter(columnId: String, query: String, mismatches: Int, insertions: Int, deletions: Int, mutations: Int)
+  case class DatabaseSequenceFilter(columnId: String, query: String, mismatches: Int, insertions: Int, deletions: Int, mutations: Int, threshold: Double, presetName: String)
   implicit val databaseSequenceFilterRead = Json.reads[DatabaseSequenceFilter]
 
   case class FiltersRequest(textFilters: List[DatabaseTextFilter], sequenceFilters: List[DatabaseSequenceFilter])
@@ -87,10 +92,12 @@ object SearchAPI extends Controller {
           val requestData = searchRequest.data
           searchRequest.action match {
             case "columns" =>
-              channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns()))
+              channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns))
+            case "presets" =>
+              channel push toJson(PresetsSuccessMessage(GlobalDatabase.getPresets(false)))
             case "search"  =>
               val filtersRequest = Json.fromJson[FiltersRequest](requestData).get
-              val filters = Filters.parse(filtersRequest.textFilters, filtersRequest.sequenceFilters)
+              val filters = Filters.parse(filtersRequest)
               searchResults.reinit(filters)
               channel push toJson(SearchSuccessMessage(searchResults.getPage(0), searchResults.results.size))
               if (filters.warnings.nonEmpty) {

@@ -3,7 +3,7 @@ package server.websocket.intersection
 import play.api.libs.json.{JsValue, Json, Writes}
 import server.websocket.{ErrorMessage, SuccessMessage, WarningMessage}
 import server.wrappers.alignment.AlignmentHelperResultWrapper
-import server.wrappers.database.{ColumnWrapper, IntersectWrapper}
+import server.wrappers.database.{ColumnWrapper, IntersectWrapper, PresetWrapper}
 
 /**
   * Created by bvdmitri on 26.06.16.
@@ -12,6 +12,8 @@ import server.wrappers.database.{ColumnWrapper, IntersectWrapper}
 case class IntersectSuccessMessage(fileName: String, totalItems: Int, rows: List[IntersectWrapper]) extends SuccessMessage("intersect")
 
 case class ColumnsSuccessMessage(columns: List[ColumnWrapper]) extends SuccessMessage("columns")
+
+case class PresetsSuccessMessage(presets: List[PresetWrapper]) extends SuccessMessage("presets")
 
 case class GetPageSuccessMessage(fileName: String, page: Int, rows: List[IntersectWrapper]) extends SuccessMessage("get_page")
 
@@ -26,6 +28,7 @@ case class IntersectionErrorMessage(fileName: String, message: String)
 object WebSocketIntersectionMessages {
   implicit val intersectSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[IntersectSuccessMessage])
   implicit val columnsSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[ColumnsSuccessMessage])
+  implicit val presetsSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[PresetsSuccessMessage])
   implicit val getPageSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[GetPageSuccessMessage])
   implicit val sortSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[SortSuccessMessage])
   implicit val helperListSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[HelperListSuccessMessage])

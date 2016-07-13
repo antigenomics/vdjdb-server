@@ -6,11 +6,12 @@ import java.util
 import com.antigenomics.vdjdb.Util.checkDatabase
 import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjdb.db.{Database, SearchResult}
+import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjtools.sample.Sample
 import controllers.IntersectionAPI.IntersectParametersRequest
-import server.wrappers.database.{ColumnWrapper, IntersectWrapper, RowWrapper}
+import server.wrappers.database.{ColumnWrapper, IntersectWrapper, PresetWrapper, RowWrapper}
 import server.Configuration
 import server.wrappers.Filters
 
@@ -57,27 +58,36 @@ object GlobalDatabase extends SynchronizedAccess {
       results.headOption
     }
 
-  def intersect(sample: Sample, parameters: IntersectParametersRequest, filters: Filters) : List[IntersectWrapper] =
+  def intersect(sample: Sample, presetName: String, filters: Filters) : List[IntersectWrapper] =
     synchronizeRead { implicit lock =>
       val buffer = new ListBuffer[IntersectWrapper]()
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
-        val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(parameters.matchV, parameters.matchJ,
-          parameters.maxMismatches, parameters.maxInsertions, parameters.maxDeletions, parameters.maxMutations).search(sample)
+        val preset = SequenceSearcherPreset.byName(presetName)
+        preset.withSearchParameters(4, 1, 1, 4)
+        val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(false, false, preset)
         var id = 0
-        instance.keySet().toList.foreach(clonotype => {
-          buffer += IntersectWrapper.wrap(id, clonotype, instance.get(clonotype))
+        val intersectedResults = instance.search(sample)
+        intersectedResults.keySet().toList.foreach(clonotype => {
+          buffer += IntersectWrapper.wrap(id, clonotype, intersectedResults.get(clonotype))
           id += 1
         })
+
       }
       buffer.toList
     }
 
-  def isParametersValid(parameters: IntersectParametersRequest): Boolean = {
-    (parameters.maxDeletions <= 2 && parameters.maxDeletions >= 0) &&
-      (parameters.maxInsertions <= 2 && parameters.maxInsertions >= 0) &&
-        (parameters.maxMismatches <= 5 && parameters.maxMismatches >= 0) &&
-         (parameters.maxMutations <= 5 && parameters.maxMutations >= 0)
+  def isParametersValid(parameters: IntersectParametersRequest, annotations: Boolean = false): Boolean = {
+    val validParameters = if (annotations) Configuration.annotationsBrowseSequenceFilterOptions else Configuration.dbBrowseSequenceFilterOptions
+    val maxMutations = validParameters.get(0)
+    val maxInsertions = validParameters.get(1)
+    val maxDeletions = validParameters.get(2)
+    val maxMismatches = validParameters.get(3)
+
+    (parameters.maxDeletions <= maxDeletions && parameters.maxDeletions >= 0) &&
+      (parameters.maxInsertions <= maxInsertions && parameters.maxInsertions >= 0) &&
+        (parameters.maxMismatches <= maxMismatches && parameters.maxMismatches >= 0) &&
+         (parameters.maxMutations <= maxMutations && parameters.maxMutations >= 0)
   }
 
   def testComplexes() =
@@ -94,7 +104,7 @@ object GlobalDatabase extends SynchronizedAccess {
       }
   }
 
-  def getColumns() : List[ColumnWrapper] =
+  def getColumns: List[ColumnWrapper] =
     synchronizeRead { implicit lock =>
       var buffer = ListBuffer[ColumnWrapper]()
       db().getDbInstance.getColumns.toList.foreach(column => {
@@ -102,6 +112,15 @@ object GlobalDatabase extends SynchronizedAccess {
       })
       buffer.toList
     }
+
+  def getPresets(annotations: Boolean = false): List[PresetWrapper] = {
+    var buffer = ListBuffer[PresetWrapper]()
+    for (presetName <- SequenceSearcherPreset.getALLOWED_PRESETS) {
+      val preset = SequenceSearcherPreset.byName(presetName)
+      buffer += PresetWrapper.wrap(presetName, preset, annotations)
+    }
+    buffer.toList
+  }
 
   def update() =
     synchronizeReadWrite { implicit lock =>

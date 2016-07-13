@@ -1,3 +1,10 @@
+@(annotationPage: Boolean)
+@import server.Configuration
+
+@sequenceFilterOptions = @{
+    if (annotationPage) Configuration.annotationsBrowseSequenceFilterOptions else Configuration.dbBrowseSequenceFilterOptions
+}
+
 <div class="box box-solid">
     <div class="box-body text-center" ng-if="isSequenceFiltersExist()">
         <table class="table table-responsive">
@@ -5,16 +12,18 @@
                 <tr>
                     <th>Field</th>
                     <th>Query</th>
+                    <th>Preset</th>
                     <th>Insertions</th>
                     <th>Deletions</th>
                     <th>Substitutions</th>
                     <th>Total</th>
+                    <th>Threshold</th>
                     <th width="5%"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr ng-repeat="filter in sequenceFilters" on-last-repeat="">
-                    <td width="30%">
+                    <td width="20%">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
                         <div class="select_drop_container">
                             <ul ng-show="isColumnActive(filter)">
@@ -22,20 +31,31 @@
                             </ul>
                         </div>
                     </td>
-                    <td width="30%">
+                    <td width="20%">
                         <input class="form-control input-sm" type="text" placeholder="Query" ng-model="filter.query">
                     </td>
                     <td>
-                        <input class="form-control input-sm" type="number" max="2" min="0"  placeholder="Insertions" ng-model="filter.insertions">
+                        <a class="select_trigger" ng-click="switchPresetVisible(filter)"> {{ filter.preset.name }}</a>
+                        <div class="select_drop_container">
+                            <ul ng-show="isPresetActive(filter)">
+                                <li ng-repeat="preset in presets" ng-click="clickPreset(filter, preset)"><a>{{ ::preset.name }}</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td width="5%">
+                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(1)" min="0"  placeholder="Insertions" ng-model="filter.insertions">
+                    </td>
+                    <td width="5%">
+                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(2)" min="0" placeholder="Deletions" ng-model="filter.deletions">
+                    </td>
+                    <td width="5%">
+                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(0)" min="0" placeholder="Mutations" ng-model="filter.mutations">
+                    </td>
+                    <td width="5%">
+                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(3)" min="0" placeholder="Mismatches" ng-model="filter.mismatches">
                     </td>
                     <td>
-                        <input class="form-control input-sm" type="number" max="2" min="0" placeholder="Deletions" ng-model="filter.deletions">
-                    </td>
-                    <td>
-                        <input class="form-control input-sm" type="number" max="5" min="0" placeholder="Mutations" ng-model="filter.mutations">
-                    </td>
-                    <td>
-                        <input class="form-control input-sm" type="number" max="5" min="0" placeholder="Mismatches" ng-model="filter.mismatches">
+                        <slider ng-model="filter.threshold" min="sliderOptions.min" step="sliderOptions.step" max="sliderOptions.max" value="sliderOptions.value"></slider>
                     </td>
                     <td width="5%">
                         <i class="fa fa-trash" ng-click="deleteSequenceFilter(filter)" style="cursor: pointer ;"></i>

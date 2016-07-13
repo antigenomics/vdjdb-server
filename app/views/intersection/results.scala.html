@@ -2,47 +2,16 @@
     <div ng-repeat="file in files()" >
         <div class="box box-solid flat" ng-show="isFile(file)">
             <div class="box-header with-border">
-                <h3 class="box-title">Search parameters</h3>
+                <h3 class="box-title">Search preset</h3>
             </div>
             <div class="box-body">
-                <div class="col-lg-2">
-                    <div class="form-group">
-                        <label for="parameters_maxMismatches">Max substitutions</label>
-                        <input type="number" max="5" min="0" class="form-control" id="parameters_maxMismatches" ng-model="file.parameters.maxMismatches">
+                <div class="col-md-3">
+                    <a class="select_trigger" ng-click="presetVisible(file)"> {{ file.presetName }}</a>
+                    <div class="select_drop_container">
+                        <ul ng-if="isFilePresetActive(file)">
+                            <li ng-repeat="preset in presets()" ng-click="clickFilePreset(file, preset)"><a>{{ ::preset.name }}</a></li>
+                        </ul>
                     </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="form-group">
-                        <label for="parameters_maxInsertions">Max insertions</label>
-                        <input type="number" max="2" min="0" class="form-control" id="parameters_maxInsertions" ng-model="file.parameters.maxInsertions">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="form-group">
-                        <label for="parameters_maxDeletions">Max deletions</label>
-                        <input type="number" max="2" min="0" class="form-control" id="parameters_maxDeletions" ng-model="file.parameters.maxDeletions">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="form-group">
-                        <label for="parameters_maxMutations">Max mutations</label>
-                        <input type="number" max="5" min="0" class="form-control" id="parameters_maxMutations" ng-model="file.parameters.maxMutations">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" ng-model="file.parameters.matchV"> Require V match
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" ng-model="file.parameters.matchJ"> Require J match
-                        </label>
-                    </div>
-                </div>
-                <br>
-                <div class="col-lg-12">
                     <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect(file)">Annotate</button>
                 </div>
             </div>

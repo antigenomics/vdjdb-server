@@ -29,6 +29,10 @@
                 });
         }
 
+        function forEachFile(callback) {
+            angular.forEach(user.files, callback)
+        }
+
         function deleteFile(file) {
             $http.post('/api/delete', { fileName: file.fileName, action: 'delete' })
                 .success(function(response) {
@@ -70,6 +74,7 @@
 
         return {
             initialize: initialize,
+            forEachFile: forEachFile,
             getUser: getUser,
             getFiles: getFiles,
             getMaxFileSize: getMaxFileSize,

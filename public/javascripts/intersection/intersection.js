@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'ui.bootstrap-slider']);
 
     application.factory('sidebar', ['user', function(userInfo) {
 
@@ -18,14 +18,7 @@
                     column: 'count',
                     type: 'desc'
                 };
-                file.parameters  = {
-                    matchV: false,
-                    matchJ: false,
-                    maxMismatches: 1,
-                    maxInsertions: 0,
-                    maxDeletions: 0,
-                    maxMutations: 1
-                };
+                file.presetName = 'dummy';
             }
         });
 
@@ -105,13 +98,13 @@
         }
     });
 
-    application.factory('intersection', ['$websocket', 'sidebar', 'table', 'notify', 'filters', function($websocket, sidebar, table, notify, filters) {
+    application.factory('intersection', ['$websocket', 'sidebar', 'table', 'notify', 'filters', 'user', function($websocket, sidebar, table, notify, filters, userInfo) {
 
         var connected = false;
         var connectionError = false;
         var pingWebSocket = null;
         var connection = $websocket('ws://' + location.host + '/intersection/connect');
-
+        var presets = [];
         var loading = false;
 
         connection.onMessage(function(message) {
@@ -124,6 +117,11 @@
                         case 'columns':
                             table.setColumns(response.columns);
                             filters.initialize(response.columns, filtersCallback);
+                            break;
+                        case 'presets':
+                            filters.presets(response.presets);
+                            presets.splice(0, presets.length);
+                            angular.extend(presets, response.presets);
                             break;
                         case 'intersect':
                             file = sidebar.getFileByFileName(response.fileName);
@@ -220,6 +218,10 @@
                 action: 'columns',
                 data: {}
             });
+            connection.send({
+                action: 'presets',
+                data: {}
+            });
             pingWebSocket = setInterval(function() {
                 connection.send({
                     action: 'ping',
@@ -234,7 +236,7 @@
                     action: 'intersect',
                     data: {
                         filters: filters.getFiltersRequest(),
-                        parameters: file.parameters,
+                        presetName: file.presetName,
                         fileName: file.fileName
                     }
                 })
@@ -340,11 +342,16 @@
             })
         }
 
+        function getPresets() {
+            return presets
+        }
+
         return {
             intersect: intersect,
             changePage: changePage,
             sort: sort,
-            helperList: helperList
+            helperList: helperList,
+            getPresets: getPresets
         }
     }]);
 
@@ -376,6 +383,25 @@
                 $scope.clipNoFlash = clipNoFlash;
                 $scope.copyToClip = copyToClip;
                 $scope.copyToClipNotification = copyToClipNotification;
+
+                $scope.presets = intersection.getPresets;
+
+                $scope.presetVisible = presetVisible;
+                $scope.clickFilePreset = clickFilePreset;
+                $scope.isFilePresetActive = isFilePresetActive;
+
+                function presetVisible(file) {
+                    file.presetVisible = !file.presetVisible;
+                }
+                
+                function clickFilePreset(file, preset) {
+                    file.presetName = preset.name;
+                    file.presetVisible = false;
+                }
+
+                function isFilePresetActive(file) {
+                    return file.presetVisible;
+                }
 
                 function isResultsLoading(file) {
                     return file.loading;
