@@ -50,13 +50,6 @@
             switch (response.status) {
                 case 'success':
                     switch (response.action) {
-                        case 'presets':
-                            filters.presets(response.presets);
-                            break;
-                        case 'columns':
-                            filters.initialize(response.columns);
-                            table.setColumns(response.columns);
-                            break;
                         case 'search':
                             totalItems = response.totalItems;
                             data.splice(0, data.length);
@@ -135,14 +128,6 @@
             LoggerService.log('Connected to the database');
             connected = true;
             loading = false;
-            connection.send({
-                action: 'columns',
-                data: {}
-            });
-            connection.send({
-                action: 'presets',
-                data: {}
-            });
             pingWebSocket = setInterval(function() {
                 connection.send({
                     action: 'ping',

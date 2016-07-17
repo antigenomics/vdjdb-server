@@ -104,8 +104,9 @@
         var connectionError = false;
         var pingWebSocket = null;
         var connection = $websocket('ws://' + location.host + '/intersection/connect');
-        var presets = [];
         var loading = false;
+
+        filters.filtersInit(filtersInit);
 
         connection.onMessage(function(message) {
             var response = JSON.parse(message.data);
@@ -114,15 +115,6 @@
             switch (response.status) {
                 case 'success':
                     switch (response.action) {
-                        case 'columns':
-                            table.setColumns(response.columns);
-                            filters.initialize(response.columns, filtersCallback);
-                            break;
-                        case 'presets':
-                            filters.presets(response.presets);
-                            presets.splice(0, presets.length);
-                            angular.extend(presets, response.presets);
-                            break;
                         case 'intersect':
                             file = sidebar.getFileByFileName(response.fileName);
                             if (file.hasOwnProperty('fileName')) {
@@ -236,7 +228,6 @@
                     action: 'intersect',
                     data: {
                         filters: filters.getFiltersRequest(),
-                        presetName: file.presetName,
                         fileName: file.fileName
                     }
                 })
@@ -306,7 +297,7 @@
             }
         }
 
-        function filtersCallback(textFilters, sequenceFilters) {
+        function filtersInit(textFilters, sequenceFilters) {
             var types = filters.getTextFiltersTypes();
             textFilters.push({
                 id: -3,
@@ -342,16 +333,11 @@
             })
         }
 
-        function getPresets() {
-            return presets
-        }
-
         return {
             intersect: intersect,
             changePage: changePage,
             sort: sort,
-            helperList: helperList,
-            getPresets: getPresets
+            helperList: helperList
         }
     }]);
 
@@ -383,25 +369,6 @@
                 $scope.clipNoFlash = clipNoFlash;
                 $scope.copyToClip = copyToClip;
                 $scope.copyToClipNotification = copyToClipNotification;
-
-                $scope.presets = intersection.getPresets;
-
-                $scope.presetVisible = presetVisible;
-                $scope.clickFilePreset = clickFilePreset;
-                $scope.isFilePresetActive = isFilePresetActive;
-
-                function presetVisible(file) {
-                    file.presetVisible = !file.presetVisible;
-                }
-                
-                function clickFilePreset(file, preset) {
-                    file.presetName = preset.name;
-                    file.presetVisible = false;
-                }
-
-                function isFilePresetActive(file) {
-                    return file.presetVisible;
-                }
 
                 function isResultsLoading(file) {
                     return file.loading;

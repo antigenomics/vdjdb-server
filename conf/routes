@@ -18,6 +18,9 @@ GET     /intersection                   controllers.IntersectionAPI.index
 GET     /intersection/connect           controllers.IntersectionAPI.intersectWebSocket
 GET     /intersection/upload            controllers.IntersectionAPI.uploadPage
 
+# Filters api
+GET     /filters/connect                controllers.FiltersAPI.filtersWebSocket
+
 GET     /api/userinfo                   controllers.IntersectionAPI.userInformation
 POST    /api/upload                     controllers.IntersectionAPI.upload
 POST    /api/delete                     controllers.IntersectionAPI.delete

@@ -361,5 +361,9 @@ body {
     cursor: pointer;
 }
 
+.block_sequence_filter {
+    pointer-events: none;
+}
+
 
 

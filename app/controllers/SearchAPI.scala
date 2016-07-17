@@ -59,7 +59,11 @@ object SearchAPI extends Controller {
   case class DatabaseTextFilter(columnId: String, value: String, filterType: String, negative: Boolean)
   implicit val databaseTextFilterRead = Json.reads[DatabaseTextFilter]
 
-  case class DatabaseSequenceFilter(columnId: String, query: String, mismatches: Int, insertions: Int, deletions: Int, mutations: Int, threshold: Double, presetName: String)
+  case class DatabaseSequenceFilter(columnId: String, query: String,
+                                    presetName: String,
+                                    mismatches: Int, insertions: Int, deletions: Int, mutations: Int,
+                                    precision: Float, recall: Float)
+
   implicit val databaseSequenceFilterRead = Json.reads[DatabaseSequenceFilter]
 
   case class FiltersRequest(textFilters: List[DatabaseTextFilter], sequenceFilters: List[DatabaseSequenceFilter])
@@ -91,10 +95,6 @@ object SearchAPI extends Controller {
           val searchRequest = Json.fromJson[SearchWebSocketRequest](websocketMessage).get
           val requestData = searchRequest.data
           searchRequest.action match {
-            case "columns" =>
-              channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns))
-            case "presets" =>
-              channel push toJson(PresetsSuccessMessage(GlobalDatabase.getPresets(false)))
             case "search"  =>
               val filtersRequest = Json.fromJson[FiltersRequest](requestData).get
               val filters = Filters.parse(filtersRequest)
@@ -146,7 +146,6 @@ object SearchAPI extends Controller {
           }
         } catch {
           case e : Exception =>
-            e.printStackTrace()
             channel push toJson(ErrorMessage("Invalid request"))
         }
     }

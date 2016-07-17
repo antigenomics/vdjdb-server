@@ -55,9 +55,10 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
   case class IntersectWebSocketRequest(action: String, data: JsValue)
 
-  case class IntersectRequest(fileName: String, presetName: String, filters: FiltersRequest)
+  case class IntersectRequest(fileName: String, filters: FiltersRequest)
 
-  case class IntersectParametersRequest(matchV: Boolean, matchJ: Boolean, maxMismatches: Int, maxInsertions: Int, maxDeletions: Int, maxMutations: Int)
+  case class IntersectParametersRequest(matchV: Boolean, matchJ: Boolean,
+                                        maxMismatches: Int, maxInsertions: Int, maxDeletions: Int, maxMutations: Int)
 
   implicit val intersectWebSocketRequestReads = Json.reads[IntersectWebSocketRequest]
   implicit val intersectParametersRequestRead = Json.reads[IntersectParametersRequest]
@@ -81,10 +82,6 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
           val websocketRequest = Json.fromJson[IntersectWebSocketRequest](websocketMessage).get
           val dataRequest = websocketRequest.data
           websocketRequest.action match {
-            case "columns" =>
-              channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns))
-            case "presets" =>
-              channel push toJson(PresetsSuccessMessage(GlobalDatabase.getPresets(false)))
             case "intersect" =>
               val intersectRequest = Json.fromJson[IntersectRequest](dataRequest).get
               val filters = Filters.parse(intersectRequest.filters)
@@ -95,8 +92,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
                     val sampleFileConnection = new SampleFileConnection(f.getFilePath, f.getSoftware)
                     val sample = sampleFileConnection.getSample
                     val fileName = intersectRequest.fileName
-                    val presetName = intersectRequest.presetName
-                    intersectResults.reinit(fileName, sample, presetName, filters)
+                    intersectResults.reinit(fileName, sample, filters)
                     intersectResults.defaultSort(fileName)
                     channel push toJson(IntersectSuccessMessage(fileName, intersectResults.getTotalItems(fileName), intersectResults.getPage(fileName, 0)))
                     if (filters.warnings.nonEmpty) {
@@ -143,7 +139,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
   def intersect = SecuredAction(parse.json) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     request.body.validate[IntersectRequest].map {
-      case IntersectRequest(fileName, presetName, filtersRequest) =>
+      case IntersectRequest(fileName, filtersRequest) =>
         val file = new FileFinder(classOf[IntersectionFile]).findByNameAndUser(user, fileName)
         if (file == null) {
           BadRequest(toJson(ServerResponse("You have no file named " + fileName)))
@@ -152,7 +148,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
             val filters = Filters.parse(filtersRequest)
             val sampleFileConnection = new SampleFileConnection(file.getFilePath, file.getSoftware)
             val sample = sampleFileConnection.getSample
-            Ok(toJson(GlobalDatabase.intersect(sample, presetName, filters)))
+            Ok(toJson(GlobalDatabase.intersect(sample, filters)))
           } catch {
             case e: Exception =>
               if (e.getMessage.contains("Unable to parse"))

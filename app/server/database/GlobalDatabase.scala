@@ -58,13 +58,12 @@ object GlobalDatabase extends SynchronizedAccess {
       results.headOption
     }
 
-  def intersect(sample: Sample, presetName: String, filters: Filters) : List[IntersectWrapper] =
+  def intersect(sample: Sample, filters: Filters) : List[IntersectWrapper] =
     synchronizeRead { implicit lock =>
       val buffer = new ListBuffer[IntersectWrapper]()
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
-        val preset = SequenceSearcherPreset.byName(presetName)
-        preset.withSearchParameters(4, 1, 1, 4)
+        val preset = SequenceSearcherPreset.byName("high-precision")
         val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(false, false, preset)
         var id = 0
         val intersectedResults = instance.search(sample)
@@ -77,12 +76,13 @@ object GlobalDatabase extends SynchronizedAccess {
       buffer.toList
     }
 
-  def isParametersValid(parameters: IntersectParametersRequest, annotations: Boolean = false): Boolean = {
-    val validParameters = if (annotations) Configuration.annotationsBrowseSequenceFilterOptions else Configuration.dbBrowseSequenceFilterOptions
-    val maxMutations = validParameters.get(0)
-    val maxInsertions = validParameters.get(1)
-    val maxDeletions = validParameters.get(2)
-    val maxMismatches = validParameters.get(3)
+  def isParametersValid(parameters: IntersectParametersRequest): Boolean = {
+
+    //TODO
+    val maxMutations = 5
+    val maxInsertions = 2
+    val maxDeletions = 2
+    val maxMismatches = 7
 
     (parameters.maxDeletions <= maxDeletions && parameters.maxDeletions >= 0) &&
       (parameters.maxInsertions <= maxInsertions && parameters.maxInsertions >= 0) &&
@@ -90,18 +90,16 @@ object GlobalDatabase extends SynchronizedAccess {
          (parameters.maxMutations <= maxMutations && parameters.maxMutations >= 0)
   }
 
-  def testComplexes() =
-    synchronizeRead { implicit lock =>
-      val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
-      val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
-      for (i <- 1 to 1000) {
-        textFilters.clear()
-        textFilters.add(new ExactTextFilter("complex.id", String.valueOf(i), false))
-        val result = db().getDbInstance.search(textFilters, sequenceFilters)
-        if (result.size() == 1) {
-          println("WARN: complexID " + i)
-        }
-      }
+  def isParametersValid(mutations: Int, insertions: Int, deletions: Int, mismatches: Int): Boolean = {
+    val maxMutations = 5
+    val maxInsertions = 2
+    val maxDeletions = 2
+    val maxMismatches = 7
+
+    (deletions <= maxDeletions && deletions >= 0) &&
+      (insertions <= maxInsertions && insertions >= 0) &&
+      (mismatches <= maxMismatches && mismatches >= 0) &&
+      (mutations <= maxMutations && mutations >= 0)
   }
 
   def getColumns: List[ColumnWrapper] =
@@ -113,11 +111,11 @@ object GlobalDatabase extends SynchronizedAccess {
       buffer.toList
     }
 
-  def getPresets(annotations: Boolean = false): List[PresetWrapper] = {
+  def getPresets: List[PresetWrapper] = {
     var buffer = ListBuffer[PresetWrapper]()
     for (presetName <- SequenceSearcherPreset.getALLOWED_PRESETS) {
       val preset = SequenceSearcherPreset.byName(presetName)
-      buffer += PresetWrapper.wrap(presetName, preset, annotations)
+      buffer += PresetWrapper.wrap(presetName, preset)
     }
     buffer.toList
   }

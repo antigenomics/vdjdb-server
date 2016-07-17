@@ -2,7 +2,7 @@ package server.wrappers
 
 import java.util
 
-import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
+import com.antigenomics.vdjdb.scoring.{ScoringMetadataTable, SequenceSearcherPreset}
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
@@ -24,11 +24,12 @@ case class Filters(textFilters: util.ArrayList[TextFilter], sequenceFilters: uti
 }
 
 object Filters {
-  def parse(filters: FiltersRequest, annotations: Boolean = false) : Filters = {
-    parse(filters.textFilters, filters.sequenceFilters, annotations)
+
+  def parse(filters: FiltersRequest): Filters = {
+    parse(filters.textFilters, filters.sequenceFilters)
   }
 
-  def parse(text: List[SearchAPI.DatabaseTextFilter], sequence: List[SearchAPI.DatabaseSequenceFilter], annotations: Boolean) : Filters = {
+  def parse(text: List[SearchAPI.DatabaseTextFilter], sequence: List[SearchAPI.DatabaseSequenceFilter]) : Filters = {
     val warnings = ListBuffer[String]()
     val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
     val columns = GlobalDatabase.getColumns
@@ -59,11 +60,15 @@ object Filters {
             case "" =>
               warnings += ("Sequence filter ignored for " + filter.columnId + ": empty query field")
             case _ =>
-              if (GlobalDatabase.isParametersValid(IntersectParametersRequest(matchV = false, matchJ = false,
-                filter.mismatches, filter.insertions, filter.deletions, filter.mutations), annotations = annotations)) {
-                val preset = SequenceSearcherPreset.byName(filter.presetName)
+              if (GlobalDatabase.isParametersValid(filter.mutations, filter.insertions, filter.deletions, filter.mismatches)) {
+                var preset: SequenceSearcherPreset = null
+                if (!filter.presetName.equalsIgnoreCase("custom")) {
+                  preset = SequenceSearcherPreset.byName(filter.presetName)
+                } else {
+                  val metadata = new ScoringMetadataTable().getByPrecision(filter.precision)
+                  preset = SequenceSearcherPreset.byMetadata(metadata)
+                }
                 preset.withSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches)
-                preset.withScoringThreshold(filter.threshold)
                 sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, preset))
               } else {
                 warnings += ("Sequence filter ignored for " + filter.columnId + ": bad parameters")

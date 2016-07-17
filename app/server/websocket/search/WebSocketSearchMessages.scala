@@ -10,10 +10,6 @@ import server.wrappers.database.{ColumnWrapper, PresetWrapper, RowWrapper}
 
 case class SearchSuccessMessage(rows: List[RowWrapper], totalItems: Int) extends SuccessMessage("search")
 
-case class ColumnsSuccessMessage(columns: List[ColumnWrapper]) extends SuccessMessage("columns")
-
-case class PresetsSuccessMessage(presets: List[PresetWrapper]) extends SuccessMessage("presets")
-
 case class GetPageSuccessMessage(rows: List[RowWrapper], page: Int) extends SuccessMessage("get_page")
 
 case class SortSuccessMessage(rows: List[RowWrapper]) extends SuccessMessage("sort")
@@ -28,8 +24,6 @@ case class WarningListMessage(warnings: List[String]) extends WarningMessage("se
 
 object WebSocketSearchMessages {
   implicit val searchSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[SearchSuccessMessage])
-  implicit val presetsSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[PresetsSuccessMessage])
-  implicit val columnsSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[ColumnsSuccessMessage])
   implicit val getPageSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[GetPageSuccessMessage])
   implicit val sortSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[SortSuccessMessage])
   implicit val changeSizeSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[ChangeSizeSuccessMessage])

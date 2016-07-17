@@ -22,5 +22,5 @@ object Configuration {
   def maxRequestsPerHour : Int = conf.getInt("maxRequestsPerHour").getOrElse(1000)
   def requestsClearInterval: Int = conf.getInt("requestsClearInterval").getOrElse(60)
   def dbBrowseSequenceFilterOptions: List[Integer] = conf.getIntList("dbBrowseSequenceFilterOptions").getOrElse(Arrays.asList(5, 2, 2, 7))
-  def annotationsBrowseSequenceFilterOptions: List[Integer] = conf.getIntList("annotationsBrowseSequenceFilterOptions").getOrElse(Arrays.asList(4, 1, 1, 4))
+
 }

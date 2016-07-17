@@ -5,15 +5,7 @@
                 <h3 class="box-title">Search preset</h3>
             </div>
             <div class="box-body">
-                <div class="col-md-3">
-                    <a class="select_trigger" ng-click="presetVisible(file)"> {{ file.presetName }}</a>
-                    <div class="select_drop_container">
-                        <ul ng-if="isFilePresetActive(file)">
-                            <li ng-repeat="preset in presets()" ng-click="clickFilePreset(file, preset)"><a>{{ ::preset.name }}</a></li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect(file)">Annotate</button>
-                </div>
+                <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect(file)">Annotate</button>
             </div>
         </div>
         <div class="box" ng-if="isFile(file) && isIntersected(file)">

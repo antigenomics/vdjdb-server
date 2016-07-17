@@ -1,19 +1,25 @@
 (function() {
     "use strict";
-    var application = angular.module('filters', []);
+    var application = angular.module('filters', ['ngWebSocket', 'table', 'notifications']);
 
-    application.factory('filters', function () {
+    application.factory('filters', ['$websocket', 'table', 'notify', function ($websocket, table, notify) {
         var textFilters = [];
         var sequenceFilters = [];
         var textFilterID = 0;
+        var sequenceFilterID = 0;
 
-        var loading = true;
+        var columnsLoading = true;
         var presetsLoading = true;
         var error = false;
 
         var textFiltersColumns = [];
         var sequenceFiltersColumns = [];
         var sequencePresets = [];
+        var customPreset = {
+            name: 'custom'
+        };
+
+        var connection = $websocket('ws://' + location.host + '/filters/connect');
 
         var textFiltersTypes = Object.freeze([
             { name: 'substring', title: 'Substring', allowNegative: true},
@@ -22,7 +28,69 @@
             { name: 'level', title: 'Level', allowNegative: false}
         ]);
 
-        function initialize(columns, callback) {
+        connection.onOpen(function() {
+            connection.send({
+                action: 'columns',
+                data: {}
+            });
+            connection.send({
+                action: 'presets',
+                data: {}
+            })
+        });
+
+        connection.onMessage(function(message) {
+            var response = JSON.parse(message.data);
+            var filter = {};
+            switch (response.status) {
+                case 'success':
+                    switch (response.action) {
+                        case 'columns':
+                            initialize(response.columns);
+                            table.setColumns(response.columns);
+                            columnsLoading = false;
+                            break;
+                        case 'presets':
+                            presets(response.presets);
+                            presetsLoading = false;
+                            break;
+                        case 'compute_recall':
+                            filter = findSequenceFilterById(response.id);
+                            filter.loading = false;
+                            filter.recall = response.value;
+                            filter.preset = customPreset;
+                            break;
+                        case 'compute_precision':
+                            filter = findSequenceFilterById(response.id);
+                            filter.loading = false;
+                            filter.precision = response.value;
+                            filter.preset = customPreset;
+                            break;
+                        default:
+                            notify.notice('Search', 'Invalid response');
+                            break;
+                    }
+                    break;
+                case 'warn':
+                    angular.forEach(response.warnings, function(warning) {
+                        notify.notice('Search', warning);
+                    });
+                    break;
+                case 'error':
+                    notify.error('Search', response.message);
+                    break;
+            }
+        });
+
+        connection.onError(function() {
+            error = true;
+        });
+
+        connection.onClose(function() {
+            error = true;
+        });
+
+        function initialize(columns) {
             angular.forEach(columns, function(column) {
                 var meta = column.metadata;
                 if (meta.searchable === '1') {
@@ -67,18 +135,12 @@
                     }
                 }
             });
-            if (callback) {
-                callback(textFilters, sequenceFilters)
-            }
-            loading = false;
+            columnsLoading = false;
         }
 
-        function presets(newPresets, callback) {
+        function presets(newPresets) {
             sequencePresets.splice(0, sequencePresets.length);
             angular.extend(sequencePresets, newPresets);
-            if (callback) {
-                callback(sequencePresets)
-            }
             presetsLoading = false
         }
 
@@ -95,7 +157,7 @@
         }
 
         function addTextFilter() {
-            if (!error && !loading) {
+            if (!error && !columnsLoading) {
                 textFilters.push({
                     id: textFilterID++,
                     columnId: '',
@@ -116,6 +178,13 @@
             return index;
         }
 
+        function findTextFilterById(id) {
+            for (var i = 0; i < textFilters.length; i++) {
+                if (textFilters[i].id === id) return textFilters[i];
+            }
+            return {};
+        }
+
         function getSequenceFiltersColumns() {
             return sequenceFiltersColumns;
         }
@@ -126,6 +195,7 @@
 
         function addSequenceFilter() {
             sequenceFilters.push({
+                id: sequenceFilterID++,
                 columnTitle: 'Please select column name: ',
                 columnId: '',
                 query: '',
@@ -135,9 +205,11 @@
                 insertions: sequencePresets[0].insertions,
                 deletions: sequencePresets[0].deletions,
                 mutations: sequencePresets[0].mutations,
-                threshold: sequencePresets[0].threshold,
+                precision: -1.0,
+                recall: -1.0,
                 activeColumn: false,
-                activePreset: false
+                activePreset: false,
+                loading: false
             });
         }
 
@@ -146,8 +218,15 @@
             if (index >= 0) sequenceFilters.splice(index, 1);
         }
 
+        function findSequenceFilterById(id) {
+            for (var i = 0; i < sequenceFilters.length; i++) {
+                if (sequenceFilters[i].id === id) return sequenceFilters[i];
+            }
+            return {};
+        }
+
         function isFiltersLoaded() {
-            return !loading && !presetsLoading;
+            return !columnsLoading && !presetsLoading;
         }
 
         function isFiltersError() {
@@ -180,6 +259,32 @@
             return sequencePresets;
         }
 
+        function filtersInit(callback) {
+            callback(textFilters, sequenceFilters)
+        }
+
+        function getRecallByPrecision(filter) {
+            filter.loading = true;
+            connection.send({
+                action: 'compute_recall',
+                data: {
+                    value: filter.precision,
+                    id: filter.id
+                }
+            })
+        }
+
+        function getPrecisionByRecall(filter) {
+            filter.loading = true;
+            connection.send({
+                action: 'compute_precision',
+                data: {
+                    value: filter.recall,
+                    id: filter.id
+                }
+            })
+        }
+
         return {
             initialize: initialize,
             presets: presets,
@@ -188,27 +293,32 @@
             getTextFilters: getTextFilters,
             addTextFilter: addTextFilter,
             deleteTextFilter: deleteTextFilter,
+            findTextFilterById: findTextFilterById,
             getSequenceFiltersColumns: getSequenceFiltersColumns,
             getSequenceFilters: getSequenceFilters,
             addSequenceFilter: addSequenceFilter,
             deleteSequenceFilter: deleteSequenceFilter,
+            findSequenceFilterById: findSequenceFilterById,
             isFiltersLoaded: isFiltersLoaded,
             isFiltersError: isFiltersError,
             getDefaultFilterTypes: getDefaultFilterTypes,
             getFiltersRequest: getFiltersRequest,
-            getPresets: getPresets
+            getPresets: getPresets,
+            filtersInit: filtersInit,
+            getRecallByPrecision: getRecallByPrecision,
+            getPrecisionByRecall: getPrecisionByRecall
         }
-    });
+    }]);
 
     application.directive('filters', function () {
         return {
             restrict: 'E',
             controller: ['$scope', 'filters', function ($scope, filters) {
                 $scope.sliderOptions = {
-                    min: -2e+4,
-                    max: 2e+4,
-                    step: 1e-1,
-                    value: 1000
+                    min: 0,
+                    max: 1,
+                    step: 1e-2,
+                    value: 0
                 };
                 $scope.textFilters = filters.getTextFilters();
                 $scope.textFiltersColumns = filters.getTextFiltersColumns();
@@ -287,6 +397,8 @@
 
                 $scope.clickPreset = function(filter, preset) {
                     filter.preset = preset;
+                    filter.precision = 0.0;
+                    filter.recall = 0.0;
                     filter.mismatches = preset.mismatches;
                     filter.insertions = preset.insertions;
                     filter.deletions = preset.deletions;
@@ -294,6 +406,14 @@
                     filter.threshold = preset.threshold;
                     filter.presetName = preset.name;
                     filter.activePreset = false;
+                };
+
+                $scope.precisionStopSlide = function precisionStopSlide(filter) {
+                    filters.getRecallByPrecision(filter)
+                };
+
+                $scope.recallStopSlide = function recallStopSlide(filter) {
+                    filters.getPrecisionByRecall(filter)
                 };
 
             }]

@@ -1,10 +1,3 @@
-@(annotationPage: Boolean)
-@import server.Configuration
-
-@sequenceFilterOptions = @{
-    if (annotationPage) Configuration.annotationsBrowseSequenceFilterOptions else Configuration.dbBrowseSequenceFilterOptions
-}
-
 <div class="box box-solid">
     <div class="box-body text-center" ng-if="isSequenceFiltersExist()">
         <table class="table table-responsive">
@@ -13,16 +6,17 @@
                     <th>Field</th>
                     <th>Query</th>
                     <th>Preset</th>
+                    <th>Substitutions</th>
                     <th>Insertions</th>
                     <th>Deletions</th>
-                    <th>Substitutions</th>
                     <th>Total</th>
-                    <th>Threshold</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
                     <th width="5%"></th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="filter in sequenceFilters" on-last-repeat="">
+                <tr ng-repeat="filter in sequenceFilters" on-last-repeat="" ng-class="{'block_sequence_filter':filter.loading}">
                     <td width="20%">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
                         <div class="select_drop_container">
@@ -31,7 +25,7 @@
                             </ul>
                         </div>
                     </td>
-                    <td width="20%">
+                    <td width="25%">
                         <input class="form-control input-sm" type="text" placeholder="Query" ng-model="filter.query">
                     </td>
                     <td>
@@ -43,19 +37,22 @@
                         </div>
                     </td>
                     <td width="5%">
-                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(1)" min="0"  placeholder="Insertions" ng-model="filter.insertions">
+                        <input class="form-control input-sm" type="number" max="5" min="0" placeholder="Mutations" ng-model="filter.mutations">
                     </td>
                     <td width="5%">
-                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(2)" min="0" placeholder="Deletions" ng-model="filter.deletions">
+                        <input class="form-control input-sm" type="number" max="2" min="0"  placeholder="Insertions" ng-model="filter.insertions">
                     </td>
                     <td width="5%">
-                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(0)" min="0" placeholder="Mutations" ng-model="filter.mutations">
+                        <input class="form-control input-sm" type="number" max="2" min="0" placeholder="Deletions" ng-model="filter.deletions">
                     </td>
                     <td width="5%">
-                        <input class="form-control input-sm" type="number" max="@sequenceFilterOptions.get(3)" min="0" placeholder="Mismatches" ng-model="filter.mismatches">
+                        <input class="form-control input-sm" type="number" max="7" min="0" placeholder="Mismatches" ng-model="filter.mismatches">
                     </td>
-                    <td>
-                        <slider ng-model="filter.threshold" min="sliderOptions.min" step="sliderOptions.step" max="sliderOptions.max" value="sliderOptions.value"></slider>
+                    <td width="10%">
+                        <slider ng-model="filter.precision" min="sliderOptions.min" step="sliderOptions.step" max="sliderOptions.max" value="sliderOptions.value" on-stop-slide="precisionStopSlide(filter)"></slider>
+                    </td>
+                    <td width="10%">
+                        <slider ng-model="filter.recall" min="sliderOptions.min" step="sliderOptions.step" max="sliderOptions.max" value="sliderOptions.value" on-stop-slide="recallStopSlide(filter)"></slider>
                     </td>
                     <td width="5%">
                         <i class="fa fa-trash" ng-click="deleteSequenceFilter(filter)" style="cursor: pointer ;"></i>
