@@ -20,6 +20,7 @@
         };
 
         var connection = $websocket('ws://' + location.host + '/filters/connect');
+        var pingWebSocket = null;
 
         var textFiltersTypes = Object.freeze([
             { name: 'substring', title: 'Substring', allowNegative: true},
@@ -36,7 +37,13 @@
             connection.send({
                 action: 'presets',
                 data: {}
-            })
+            });
+            pingWebSocket = setInterval(function() {
+                connection.send({
+                    action: 'ping',
+                    data: {}
+                });
+            }, 10000)
         });
 
         connection.onMessage(function(message) {
@@ -84,10 +91,12 @@
 
         connection.onError(function() {
             error = true;
+            clearInterval(pingWebSocket);
         });
 
         connection.onClose(function() {
             error = true;
+            clearInterval(pingWebSocket);
         });
 
         function initialize(columns) {
