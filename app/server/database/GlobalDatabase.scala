@@ -64,6 +64,7 @@ object GlobalDatabase extends SynchronizedAccess {
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
         val preset = SequenceSearcherPreset.byName("high-precision")
+        preset.withSearchParameters(4, 1, 1, 5)
         val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(false, false, preset)
         var id = 0
         val intersectedResults = instance.search(sample)
