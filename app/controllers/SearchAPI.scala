@@ -60,9 +60,7 @@ object SearchAPI extends Controller {
   implicit val databaseTextFilterRead = Json.reads[DatabaseTextFilter]
 
   case class DatabaseSequenceFilter(columnId: String, query: String,
-                                    presetName: String,
-                                    mismatches: Int, insertions: Int, deletions: Int, mutations: Int,
-                                    precision: Float, recall: Float)
+                                    mismatches: Int, insertions: Int, deletions: Int, mutations: Int)
 
   implicit val databaseSequenceFilterRead = Json.reads[DatabaseSequenceFilter]
 

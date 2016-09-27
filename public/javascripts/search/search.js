@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var application = angular.module('searchPage', ['notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'ui.bootstrap-slider']);
+    var application = angular.module('searchPage', ['notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
 
     application.config(['ngClipProvider', function(ngClipProvider) {
         ngClipProvider.setPath('/assets/lib/angular/plugins/zeroclipboard/ZeroClipboard.swf');
@@ -170,7 +170,7 @@
 
         function searchWS() {
             if (connected && !loading) {
-                $("[data-toggle='popover']").popover('destroy');
+                $(".row_popover").popover('destroy');
                 loading = true;
                 sortRule.columnId = defaultSortRule.columnId;
                 sortRule.sortType = defaultSortRule.sortType;
@@ -185,7 +185,7 @@
 
         function changePage(pageV) {
             if (connected && !loading) {
-                $("[data-toggle='popover']").popover('destroy');
+                $(".row_popover").popover('destroy');
                 pageLoading = true;
                 connection.send({
                     action: 'get_page',
@@ -200,7 +200,7 @@
 
         function sortDatabase(index, page) {
             if (connected && !loading) {
-                $("[data-toggle='popover']").popover('destroy');
+                $(".row_popover").popover('destroy');
                 pageLoading = true;
                 if (sortRule.columnId === index) {
                     sortRule.sortType = sortRule.sortType === 'asc' ? 'desc' : 'asc';

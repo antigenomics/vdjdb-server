@@ -265,6 +265,10 @@ body {
     visibility: visible;
 }
 
+.column_popover {
+    width: 100%;
+}
+
 .popover-footer {
     padding:8px 14px;
     margin:0;

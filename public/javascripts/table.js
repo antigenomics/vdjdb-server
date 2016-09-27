@@ -115,10 +115,10 @@
                             color_i = '#d7191c'
                         }
                     }
-                    value = '<i style="color: ' + color_i + '" class="fa fa-info-circle comments-control row_popover" tab-index="0" ' +
+                    value = '<div class="row_popover" style="width: 100%; height: 100%;" tab-index="0" ' +
                         'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
                         'title="' + columnMeta.title + '" data-content="' + text + '" clip-copy="copyToClip(\'' + text + '\')"' +
-                        'clip-click-fallback="clipNoFlash(\'' + text + '\')" clip-click="copyToClipNotification()"></i>'
+                        'clip-click-fallback="clipNoFlash(\'' + text + '\')" clip-click="copyToClipNotification()"><i style="color: ' + color_i + '" class="fa fa-info-circle comments-control"></i></div>'
                 } catch (e) {
                     value = ''
                 }
@@ -131,8 +131,12 @@
         }
 
         function columnHeader(column) {
-            return '<text class="column_popover" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="' +
-                column.metadata.comment + '">' + column.metadata.title + '</text>';
+            return '<div class="column_popover" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="' +
+                column.metadata.comment + '">' + column.metadata.title + '</div>';
+        }
+
+        function columnComment(column) {
+            return column.metadata.comment;
         }
 
         function isColumnVisible(column) {

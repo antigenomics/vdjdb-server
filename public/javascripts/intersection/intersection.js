@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'ui.bootstrap-slider']);
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
 
     application.factory('sidebar', ['user', function(userInfo) {
 
@@ -106,6 +106,7 @@
         var connection = $websocket('ws://' + location.host + '/intersection/connect');
         var loading = false;
 
+        filters.hideSequenceFilters();
         filters.filtersInit(filtersInit);
 
         connection.onMessage(function(message) {
@@ -306,7 +307,7 @@
                 value: 'HomoSapiens',
                 filterType: types[1],
                 negative: false,
-                types: [0, 1, 2],
+                types: [0, 1],
                 activeColumn: false,
                 activeType: false
             });
@@ -317,7 +318,7 @@
                 value: 'TRB',
                 filterType: types[1],
                 negative: false,
-                types: [0, 1, 2],
+                types: [0, 1],
                 activeColumn: false,
                 activeType: false
             });
@@ -325,9 +326,9 @@
                 columnId: 'vdjdb.score',
                 columnTitle: 'score',
                 value: '2',
-                filterType: types[3],
+                filterType: types[2],
                 negative: false,
-                types: [3],
+                types: [2],
                 activeColumn: false,
                 activeType: false
             })

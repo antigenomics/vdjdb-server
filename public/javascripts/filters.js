@@ -3,10 +3,28 @@
     var application = angular.module('filters', ['ngWebSocket', 'table', 'notifications']);
 
     application.factory('filters', ['$websocket', 'table', 'notify', function ($websocket, table, notify) {
+
+        var filterHints = {
+            textFilterFieldHint: '',
+            textFilterValueHint: '',
+            textFilterTypeHint: '',
+            textFilterNegativeHint: '',
+
+            sequenceFilterFieldHint: '',
+            sequenceFilterQueryHint: '',
+            sequenceFilterSubstitutionsHint: '',
+            sequenceFilterInsertionsHint: '',
+            sequenceFilterDeletionsHint: '',
+            sequenceFilterTotalHint: ''
+        };
+
         var textFilters = [];
         var sequenceFilters = [];
         var textFilterID = 0;
         var sequenceFilterID = 0;
+
+        var textFiltersHide = false
+        var sequenceFiltersHide = false
 
         var columnsLoading = true;
         var presetsLoading = true;
@@ -25,7 +43,6 @@
         var textFiltersTypes = Object.freeze([
             { name: 'substring', title: 'Substring', allowNegative: true},
             { name: 'exact', title: 'Exact', allowNegative: true},
-            { name: 'pattern', title: 'Pattern', allowNegative: true},
             { name: 'level', title: 'Level', allowNegative: false}
         ]);
 
@@ -109,8 +126,8 @@
                             title: meta.title,
                             types: (function() {
                                 if (meta.dataType === 'uint')
-                                    return [3];
-                                return [0, 1, 2]
+                                    return [2];
+                                return [0, 1]
                             }()),
                             allowNegative: (function() {
                                 return meta.dataType !== 'uint';
@@ -119,7 +136,7 @@
                             values: column.values,
                             defaultFilterType: (function() {
                                 if (meta.dataType === 'uint')
-                                    return textFiltersTypes[3];
+                                    return textFiltersTypes[2];
                                 return textFiltersTypes[1];
                             }())
                         })
@@ -127,7 +144,7 @@
                         textFiltersColumns.push({
                             name: column.name,
                             title: meta.title,
-                            types: [0, 1, 2],
+                            types: [0, 1],
                             allowNegative: true,
                             autocomplete: false,
                             values: [],
@@ -136,7 +153,7 @@
                         sequenceFiltersColumns.push({
                             name: column.name,
                             title: meta.title,
-                            types: [0, 1, 2],
+                            types: [0, 1],
                             allowNegative: true,
                             autocomplete: false,
                             values: []
@@ -174,7 +191,7 @@
                     value: '',
                     filterType: textFiltersTypes[1],
                     negative: false,
-                    types: [0, 1, 2, 3],
+                    types: [0, 1, 2],
                     activeColumn: false,
                     activeType: false
                 });
@@ -208,16 +225,20 @@
                 columnTitle: 'Please select column name: ',
                 columnId: '',
                 query: '',
-                preset: sequencePresets[0],
-                presetName: sequencePresets[0].name,
-                mismatches: sequencePresets[0].mismatches,
-                insertions: sequencePresets[0].insertions,
-                deletions: sequencePresets[0].deletions,
-                mutations: sequencePresets[0].mutations,
-                precision: -1.0,
-                recall: -1.0,
+                //preset: sequencePresets[0],
+                //presetName: sequencePresets[0].name,
+                //mismatches: sequencePresets[0].mismatches,
+                mismatches: 2,
+                //insertions: sequencePresets[0].insertions,
+                insertions: 1,
+                //deletions: sequencePresets[0].deletions,
+                deletions: 1,
+                //mutations: sequencePresets[0].mutations,
+                mutations: 2,
+                //precision: -1.0,
+                //recall: -1.0,
                 activeColumn: false,
-                activePreset: false,
+                //activePreset: false,
                 loading: false
             });
         }
@@ -294,6 +315,26 @@
             })
         }
 
+        function isTextFiltersHidden() {
+            return textFiltersHide;
+        }
+
+        function isSequenceFiltersHidden() {
+            return sequenceFiltersHide;
+        }
+
+        function hideTextFilters() {
+            textFiltersHide = true;
+        }
+
+        function hideSequenceFilters() {
+            sequenceFiltersHide = true;
+        }
+
+        function getHints() {
+            return filterHints;
+        }
+
         return {
             initialize: initialize,
             presets: presets,
@@ -315,7 +356,12 @@
             getPresets: getPresets,
             filtersInit: filtersInit,
             getRecallByPrecision: getRecallByPrecision,
-            getPrecisionByRecall: getPrecisionByRecall
+            getPrecisionByRecall: getPrecisionByRecall,
+            hideTextFilters: hideTextFilters,
+            hideSequenceFilters: hideSequenceFilters,
+            isTextFiltersHidden,
+            isSequenceFiltersHidden,
+            getHints: getHints   
         }
     }]);
 
@@ -323,12 +369,13 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'filters', function ($scope, filters) {
-                $scope.sliderOptions = {
-                    min: 0,
-                    max: 1,
-                    step: 1e-2,
-                    value: 0
-                };
+                // $scope.sliderOptions = {
+                //     min: 0,
+                //     max: 1,
+                //     step: 1e-2,
+                //     value: 0
+                // };
+
                 $scope.textFilters = filters.getTextFilters();
                 $scope.textFiltersColumns = filters.getTextFiltersColumns();
                 $scope.textFiltersTypes = filters.getTextFiltersTypes();
@@ -340,7 +387,11 @@
                 $scope.addSequenceFilter = filters.addSequenceFilter;
                 $scope.deleteSequenceFilter = filters.deleteSequenceFilter;
 
-                $scope.presets = filters.getPresets();
+                $scope.isTextFiltersHidden = filters.isTextFiltersHidden;
+                $scope.isSequenceFiltersHidden = filters.isSequenceFiltersHidden;
+                $scope.hints = filters.getHints();
+
+                //$scope.presets = filters.getPresets();
 
                 $scope.isFiltersLoaded = filters.isFiltersLoaded;
                 $scope.isFiltersError = filters.isFiltersError;
@@ -374,6 +425,11 @@
                             source: column.values,
                             minLength: 0
                         });
+                    } else {
+                        $("#text_filter_" + filter.id).autocomplete({
+                            source: [],
+                            minLength: 0
+                        });
                     }
                 };
 
@@ -396,34 +452,35 @@
                     filter.activeType = false;
                 };
 
-                $scope.switchPresetVisible = function(filter) {
-                    filter.activePreset = !filter.activePreset;
-                };
+                //Preset feature in development
+                // $scope.switchPresetVisible = function(filter) {
+                //     filter.activePreset = !filter.activePreset;
+                // };
 
-                $scope.isPresetActive = function(filter) {
-                    return filter.activePreset;
-                };
+                // $scope.isPresetActive = function(filter) {
+                //     return filter.activePreset;
+                // };
 
-                $scope.clickPreset = function(filter, preset) {
-                    filter.preset = preset;
-                    filter.precision = 0.0;
-                    filter.recall = 0.0;
-                    filter.mismatches = preset.mismatches;
-                    filter.insertions = preset.insertions;
-                    filter.deletions = preset.deletions;
-                    filter.mutations = preset.mutations;
-                    filter.threshold = preset.threshold;
-                    filter.presetName = preset.name;
-                    filter.activePreset = false;
-                };
+                // $scope.clickPreset = function(filter, preset) {
+                //     filter.preset = preset;
+                //     filter.precision = 0.0;
+                //     filter.recall = 0.0;
+                //     filter.mismatches = preset.mismatches;
+                //     filter.insertions = preset.insertions;
+                //     filter.deletions = preset.deletions;
+                //     filter.mutations = preset.mutations;
+                //     filter.threshold = preset.threshold;
+                //     filter.presetName = preset.name;
+                //     filter.activePreset = false;
+                // };
 
-                $scope.precisionStopSlide = function precisionStopSlide(filter) {
-                    filters.getRecallByPrecision(filter)
-                };
+                // $scope.precisionStopSlide = function precisionStopSlide(filter) {
+                //     filters.getRecallByPrecision(filter)
+                // };
 
-                $scope.recallStopSlide = function recallStopSlide(filter) {
-                    filters.getPrecisionByRecall(filter)
-                };
+                // $scope.recallStopSlide = function recallStopSlide(filter) {
+                //     filters.getPrecisionByRecall(filter)
+                // };
 
             }]
         }

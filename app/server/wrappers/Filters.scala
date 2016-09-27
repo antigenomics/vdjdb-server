@@ -10,6 +10,7 @@ import controllers.IntersectionAPI.IntersectParametersRequest
 import controllers.SearchAPI
 import controllers.SearchAPI.FiltersRequest
 import server.database.GlobalDatabase
+import com.antigenomics.vdjdb.scoring.DummyAlignmentScoring
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
@@ -61,15 +62,9 @@ object Filters {
               warnings += ("Sequence filter ignored for " + filter.columnId + ": empty query field")
             case _ =>
               if (GlobalDatabase.isParametersValid(filter.mutations, filter.insertions, filter.deletions, filter.mismatches)) {
-                var preset: SequenceSearcherPreset = null
-                if (!filter.presetName.equalsIgnoreCase("custom")) {
-                  preset = SequenceSearcherPreset.byName(filter.presetName)
-                } else {
-                  val metadata = new ScoringMetadataTable().getByPrecision(filter.precision)
-                  preset = SequenceSearcherPreset.byMetadata(metadata)
-                }
-                preset.withSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches)
-                sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query, preset))
+                val preset: SequenceSearcherPreset = new SequenceSearcherPreset(DummyAlignmentScoring.INSTANCE, 
+                  new TreeSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches))
+                sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query.toUpperCase(), preset))
               } else {
                 warnings += ("Sequence filter ignored for " + filter.columnId + ": bad parameters")
               }

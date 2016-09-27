@@ -1,12 +1,20 @@
-<div class="box box-solid">
+<div class="box box-solid" ng-if="!isTextFiltersHidden()">
     <div class="box-body text-center" ng-if="isTextFiltersExist()">
         <table class="table table-responsive">
             <thead>
                 <tr>
-                    <th>Field</th>
-                    <th>Filter value / expression</th>
-                    <th>Filter type</th>
-                    <th>Negative</th>
+                    <th>
+                        <div class="column_popover">Field</div>
+                    </th>
+                    <th>
+                        <div class="column_popover">Filter value / expression</div>
+                    </th>
+                    <th>
+                        <div class="column_popover">Filter type</div>
+                    </th>
+                    <th>
+                        <div class="column_popover">Negative</div>
+                    </th>
                     <th width="5%"></th>
                 </tr>
             </thead>

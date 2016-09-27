@@ -14,6 +14,8 @@ import controllers.IntersectionAPI.IntersectParametersRequest
 import server.wrappers.database.{ColumnWrapper, IntersectWrapper, PresetWrapper, RowWrapper}
 import server.Configuration
 import server.wrappers.Filters
+import com.antigenomics.vdjdb.scoring.DummyAlignmentScoring
+import com.milaboratory.core.tree.TreeSearchParameters
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
@@ -63,8 +65,8 @@ object GlobalDatabase extends SynchronizedAccess {
       val buffer = new ListBuffer[IntersectWrapper]()
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
-        val preset = SequenceSearcherPreset.byName("high-precision")
-        preset.withSearchParameters(4, 1, 1, 5)
+        val preset: SequenceSearcherPreset = new SequenceSearcherPreset(DummyAlignmentScoring.INSTANCE, 
+                  new TreeSearchParameters(0,0,0,0))
         val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(false, false, preset)
         var id = 0
         val intersectedResults = instance.search(sample)
