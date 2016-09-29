@@ -144,6 +144,7 @@ object SearchAPI extends Controller {
           }
         } catch {
           case e : Exception =>
+            print(e)
             channel push toJson(ErrorMessage("Invalid request"))
         }
     }
