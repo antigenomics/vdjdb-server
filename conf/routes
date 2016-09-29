@@ -8,6 +8,7 @@ GET     /about                          controllers.Application.about
 
 # Search api
 GET     /search                         controllers.SearchAPI.index
+POST    /search 						controllers.SearchAPI.search
 GET     /search/columns                 controllers.SearchAPI.columns
 GET     /search/presets                 controllers.SearchAPI.presets
 GET     /search/connect                 controllers.SearchAPI.searchWebSocket
