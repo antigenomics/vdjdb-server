@@ -3,6 +3,17 @@ body {
     min-width: 800px; !important;
 }
 
+.filter_hint {
+    cursor: pointer;
+    font-size: 1.5em;
+    color: gray;
+}
+
+/* The max width is dependant on the container (more info below) */
+.popover{
+    max-width: 50%; /* Max Width of the popover (depending on the container!) */
+}
+
 .spinner {
     margin: 100px auto;
     width: 40px;

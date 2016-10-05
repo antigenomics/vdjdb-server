@@ -117,7 +117,7 @@
                     }
                     value = '<div class="row_popover" style="width: 100%; height: 100%;" tab-index="0" ' +
                         'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
-                        'title="' + columnMeta.title + '" data-content="' + text + '" clip-copy="copyToClip(\'' + text + '\')"' +
+                        'title="' + columnMeta.title + '" data-content="' + text + '" clip-copy="copyToClip(\'' + text + '\')"' + ' data-animation="false" '+
                         'clip-click-fallback="clipNoFlash(\'' + text + '\')" clip-click="copyToClipNotification()"><i style="color: ' + color_i + '" class="fa fa-info-circle comments-control"></i></div>'
                 } catch (e) {
                     value = ''
@@ -150,7 +150,8 @@
             entryValue: entryValue,
             isEntryVisible: isEntryVisible,
             columnHeader: columnHeader,
-            isColumnVisible: isColumnVisible
+            isColumnVisible: isColumnVisible,
+            columnByName: columnByName
         }
     })
 

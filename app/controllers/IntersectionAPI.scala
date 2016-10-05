@@ -9,7 +9,7 @@ import com.antigenomics.vdjtools.misc.Software
 import models.auth.User
 import play.api.libs.json.{JsValue, Json}
 import server.wrappers.ServerResponse
-
+import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import scala.collection.JavaConversions._
 import play.api.mvc._
 import server.Configuration
@@ -27,6 +27,7 @@ import server.websocket.ErrorMessage
 import server.websocket.intersection._
 import server.websocket.intersection.WebSocketIntersectionMessages._
 import server.wrappers.models.UserWrapper
+import utils.annotate_converter.AnnotateDocumentConverter
 
 object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
@@ -51,6 +52,26 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
   def userInformation = SecuredAction(ajaxCall = true) { implicit request =>
     val user = User.findByUUID(request.user.identityId.userId)
     Ok(toJson(UserWrapper.wrap(user)))
+  }
+
+  def downloadDocument(exportType: String, link: String) = LimitedAction { implicit request =>
+    val folder = new java.io.File("/tmp/" + link + "/")
+    val extension = AnnotateDocumentConverter.getExtension(exportType)
+    val doc = new java.io.File(folder.getAbsolutePath + "/" + "IntersectResults" + extension)
+    if (folder.exists() && doc.exists()) {
+      val docContent: Enumerator[Array[Byte]] = Enumerator.fromFile(doc)
+      doc.delete()
+      folder.delete()
+      SimpleResult(
+        header = ResponseHeader(200, Map(
+          CONTENT_DISPOSITION -> ("attachment; filename=IntersectResults" + extension),
+          CONTENT_TYPE -> "application/x-download"
+        )),
+        body = docContent
+      )
+    } else {
+      BadRequest(toJson(ServerResponse("Invalid request")))
+    }
   }
 
   case class IntersectWebSocketRequest(action: String, data: JsValue)
@@ -124,6 +145,22 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
               val fileName = (dataRequest \ "fileName").asOpt[String].getOrElse("<invalidName>")
               val id = (dataRequest \ "id").asOpt[Int].getOrElse(-1)
               channel push toJson(HelperListSuccessMessage(fileName, id, intersectResults.getHelperList(fileName, id)))
+            case "export" =>
+              val fileName = (dataRequest \ "fileName").asOpt[String].getOrElse("<invalidName>")
+              val exportType = (dataRequest \ "exportType").asOpt[String].getOrElse("excel")
+              val converter = AnnotateDocumentConverter.get(exportType)
+              converter match {
+                case Some(c) =>
+                  val link = c.convert(fileName, intersectResults)
+                  link match {
+                    case Some(l) =>
+                      channel push toJson(ConverterSuccessMessage(fileName, exportType, l))
+                    case _ =>
+                      channel push toJson(ErrorMessage("Export failed"))
+                  }
+                case None =>
+                  channel push toJson(ErrorMessage("Export invalid type"))
+              }
             case _ =>
           }
         } catch {

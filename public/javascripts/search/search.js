@@ -81,6 +81,7 @@
                                 $('.row_popover').popover({
                                     container: 'body',
                                     html: true,
+                                    animation: false,
                                     template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
                                 });
                             }, 100);

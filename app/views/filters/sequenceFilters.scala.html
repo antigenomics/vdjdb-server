@@ -3,6 +3,7 @@
         <table class="table table-responsive">
             <thead>
                 <tr>
+                    <th width="1%">Hint</th>
                     <th>Field</th>
                     <th>Query</th>
                     <!--<th>Preset</th>-->
@@ -19,6 +20,9 @@
             </thead>
             <tbody>
                 <tr ng-repeat="filter in sequenceFilters" on-last-repeat="" ng-class="{'block_sequence_filter':filter.loading}">
+                    <td width="1%" id="filter_hint_seq_{{ ::filter.id }}" class="filter_hint" data-trigger="hover" data-toggle="popover" data-placement="top">
+                        <i class="fa fa-question pull-right" aria-hidden="true"></i>
+                    </td>
                     <td width="20%">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
                         <div class="select_drop_container">

@@ -1,6 +1,6 @@
 package utils.converter
 import java.io.FileOutputStream
-
+import server.results.SearchResults
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import server.database.GlobalDatabase
 import server.wrappers.database.RowWrapper
@@ -10,7 +10,8 @@ import utils.CommonUtils
   * Created by bvdmitri on 23.06.16.
   */
 class ExcelConverter extends DocumentConverter {
-  override def convert(rows: List[RowWrapper]): Option[String] = {
+  override def convert(searchResults: SearchResults): Option[String] = {
+    var rows = searchResults.results
     val wb = new HSSFWorkbook()
     val sheet = wb.createSheet("SearchResults")
 

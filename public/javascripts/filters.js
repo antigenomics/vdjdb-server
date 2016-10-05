@@ -4,20 +4,6 @@
 
     application.factory('filters', ['$websocket', 'table', 'notify', function ($websocket, table, notify) {
 
-        var filterHints = {
-            textFilterFieldHint: '',
-            textFilterValueHint: '',
-            textFilterTypeHint: '',
-            textFilterNegativeHint: '',
-
-            sequenceFilterFieldHint: '',
-            sequenceFilterQueryHint: '',
-            sequenceFilterSubstitutionsHint: '',
-            sequenceFilterInsertionsHint: '',
-            sequenceFilterDeletionsHint: '',
-            sequenceFilterTotalHint: ''
-        };
-
         var textFilters = [];
         var sequenceFilters = [];
         var textFilterID = 0;
@@ -41,11 +27,11 @@
         var pingWebSocket = null;
 
         var textFiltersTypes = Object.freeze([
-            { name: 'substring', title: 'Substring', allowNegative: true },
-            { name: 'exact', title: 'Exact', allowNegative: true },
-            { name: 'level', title: 'Level', allowNegative: false },
-            { name: 'frequency', title: 'Frequency', allowNegative: false },
-            { name: 'identification', title: 'Method', allowNegative: false }  
+            { name: 'substring', title: 'Substring', allowNegative: true, description: 'substring' },
+            { name: 'exact', title: 'Exact', allowNegative: true, description: 'exact' },
+            { name: 'level', title: 'Level', allowNegative: false, description: 'level' },
+            { name: 'frequency', title: 'Frequency', allowNegative: false, description: 'frequency' },
+            { name: 'identification', title: 'Method', allowNegative: false, description: 'identification' }  
         ]);
 
         connection.onOpen(function() {
@@ -215,12 +201,14 @@
                     activeColumn: false,
                     activeType: false
                 });
+                showTextFiltersPopover();
             }
         }
 
         function deleteTextFilter(filter) {
             var index = textFilters.indexOf(filter);
             if (index >= 0) textFilters.splice(index, 1);
+            showTextFiltersPopover();
             return index;
         }
 
@@ -261,11 +249,14 @@
                 //activePreset: false,
                 loading: false
             });
+            showSequenceFiltersPopover();
         }
 
         function deleteSequenceFilter(filter) {
             var index = sequenceFilters.indexOf(filter);
             if (index >= 0) sequenceFilters.splice(index, 1);
+            showSequenceFiltersPopover();
+            return index;
         }
 
         function findSequenceFilterById(id) {
@@ -351,8 +342,44 @@
             sequenceFiltersHide = true;
         }
 
-        function getHints() {
-            return filterHints;
+        function showTextFiltersPopover() {
+            //TODO: Overhead, no need to destroy each time    
+            setTimeout(function() {
+                angular.forEach(textFilters, function(filter) {
+                    var column = table.columnByName(filter.columnId);
+                    $("#filter_hint_" + filter.id).popover('destroy');
+                    $("#filter_hint_" + filter.id).popover({
+                        placement: 'top',
+                        container: 'body',
+                        html: 'true',
+                        trigger: 'hover',
+                        animation: false,
+                        content: '<div>' + (column == null ? 'Please select column name' : filter.columnTitle + ': ' + column.metadata.comment) + '</div>'// +
+                                 //'<hr>'+
+                                 //'<div>' + filter.filterType.title + ': ' + filter.filterType.description + '</div>'
+                    });
+                });
+            }, 100);
+        }
+
+        function showSequenceFiltersPopover() {
+            //TODO: Overhead, no need to destroy each time    
+            setTimeout(function() {
+                angular.forEach(sequenceFilters, function(filter) {
+                    var column = table.columnByName(filter.columnId);
+                    $("#filter_hint_seq_" + filter.id).popover('destroy');
+                    $("#filter_hint_seq_" + filter.id).popover({
+                        placement: 'top',
+                        container: 'body',
+                        html: 'true',
+                        trigger: 'hover',
+                        animation: false,
+                        content: '<div>' + (column == null ? 'Please select column name' : filter.columnTitle + ': ' + column.metadata.comment) + '</div>'// +
+                                 //'<hr>'+
+                                 //'<div>' + filter.filterType.title + ': ' + filter.filterType.description + '</div>'
+                    });
+                });
+            }, 100);   
         }
 
         return {
@@ -379,9 +406,11 @@
             getPrecisionByRecall: getPrecisionByRecall,
             hideTextFilters: hideTextFilters,
             hideSequenceFilters: hideSequenceFilters,
-            isTextFiltersHidden,
-            isSequenceFiltersHidden,
-            getHints: getHints   
+            isTextFiltersHidden: isTextFiltersHidden,
+            isTextFiltersHidden: isSequenceFiltersHidden,
+            showTextFiltersPopover: showTextFiltersPopover,
+            showSequenceFiltersPopover: showSequenceFiltersPopover
+
         }
     }]);
 
@@ -409,7 +438,6 @@
 
                 $scope.isTextFiltersHidden = filters.isTextFiltersHidden;
                 $scope.isSequenceFiltersHidden = filters.isSequenceFiltersHidden;
-                $scope.hints = filters.getHints();
 
                 //$scope.presets = filters.getPresets();
 
@@ -451,12 +479,14 @@
                             minLength: 0
                         });
                     }
+                    filters.showTextFiltersPopover();
                 };
 
                 $scope.clickSequenceColumn = function(filter, column) {
                     filter.columnId = column.name;
                     filter.columnTitle = column.title;
                     filter.activeColumn = false;
+                    filters.showSequenceFiltersPopover();
                 };
 
                 $scope.switchTypeVisible = function(filter) {

@@ -3,23 +3,19 @@
         <table class="table table-responsive">
             <thead>
                 <tr>
-                    <th>
-                        <div class="column_popover">Field</div>
-                    </th>
-                    <th>
-                        <div class="column_popover">Filter value / expression</div>
-                    </th>
-                    <th>
-                        <div class="column_popover">Filter type</div>
-                    </th>
-                    <th>
-                        <div class="column_popover">Negative</div>
-                    </th>
+                    <th width="1%">Hint</th>
+                    <th>Field</th>
+                    <th>Filter value / expression</th>
+                    <th>Filter type</th>
+                    <th>Negative</th>
                     <th width="5%"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr ng-repeat="filter in textFilters | orderBy:'index'" on-last-repeat>
+                    <td width="1%" id="filter_hint_{{ ::filter.id }}" class="filter_hint" data-trigger="hover" data-toggle="popover" data-placement="top">
+                        <i class="fa fa-question pull-right" aria-hidden="true"></i>
+                    </td>
                     <td width="30%">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
                         <div class="select_drop_container">
@@ -31,7 +27,7 @@
                     <td width="30%">
                         <input id="text_filter_{{ ::filter.id }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
                     </td>
-                    <td width="30%">
+                    <td width="29%">
                         <a class="select_trigger" ng-click="switchTypeVisible(filter)">{{ filter.filterType.title }}</a>
                         <div class="select_drop_container">
                             <ul ng-show="isTypeActive(filter)">

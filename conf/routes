@@ -15,9 +15,10 @@ GET     /search/connect                 controllers.SearchAPI.searchWebSocket
 GET     /search/doc/:exportType/:link   controllers.SearchAPI.downloadDocument(exportType, link)
 
 # Annotations api
-GET     /intersection                   controllers.IntersectionAPI.index
-GET     /intersection/connect           controllers.IntersectionAPI.intersectWebSocket
-GET     /intersection/upload            controllers.IntersectionAPI.uploadPage
+GET     /intersection                   		controllers.IntersectionAPI.index
+GET     /intersection/connect           		controllers.IntersectionAPI.intersectWebSocket
+GET     /intersection/upload            		controllers.IntersectionAPI.uploadPage
+GET     /intersection/doc/:exportType/:link   	controllers.IntersectionAPI.downloadDocument(exportType, link)
 
 # Filters api
 GET     /filters/connect                controllers.FiltersAPI.filtersWebSocket

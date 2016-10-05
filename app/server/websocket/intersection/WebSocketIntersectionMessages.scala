@@ -17,6 +17,8 @@ case class SortSuccessMessage(fileName: String, column: String, sortType: String
 
 case class HelperListSuccessMessage(fileName: String, id: Int, helpers: List[AlignmentHelperResultWrapper]) extends SuccessMessage("helper_list")
 
+case class ConverterSuccessMessage(fileName: String, exportType: String, link: String) extends SuccessMessage("export")
+
 case class WarningListMessage(warnings: List[String]) extends WarningMessage("search")
 
 case class IntersectionErrorMessage(fileName: String, message: String)
@@ -26,6 +28,7 @@ object WebSocketIntersectionMessages {
   implicit val getPageSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[GetPageSuccessMessage])
   implicit val sortSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[SortSuccessMessage])
   implicit val helperListSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[HelperListSuccessMessage])
+  implicit val converterSuccessMessageWrites = SuccessMessage.writesSubclass(Json.writes[ConverterSuccessMessage])
   implicit val warningListMessageWrites = WarningMessage.writesSubclass(Json.writes[WarningListMessage])
   implicit val intersectionErrorMessageWrites = new Writes[IntersectionErrorMessage] {
     override def writes(o: IntersectionErrorMessage): JsValue = Json.obj(

@@ -130,7 +130,7 @@ object SearchAPI extends Controller {
               val converter = DocumentConverter.get(exportType)
               converter match {
                 case Some(c) =>
-                  val link = c.convert(searchResults.results)
+                  val link = c.convert(searchResults)
                   link match {
                     case Some(l) =>
                       channel push toJson(ConverterSuccessMessage(exportType, l))

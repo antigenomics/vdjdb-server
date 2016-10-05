@@ -1,4 +1,9 @@
 <intersection class="col-md-12 col-lg-12">
+    <div class="box box-solid flat" ng-hide="isFileSelected()">
+        <div class="box-body">
+            <h4>Please select sample</h4>
+        </div>  
+    </div>
     <div ng-repeat="file in files()" >
         <div class="box box-solid flat" ng-show="isFile(file)">
             <div class="box-header with-border">
@@ -17,6 +22,12 @@
                         max-size="10" class="pagination no-margin pagination-sm pull-right" boundary-links="true"
                         rotate="true" ng-click="changePage(file)">
                     </pagination>
+                </div>
+            </div>
+            <div class="box-header with-border">
+                <h3 class="box-title"></h3>
+                <div class="box-tools">
+                    <button class="btn btn-flat btn-default" ng-click="exportDocument(file, 'excel')">Export to Excel</button>
                 </div>
             </div>
             <div id="table_wrapper" class="box-body" ng-class="{'table_loading':isResultsLoading(file)}">

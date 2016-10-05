@@ -169,6 +169,17 @@
                                 file.loading = false;
                             }
                             break;
+                        case "export":
+                            file = sidebar.getFileByFileName(response.fileName);
+                            var elem = document.createElement('a');
+                            var link = response.link;
+                            var exportType = response.exportType;
+                            elem.href = '/intersection/doc/' + exportType + '/' + link;
+                            console.log(elem.href);
+                            document.body.appendChild(elem);
+                            elem.click();
+                            file.loading = false;
+                            break;
                         default:
                             notify.error('Intersection', 'Unknown action')
                     }
@@ -230,6 +241,18 @@
                     data: {
                         filters: filters.getFiltersRequest(),
                         fileName: file.fileName
+                    }
+                })
+            })
+        }
+
+        function exportDocument(file, type) {
+            checkFile(file, function() {
+                connection.send({
+                    action: 'export',
+                    data: {
+                        fileName: file.fileName,
+                        exportType: type
                     }
                 })
             })
@@ -338,7 +361,8 @@
             intersect: intersect,
             changePage: changePage,
             sort: sort,
-            helperList: helperList
+            helperList: helperList,
+            exportDocument: exportDocument
         }
     }]);
 
@@ -348,11 +372,13 @@
             controller: ['$scope', 'sidebar', 'intersection', 'table', function($scope, sidebar, intersection, table) {
                 $scope.files = sidebar.files;
                 $scope.isFile = sidebar.isFile;
+                $scope.isFileSelected = sidebar.isFileSelected;
 
                 $scope.intersect = intersection.intersect;
                 $scope.changePage = intersection.changePage;
                 $scope.sort = intersection.sort;
                 $scope.helperList = intersection.helperList;
+                $scope.exportDocument = intersection.exportDocument;
 
                 $scope.isIntersected = isIntersected;
                 $scope.isResultsLoading = isResultsLoading;
