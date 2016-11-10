@@ -26,12 +26,16 @@
         var connection = $websocket('ws://' + location.host + '/filters/connect');
         var pingWebSocket = null;
 
+        var hints = {
+            "CDR3": "cdr3 <p>html allowed</p>"
+        }
+
         var textFiltersTypes = Object.freeze([
             { name: 'substring', title: 'Substring', allowNegative: true, description: 'substring' },
             { name: 'exact', title: 'Exact', allowNegative: true, description: 'exact' },
-            { name: 'level', title: 'Level', allowNegative: false, description: 'level' },
-            { name: 'frequency', title: 'Frequency', allowNegative: false, description: 'frequency' },
-            { name: 'identification', title: 'Method', allowNegative: false, description: 'identification' }  
+            { name: 'level', title: 'Greater or equal', allowNegative: true, description: 'level' },
+            { name: 'frequency', title: 'Greater or equal', allowNegative: true, description: 'frequency' },
+            { name: 'identification', title: 'Set', allowNegative: true, description: 'identification' }  
         ]);
 
         connection.onOpen(function() {
@@ -131,6 +135,9 @@
                             name: column.name,
                             title: meta.title,
                             types: (function() {
+                                if (meta.title === 'Gene') {
+                                    return [1];
+                                }
                                 if (meta.dataType === 'uint')
                                     return [2];
                                 return [0, 1]
@@ -354,7 +361,7 @@
                         html: 'true',
                         trigger: 'hover',
                         animation: false,
-                        content: '<div>' + (column == null ? 'Please select column name' : filter.columnTitle + ': ' + column.metadata.comment) + '</div>'// +
+                        content: '<div>' + (column == null ? 'Please select column name' :  hints[filter.columnTitle]) + '</div>'// +
                                  //'<hr>'+
                                  //'<div>' + filter.filterType.title + ': ' + filter.filterType.description + '</div>'
                     });
@@ -374,7 +381,7 @@
                         html: 'true',
                         trigger: 'hover',
                         animation: false,
-                        content: '<div>' + (column == null ? 'Please select column name' : filter.columnTitle + ': ' + column.metadata.comment) + '</div>'// +
+                        content: '<div>' + (column == null ? 'Please select column name' : hints[filter.columnTitle]) + '</div>'// +
                                  //'<hr>'+
                                  //'<div>' + filter.filterType.title + ': ' + filter.filterType.description + '</div>'
                     });
@@ -407,7 +414,7 @@
             hideTextFilters: hideTextFilters,
             hideSequenceFilters: hideSequenceFilters,
             isTextFiltersHidden: isTextFiltersHidden,
-            isTextFiltersHidden: isSequenceFiltersHidden,
+            isSequenceFiltersHidden: isSequenceFiltersHidden,
             showTextFiltersPopover: showTextFiltersPopover,
             showSequenceFiltersPopover: showSequenceFiltersPopover
 
@@ -462,6 +469,7 @@
                 };
 
                 $scope.clickTextColumn = function(filter, column) {
+                    filter.value = '';
                     filter.columnId = column.name;
                     filter.columnTitle = column.title;
                     filter.types = column.types;
@@ -483,6 +491,7 @@
                 };
 
                 $scope.clickSequenceColumn = function(filter, column) {
+                    filter.value = '';
                     filter.columnId = column.name;
                     filter.columnTitle = column.title;
                     filter.activeColumn = false;
@@ -490,7 +499,9 @@
                 };
 
                 $scope.switchTypeVisible = function(filter) {
-                    filter.activeType = !filter.activeType;
+                    if (filter.types.length !== 1) {
+                        filter.activeType = !filter.activeType;
+                    }
                 };
 
                 $scope.isTypeActive = function(filter) {

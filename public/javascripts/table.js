@@ -101,8 +101,9 @@
                     var text = "";
                     var color_i = 'black';
                     angular.forEach(Object.keys(comment).sort(), function (propertyName) {
-                        if (comment[propertyName] !== "")
-                            text += '<p>' + propertyName + ' : ' + comment[propertyName] + '</p>';
+                            if (comment[propertyName] !== "") {
+                                text += '<p>' + propertyName + ' : ' + comment[propertyName] + '</p>';
+                            }
                     });
                     if (columnName === 'cdr3fix') {
                         if (comment['fixNeeded'] === false && comment['good'] === true) {
