@@ -26,7 +26,7 @@
                     </td>
                     <td width="30%">
                         <input id="text_filter_{{ ::filter.id }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value" 
-                                ng-focus="filter.inputFocused = true" ng-blur="filter.inputFocused = false">
+                                ng-click="filter.inputFocused = !filter.inputFocused">
                         <div class="select_drop_container">
                             <ul ng-if="filter.inputFocused && filter.column.autocomplete">
                                 <li>Suggestions</li>
