@@ -37,10 +37,9 @@
             "MHC.class": "<p>MHCI or MHCII</p>",
             "Antigen.Epitope": "<p>Amino acid sequence</p><p>Example: <em>NLVPMVATV</em>.</p><p>Start typing to see full list</p>",
             "Antigen.Gene": "<p>Parent gene of an epitope</p><p>Example: <em>EBNA1</em>.</p><p>Start typing to see full list</p>",
-            "Antigen.Gene": "<p>Parent species of an epitope</p><p>Example: <em>CMV</em>.</p><p>Start typing to see full list</p>",
-            "Antigen.Gene": "<p>Parent species of an epitope</p><p>Example: <em>CMV</em>.</p><p>Start typing to see full list</p>",
+            "Antigen.Species": "<p>Parent species of an epitope</p><p>Example: <em>CMV</em>.</p><p>Start typing to see full list</p>",
             "Reference": "<p>Pubmed ID, URL or submitter details if unpublished.</p>",
-            "score": "<p>VDJdb confidence score for record identification method</p><p>Example: <em>1</em> will search for records with score greater or equal to 1.</p><p>Score range: 0-3 (low confidence - extremely high confidence), using 1 is recommended</p>"
+            "score": "<p>VDJdb confidence score for record identification method</p><p>Example: <em>1</em> will search for records with score greater or equal to 1.</p><p>Score range: 0-3 (low confidence - extremely high confidence), using 1 is recommended</p>",
             "Frequency": "<p>Share of TCR sequence across all sequences identified for a given epitope in a given assay.</p><p>Example: <em>0.1</em> will search for records represented by 10% or more cells.</p>",
             "Method": "<p>Search for specific assay details using keywords.</p><p>Example: <em>single-cell</em> will show assays using single-cell sequencing, <em>sort</em> will show all assays using multimer sorting, <em>tetramer</em> will show all assays using tetramers.</p><p>Multiple values can be supplied separated by comma</p>"
         }
