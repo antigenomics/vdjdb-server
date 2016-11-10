@@ -27,15 +27,30 @@
         var pingWebSocket = null;
 
         var hints = {
-            "CDR3": "<p>CDR3: ..</p><p>Example: ...</p>"
+            "Gene": "<p>TCR chain</p><p><em>TRA</em> or <em>TRB</em></p>",
+            "CDR3": "<p>Amino acid sequence</p><p>Example: <em>CASSLAPGATNEKLFF</em> (Full match), <em>CASSLAPGAT</em> or <em>LAPGAT</em> (Substring match)</p>",
+            "V": "<p>TCR Variable segment</p><p>Example: <em>TRBV7-2*02</em> (Full match), <em>TRBV7-2</em> or <em>TRBV7-2*02</em> (Substring match).</p><p>Start typing to see full list</p>",
+            "J": "<p>TCR Joining segment</p><p>Example: <em>TRBJ1-6*01</em> (Full match), <em>TRBJ1-6</em> or <em>TRBJ1</em> (Substring match).</p><p>Start typing to see full list</p>",
+            "Species": "<p>Host species of TCR sequence</p><p>Example: <em>HomoSapiens</em>, <em>MusMusculus</em> or <em>MacacaMulatta</em>.</p><p>Start typing to see full list</p>",
+            "MHC.A": "<p>Identifier of first MHC chain</p><p>Example: <em>HLA-A*02:01:48</em> (Full match), <em>HLA-A*02:01</em> or <em>HLA-A*02</em> (Substring match).</p><p>Start typing to see full list</p>",
+            "MHC.B": "<p>Identifier of second MHC chain</p><p>Example: <em>HLA-DRB5*01:01:01</em> (Full match), <em>HLA-DRB5*01</em> (Substring match); B2M for MHC class I.</p><p>Start typing to see full list</p>",
+            "MHC.class": "<p>MHCI or MHCII</p>",
+            "Antigen.Epitope": "<p>Amino acid sequence</p><p>Example: <em>NLVPMVATV</em>.</p><p>Start typing to see full list</p>",
+            "Antigen.Gene": "<p>Parent gene of an epitope</p><p>Example: <em>EBNA1</em>.</p><p>Start typing to see full list</p>",
+            "Antigen.Gene": "<p>Parent species of an epitope</p><p>Example: <em>CMV</em>.</p><p>Start typing to see full list</p>",
+            "Antigen.Gene": "<p>Parent species of an epitope</p><p>Example: <em>CMV</em>.</p><p>Start typing to see full list</p>",
+            "Reference": "<p>Pubmed ID, URL or submitter details if unpublished.</p>",
+            "score": "<p>VDJdb confidence score for record identification method</p><p>Example: <em>1</em> will search for records with score greater or equal to 1.</p><p>Score range: 0-3 (low confidence - extremely high confidence), using 1 is recommended</p>"
+            "Frequency": "<p>Share of TCR sequence across all sequences identified for a given epitope in a given assay.</p><p>Example: <em>0.1</em> will search for records represented by 10% or more cells.</p>",
+            "Method": "<p>Search for specific assay details using keywords.</p><p>Example: <em>single-cell</em> will show assays using single-cell sequencing, <em>sort</em> will show all assays using multimer sorting, <em>tetramer</em> will show all assays using tetramers.</p><p>Multiple values can be supplied separated by comma</p>"
         }
 
         var textFiltersTypes = Object.freeze([
-            { name: 'substring', title: 'Substring', allowNegative: true, description: 'substring' },
-            { name: 'exact', title: 'Exact', allowNegative: true, description: 'exact' },
-            { name: 'level', title: 'Greater or equal', allowNegative: true, description: 'level' },
-            { name: 'frequency', title: 'Greater or equal', allowNegative: true, description: 'frequency' },
-            { name: 'identification', title: 'Set', allowNegative: true, description: 'identification' }  
+            { name: 'substring', title: 'Substring match', allowNegative: true, description: 'substring' },
+            { name: 'exact', title: 'Full match', allowNegative: true, description: 'exact' },
+            { name: 'level', title: 'Greater or equals', allowNegative: true, description: 'level' },
+            { name: 'frequency', title: 'Greater or equals', allowNegative: true, description: 'frequency' },
+            { name: 'identification', title: 'Tags and keywords', allowNegative: true, description: 'identification' }  
         ]);
 
         connection.onOpen(function() {
