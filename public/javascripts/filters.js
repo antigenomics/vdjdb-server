@@ -27,7 +27,7 @@
         var pingWebSocket = null;
 
         var hints = {
-            "CDR3": "cdr3 <p>html allowed</p>"
+            "CDR3": "<p>CDR3: ..</p><p>Example: ...</p>"
         }
 
         var textFiltersTypes = Object.freeze([
