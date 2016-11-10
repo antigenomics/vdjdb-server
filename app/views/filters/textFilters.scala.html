@@ -25,7 +25,17 @@
                         </div>
                     </td>
                     <td width="30%">
-                        <input id="text_filter_{{ ::filter.id }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value">
+                        <input id="text_filter_{{ ::filter.id }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value" 
+                                ng-click="filter.inputFocused = !filter.inputFocused">
+                        <div class="select_drop_container">
+                            <ul ng-if="filter.inputFocused && filter.column.autocomplete">
+                                <li>Suggestions</li>
+                                <li ng-repeat="value in filter.column.values | filterBySubstring:filter.value" 
+                                    ng-click="filter.value = value; filter.inputFocused = false">
+                                    {{ ::value }}
+                                </li>
+                            </ul>
+                        </div>
                     </td>
                     <td width="29%">
                         <a class="select_trigger" ng-click="switchTypeVisible(filter)">{{ filter.filterType.title }}</a>

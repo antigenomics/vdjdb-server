@@ -221,7 +221,9 @@
                     negative: false,
                     types: [0, 1, 2],
                     activeColumn: false,
-                    activeType: false
+                    activeType: false,
+                    inputFocused: false,
+                    column: {}
                 });
                 showTextFiltersPopover();
             }
@@ -440,6 +442,20 @@
         }
     }]);
 
+    application.filter('filterBySubstring', function() {
+        return function(data, value) {
+            if (data instanceof Array) {
+                return data.filter(function(item) {
+                    return item.indexOf(value) !== -1;
+                })
+            } else {
+                return []
+            }
+        }
+
+    })
+
+
     application.directive('filters', function () {
         return {
             restrict: 'E',
@@ -495,17 +511,8 @@
                     filter.filterType = column.defaultFilterType;
                     filter.negative = false;
                     filter.activeColumn = false;
-                    if (column.autocomplete) {
-                        $("#text_filter_" + filter.id).autocomplete({
-                            source: column.values,
-                            minLength: 0
-                        });
-                    } else {
-                        $("#text_filter_" + filter.id).autocomplete({
-                            source: [],
-                            minLength: 0
-                        });
-                    }
+                    filter.column = column;
+                    filter.inputFocused = false;
                     filters.showTextFiltersPopover();
                 };
 
