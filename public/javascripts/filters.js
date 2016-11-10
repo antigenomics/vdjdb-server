@@ -124,24 +124,6 @@
         });
 
         function initialize(columns) {
-            textFiltersColumns.push({
-                name: 'method',
-                title: 'Frequency',
-                types: [3],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[3]
-            });
-            textFiltersColumns.push({
-                name: 'method',
-                title: 'Method',
-                types: [4],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[4]
-            })
             angular.forEach(columns, function(column) {
                 var meta = column.metadata;
                 if (meta.searchable === '1') {
@@ -189,6 +171,24 @@
                     }
                 }
             });
+            textFiltersColumns.push({
+                name: 'method',
+                title: 'Frequency',
+                types: [3],
+                allowNegative: false,
+                autocomplete: false,
+                values: [],
+                defaultFilterType: textFiltersTypes[3]
+            });
+            textFiltersColumns.push({
+                name: 'method',
+                title: 'Method',
+                types: [4],
+                allowNegative: false,
+                autocomplete: false,
+                values: [],
+                defaultFilterType: textFiltersTypes[4]
+            })
             columnsLoading = false;
         }
 
@@ -324,6 +324,10 @@
 
         function filtersInit(callback) {
             callback(textFilters, sequenceFilters)
+            setTimeout(function() {
+                showTextFiltersPopover();
+                showSequenceFiltersPopover();
+            }, 300);
         }
 
         function getRecallByPrecision(filter) {
