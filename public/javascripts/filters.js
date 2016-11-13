@@ -41,15 +41,17 @@
             "Reference": "<p>Pubmed ID, URL or submitter details if unpublished.</p>",
             "score": "<p>VDJdb confidence score for record identification method</p><p>Example: <em>1</em> will search for records with score greater or equal to 1.</p><p>Score range: 0-3 (low confidence - extremely high confidence), using 1 is recommended</p>",
             "Frequency": "<p>Share of TCR sequence across all sequences identified for a given epitope in a given assay.</p><p>Example: <em>0.1</em> will search for records represented by 10% or more cells.</p>",
-            "Method": "<p>Search for specific assay details using keywords.</p><p>Example: <em>single-cell</em> will show assays using single-cell sequencing, <em>sort</em> will show all assays using multimer sorting, <em>tetramer</em> will show all assays using tetramers.</p><p>Multiple values can be supplied separated by comma</p>"
+            "Method": "<p>Search for specific assay details using keywords.</p><p>Example: <em>single-cell</em> will show assays using single-cell sequencing, <em>sort</em> will show all assays using multimer sorting, <em>tetramer</em> will show all assays using tetramers.</p><p>Multiple values can be supplied separated by comma</p>",
+            "Meta": "<p>Various meta-information: cell subset, status, donor, etc</p><p>Examples:</p><p><em>cell: CD8+, tissue: PBMC</em></p><p><em>structure</em></p><p><em>structure: 1ao7</em></p>"
         }
 
         var textFiltersTypes = Object.freeze([
             { name: 'substring', title: 'Substring match', allowNegative: true, description: 'substring' },
             { name: 'exact', title: 'Full match', allowNegative: true, description: 'exact' },
             { name: 'level', title: 'Greater or equals', allowNegative: true, description: 'level' },
-            { name: 'frequency', title: 'Greater or equals', allowNegative: true, description: 'frequency' },
-            { name: 'identification', title: 'Tags and keywords', allowNegative: true, description: 'identification' }  
+            { name: 'frequency', title: 'Greater or equals', allowNegative: false, description: 'frequency' },
+            { name: 'identification', title: 'Tags and keywords', allowNegative: false, description: 'identification' },
+            { name: 'json', title: 'Tags and keywords', allowNegative: false, description: 'json' }  
         ]);
 
         connection.onOpen(function() {
@@ -169,6 +171,15 @@
                         })
                     }
                 }
+            });
+            textFiltersColumns.push({
+                name: 'meta',
+                title: 'Meta',
+                types: [5],
+                allowNegative: false,
+                autocomplete: false,
+                values: [],
+                defaultFilterType: textFiltersTypes[5]
             });
             textFiltersColumns.push({
                 name: 'method',

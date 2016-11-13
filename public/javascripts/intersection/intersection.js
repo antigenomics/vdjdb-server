@@ -348,7 +348,7 @@
             textFilters.push({
                 columnId: 'vdjdb.score',
                 columnTitle: 'score',
-                value: '2',
+                value: '1',
                 filterType: types[2],
                 negative: false,
                 types: [2],

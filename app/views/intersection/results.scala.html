@@ -2,9 +2,9 @@
     <div class="box box-solid flat" ng-hide="isFileSelected()">
         <div class="box-body">
             <h4>Please select sample</h4>
-        </div>  
+        </div>
     </div>
-    <div ng-repeat="file in files()" >
+    <div ng-repeat="file in files()">
         <div class="box box-solid flat" ng-show="isFile(file)">
             <div class="box-header with-border">
                 <h3 class="box-title">Search preset</h3>
@@ -17,10 +17,7 @@
             <div class="box-header with-border">
                 <h3 class="box-title">Results for {{ file.fileName }}</h3>
                 <div class="box-tools">
-                    <pagination total-items="file.totalItems"
-                        items-per-page="25" ng-model="file.page"
-                        max-size="10" class="pagination no-margin pagination-sm pull-right" boundary-links="true"
-                        rotate="true" ng-click="changePage(file)">
+                    <pagination total-items="file.totalItems" items-per-page="25" ng-model="file.page" max-size="10" class="pagination no-margin pagination-sm pull-right" boundary-links="true" rotate="true" ng-click="changePage(file)">
                     </pagination>
                 </div>
             </div>
@@ -32,7 +29,8 @@
             </div>
             <div id="table_wrapper" class="box-body" ng-class="{'table_loading':isResultsLoading(file)}">
                 <div class="block_background" ng-if="isResultsLoading(file)"></div>
-                <div class="block_processing" ng-if="isResultsLoading(file)"><h3>Loading...</h3></div>
+                <div class="block_processing" ng-if="isResultsLoading(file)">
+                    <h3>Loading...</h3></div>
                 <div class="text-center" ng-hide="isResultsExist(file) || isResultsLoading(file)">
                     <h4>No data found</h4>
                 </div>
@@ -64,31 +62,52 @@
                             <tr ng-repeat-end class="helper_tr">
                                 <td colspan="8" ng-if="row.showHelpers">
                                     <div ng-repeat="helper in row.helpers" on-last-repeat>
-                                    <div id="table_wrapper">
-                                        <div id="table_scroll_wrapper">
-                                            <table class="table compact">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Score</th>
-                                                        <th class="column_header" ng-repeat="column in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>{{ ::helper.score }}</td>
-                                                        <td ng-repeat="entry in ::helper.row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, helper.row.entries, false)"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="alignment_block" colspan="{{ getColumnsLength() + 1 }}">
-                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.seq1String }}</p>
-                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.markup }}</p>
-                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.seq2String }}</p>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                        <div id="table_wrapper">
+                                            <div id="table_scroll_wrapper">
+                                                <table class="table compact">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Score</th>
+                                                            <th class="column_header" ng-repeat="column in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>{{ ::helper.score }}</td>
+                                                            <td ng-repeat="entry in ::helper.row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, helper.row.entries, false)"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="alignment_block" colspan="{{ getColumnsLength() + 1 }}">
+                                                                <div class="col-md-12">
+                                                                    <div class="col-md-4 align_right">
+                                                                        <p>Sample query</p>
+                                                                    </div>
+                                                                    <div class="col-md-8 align_left">
+                                                                        <p class="alignment_text">{{ ::helper.alignmentHelper.seq1String }}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-12">
+                                                                    <div class="col-md-4 align_right">
+                                                                        <p></p>
+                                                                    </div>
+                                                                    <div class="col-md-8 align_left">
+                                                                        <p class="alignment_text">{{ ::helper.alignmentHelper.markup }}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-12">
+                                                                    <div class="col-md-4 align_right">
+                                                                        <p>Database query</p>
+                                                                    </div>
+                                                                    <div class="col-md-8 align_left">
+                                                                        <p class="alignment_text">{{ ::helper.alignmentHelper.seq2String }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
-                                    </div>
                                     </div>
                                 </td>
                             </tr>

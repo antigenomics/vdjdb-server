@@ -47,6 +47,7 @@ object Filters {
               case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
               case "frequency" => textFilters.add(new FieldLevelFilter(filter.columnId, "frequency", filter.value))
               case "identification" => textFilters.add(new FieldSubstringFilter(filter.columnId, "identification", filter.value))
+              case "json" => textFilters.add(new JSONSubstringFilter(filter.columnId, filter.value))
               case _ =>
                 warnings += ("Text filter ignored for " + filter.columnId + ": please select filter type")
             }
