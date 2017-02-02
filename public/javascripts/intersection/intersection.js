@@ -18,7 +18,19 @@
                     column: 'count',
                     type: 'desc'
                 };
-                file.presetName = 'dummy';
+                file.searchParamsActive = false;
+                file.maxMismatchesActive = false;
+                file.scoringNameActive = false;
+                file.parameters = {
+                    presetName: 'Exact',
+                    scoringName: 'Dummy',
+                    matchV: true, 
+                    matchJ: true,
+                    maxMismatches: 0, 
+                    maxInsertions: 0, 
+                    maxDeletions: 0, 
+                    maxMutations: 0
+                }
             }
         });
 
@@ -67,6 +79,50 @@
             return selectedFileUID === file.uid;
         }
 
+        function switchSearchParamsActive(file) {
+            file.searchParamsActive = !file.searchParamsActive;
+        }
+
+        function isSearchParamsActive(file) {
+            return file.searchParamsActive;
+        }
+
+        function searchParamsExact(file) {
+            file.parameters.presetName = 'Exact';
+            file.searchParamsActive = false;
+        }
+
+        function searchParamsHamming(file) {
+            file.parameters.presetName = 'Hamming';
+            file.searchParamsActive = false;
+        }
+
+        function isMaxMismatchesActive(file) {
+            return file.maxMismatchesActive;
+        }
+
+        function switchMaxMismatchesParamsActive(file) {
+            file.maxMismatchesActive = !file.maxMismatchesActive;
+        }
+
+        function maxMismatches(file, max) {
+            file.maxMismatchesActive = false;
+            file.parameters.maxMismatches = max;
+        } 
+
+        function switchScoringNameParamsActive(file) {
+            file.scoringNameActive = !file.scoringNameActive;
+        }
+
+        function isScoringNameActive(file) {
+            return file.scoringNameActive;
+        }
+
+        function setScoringName(file, name) {
+            file.parameters.scoringName = name;
+            file.scoringNameActive = false;
+        }
+
         return {
             files: files,
             isFilesExist: isFilesExist,
@@ -76,7 +132,17 @@
             getSelectedFile: getSelectedFile,
             getFileByFileName: getFileByFilename,
             isFileSelected: isFileSelected,
-            isFile: isFile
+            isFile: isFile,
+            switchSearchParamsActive: switchSearchParamsActive,
+            isSearchParamsActive: isSearchParamsActive,
+            searchParamsExact: searchParamsExact,
+            searchParamsHamming: searchParamsHamming,
+            isMaxMismatchesActive: isMaxMismatchesActive,
+            switchMaxMismatchesParamsActive: switchMaxMismatchesParamsActive,
+            maxMismatches: maxMismatches,
+            switchScoringNameParamsActive: switchScoringNameParamsActive,
+            isScoringNameActive: isScoringNameActive,
+            setScoringName: setScoringName
         }
     }]);
 
@@ -240,7 +306,8 @@
                     action: 'intersect',
                     data: {
                         filters: filters.getFiltersRequest(),
-                        fileName: file.fileName
+                        fileName: file.fileName,
+                        parameters: file.parameters
                     }
                 })
             })
@@ -373,6 +440,17 @@
                 $scope.files = sidebar.files;
                 $scope.isFile = sidebar.isFile;
                 $scope.isFileSelected = sidebar.isFileSelected;
+
+                $scope.switchSearchParamsActive = sidebar.switchSearchParamsActive;
+                $scope.isSearchParamsActive = sidebar.isSearchParamsActive;
+                $scope.searchParamsExact = sidebar.searchParamsExact;
+                $scope.searchParamsHamming = sidebar.searchParamsHamming;
+                $scope.isMaxMismatchesActive = sidebar.isMaxMismatchesActive;
+                $scope.switchMaxMismatchesParamsActive = sidebar.switchMaxMismatchesParamsActive;
+                $scope.maxMismatches = sidebar.maxMismatches;
+                $scope.switchScoringNameParamsActive = sidebar.switchScoringNameParamsActive;
+                $scope.isScoringNameActive = sidebar.isScoringNameActive;
+                $scope.setScoringName = sidebar.setScoringName;
 
                 $scope.intersect = intersection.intersect;
                 $scope.changePage = intersection.changePage;

@@ -17,8 +17,8 @@ class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, L
     this(IntersectResults.DEFAULT_PAGE_SIZE, mutable.HashMap())
   }
 
-  def reinit(fileName: String, sample: Sample, filters: Filters): Unit = {
-    results += (fileName -> GlobalDatabase.intersect(sample, filters))
+  def reinit(fileName: String, sample: Sample, filters: Filters, parameters: IntersectParametersRequest): Unit = {
+    results += (fileName -> GlobalDatabase.intersect(sample, filters, parameters))
   }
 
   def getPage(fileName: String, page: Int): List[IntersectWrapper] = {

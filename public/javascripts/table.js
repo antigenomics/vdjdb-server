@@ -105,17 +105,41 @@
                                 text += '<p>' + propertyName + ' : ' + comment[propertyName] + '</p>';
                             }
                     });
-                    if (columnName === 'cdr3fix') {
-                        if (comment['fixNeeded'] === false && comment['good'] === true) {
-                            color_i = '#1a9641';
-                        } else if (comment['fixNeeded'] === false && comment['good'] === false) {
-                            color_i = '#fdae61'
-                        } else if (comment['fixNeeded'] === true && comment['good'] === true) {
-                            color_i = '#a6d96a'
+
+                    //#1a9641 - green
+                    //#a6d96a - light green
+                    //#dde927 - yellow
+                    //#fdae61 - orange
+                    //#d7191c - red
+
+                    if (columnName == 'cdr3fix') {
+                        var FixNeeded = (comment['fixNeeded'] === true);
+                        var ChangeSegment = false
+                        var ChangeSequence = false
+                        var Failed = false
+
+                        angular.forEach(comment, function(field) {
+                            Failed = String(field).indexOf('Failed') !== -1 || Failed;
+                            ChangeSegment = String(field).indexOf('ChangeSegment') !== -1 || ChangeSegment;
+                            ChangeSequence = String(field).indexOf('ChangeSequence') !== -1 || ChangeSequence;
+                        })
+
+                        //console.log(Failed)
+
+                        if (Failed) {
+                            color_i = '#d7191c';
+                        } else if (ChangeSequence) {
+                            color_i = '#fdae61';
+                        } else if (ChangeSegment) {
+                            color_i = '#dde927';
+                        } else if (FixNeeded) {
+                            color_i = '#a6d96a';
                         } else {
-                            color_i = '#d7191c'
+                            color_i = '#1a9641';
                         }
+
                     }
+
                     value = '<div class="row_popover" style="width: 100%; height: 100%;" tab-index="0" ' +
                         'data-trigger="hover" data-toggle="popover" data-placement="left" ' +
                         'title="' + columnMeta.title + '" data-content="' + text + '" clip-copy="copyToClip(\'' + text + '\')"' + ' data-animation="false" '+

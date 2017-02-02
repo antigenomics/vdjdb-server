@@ -6,7 +6,9 @@ import java.util
 import com.antigenomics.vdjdb.Util.checkDatabase
 import com.antigenomics.vdjdb.VdjdbInstance
 import com.antigenomics.vdjdb.db.{Database, SearchResult}
+import com.antigenomics.vdjdb.scoring.AlignmentScoring
 import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
+import com.antigenomics.vdjdb.scoring.AlignmentScoringProvider
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjtools.sample.Sample
@@ -60,12 +62,22 @@ object GlobalDatabase extends SynchronizedAccess {
       results.headOption
     }
 
-  def intersect(sample: Sample, filters: Filters) : List[IntersectWrapper] =
+  def intersect(sample: Sample, filters: Filters, parameters: IntersectParametersRequest) : List[IntersectWrapper] =
     synchronizeRead { implicit lock =>
       val buffer = new ListBuffer[IntersectWrapper]()
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
-        val preset: SequenceSearcherPreset = new SequenceSearcherPreset()
+        var preset: SequenceSearcherPreset = new SequenceSearcherPreset()
+
+        if (parameters.presetName == "Hamming") {
+          var scoring: AlignmentScoring = DummyAlignmentScoring.INSTANCE;
+          if (parameters.scoringName == "v1") {
+            scoring = AlignmentScoringProvider.loadScoring("v1")
+            val maxMismatches = parameters.maxMismatches
+            preset = new SequenceSearcherPreset(new TreeSearchParameters(maxMismatches, 0, 0, maxMismatches), scoring)
+          }
+        }
+
         val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(false, false, preset)
         var id = 0
         val intersectedResults = instance.search(sample)
