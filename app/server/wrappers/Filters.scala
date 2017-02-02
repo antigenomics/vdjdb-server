@@ -2,7 +2,7 @@ package server.wrappers
 
 import java.util
 
-import com.antigenomics.vdjdb.scoring.{ScoringMetadataTable, SequenceSearcherPreset}
+import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
 import com.antigenomics.vdjdb.sequence.SequenceFilter
 import com.antigenomics.vdjdb.text._
 import com.milaboratory.core.tree.TreeSearchParameters
@@ -65,8 +65,7 @@ object Filters {
               warnings += ("Sequence filter ignored for " + filter.columnId + ": empty query field")
             case _ =>
               if (GlobalDatabase.isParametersValid(filter.mutations, filter.insertions, filter.deletions, filter.mismatches)) {
-                val preset: SequenceSearcherPreset = new SequenceSearcherPreset(DummyAlignmentScoring.INSTANCE, 
-                  new TreeSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches))
+                val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches), DummyAlignmentScoring.INSTANCE)
                 sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query.toUpperCase(), preset))
               } else {
                 warnings += ("Sequence filter ignored for " + filter.columnId + ": bad parameters")

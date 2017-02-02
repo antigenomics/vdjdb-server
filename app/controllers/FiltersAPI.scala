@@ -1,6 +1,6 @@
 package controllers
 
-import com.antigenomics.vdjdb.scoring.{ScoringMetadata, ScoringMetadataTable}
+// import com.antigenomics.vdjdb.scoring.{ScoringMetadata, ScoringMetadataTable}
 import play.api.libs.iteratee.{Concurrent, Iteratee}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Controller, WebSocket}
@@ -34,16 +34,16 @@ object FiltersAPI extends Controller {
             channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns))
           case "presets" =>
             channel push toJson(PresetsSuccessMessage(GlobalDatabase.getPresets))
-          case "compute_precision" =>
-            val id = (data \ "id").asOpt[Int].getOrElse(-1)
-            val value = (data \ "value").asOpt[Float].getOrElse(-1.0f)
-            val metadata = new ScoringMetadataTable().getByRecall(value)
-            channel push toJson(ComputePrecisionSuccessMessage(id, metadata.getPrecision))
-          case "compute_recall" =>
-            val id = (data \ "id").asOpt[Int].getOrElse(-1)
-            val value = (data \ "value").asOpt[Float].getOrElse(-1.0f)
-            val metadata = new ScoringMetadataTable().getByPrecision(value)
-            channel push toJson(ComputeRecallSuccessMessage(id, metadata.getRecall))
+          // case "compute_precision" =>
+          //   val id = (data \ "id").asOpt[Int].getOrElse(-1)
+          //   val value = (data \ "value").asOpt[Float].getOrElse(-1.0f)
+          //   val metadata = new ScoringMetadataTable().getByRecall(value)
+          //   channel push toJson(ComputePrecisionSuccessMessage(id, metadata.getPrecision))
+          // case "compute_recall" =>
+          //   val id = (data \ "id").asOpt[Int].getOrElse(-1)
+          //   val value = (data \ "value").asOpt[Float].getOrElse(-1.0f)
+          //   val metadata = new ScoringMetadataTable().getByPrecision(value)
+          //   channel push toJson(ComputeRecallSuccessMessage(id, metadata.getRecall))
           case _ =>
 
         } catch {

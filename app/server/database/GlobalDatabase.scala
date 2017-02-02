@@ -65,8 +65,7 @@ object GlobalDatabase extends SynchronizedAccess {
       val buffer = new ListBuffer[IntersectWrapper]()
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
-        val preset: SequenceSearcherPreset = new SequenceSearcherPreset(DummyAlignmentScoring.INSTANCE, 
-                  TreeSearchParameters.ONE_MISMATCH)
+        val preset: SequenceSearcherPreset = new SequenceSearcherPreset()
         val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(false, false, preset)
         var id = 0
         val intersectedResults = instance.search(sample)
@@ -115,11 +114,13 @@ object GlobalDatabase extends SynchronizedAccess {
     }
 
   def getPresets: List[PresetWrapper] = {
+    // var buffer = ListBuffer[PresetWrapper]()
+    // for (presetName <- SequenceSearcherPreset.getALLOWED_PRESETS) {
+    //   val preset = SequenceSearcherPreset.byName(presetName)
+    //   buffer += PresetWrapper.wrap(presetName, preset)
+    // }
+    // buffer.toList
     var buffer = ListBuffer[PresetWrapper]()
-    for (presetName <- SequenceSearcherPreset.getALLOWED_PRESETS) {
-      val preset = SequenceSearcherPreset.byName(presetName)
-      buffer += PresetWrapper.wrap(presetName, preset)
-    }
     buffer.toList
   }
 

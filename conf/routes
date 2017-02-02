@@ -10,7 +10,7 @@ GET     /about                          controllers.Application.about
 GET     /search                         controllers.SearchAPI.index
 POST    /search 						controllers.SearchAPI.search
 GET     /search/columns                 controllers.SearchAPI.columns
-GET     /search/presets                 controllers.SearchAPI.presets
+#GET     /search/presets                 controllers.SearchAPI.presets
 GET     /search/connect                 controllers.SearchAPI.searchWebSocket
 GET     /search/doc/:exportType/:link   controllers.SearchAPI.downloadDocument(exportType, link)
 

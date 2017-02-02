@@ -32,9 +32,9 @@ object SearchAPI extends Controller {
     Ok(toJson(GlobalDatabase.getColumns))
   }
 
-  def presets = LimitedAction { implicit request =>
-    Ok(toJson(SequenceSearcherPreset.getALLOWED_PRESETS.toList))
-  }
+  // def presets = LimitedAction { implicit request =>
+  //   Ok(toJson(SequenceSearcherPreset.getALLOWED_PRESETS.toList))
+  // }
 
   def downloadDocument(exportType: String, link: String) = LimitedAction { implicit request =>
     val folder = new java.io.File("/tmp/" + link + "/")
