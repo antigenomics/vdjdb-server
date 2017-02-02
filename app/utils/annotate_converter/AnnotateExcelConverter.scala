@@ -12,7 +12,8 @@ import utils.CommonUtils
 class AnnotateExcelConverter extends AnnotateDocumentConverter {
   override def convert(fileName: String, intersectResults: IntersectResults): Option[String] = {
     intersectResults.results.get(fileName) match {
-      case Some(list) =>
+      case Some(dbResults) =>
+        val list = dbResults.list
         if (list.isEmpty) {
           None
         } else {

@@ -4,12 +4,13 @@ import play.api.libs.json.{JsValue, Json, Writes}
 import server.websocket.{ErrorMessage, SuccessMessage, WarningMessage}
 import server.wrappers.alignment.AlignmentHelperResultWrapper
 import server.wrappers.database.{ColumnWrapper, IntersectWrapper, PresetWrapper}
+import server.wrappers.summary.SummaryStatisticWrapper
 
 /**
   * Created by bvdmitri on 26.06.16.
   */
 
-case class IntersectSuccessMessage(fileName: String, totalItems: Int, rows: List[IntersectWrapper]) extends SuccessMessage("intersect")
+case class IntersectSuccessMessage(fileName: String, totalItems: Int, rows: List[IntersectWrapper], summary: SummaryStatisticWrapper) extends SuccessMessage("intersect")
 
 case class GetPageSuccessMessage(fileName: String, page: Int, rows: List[IntersectWrapper]) extends SuccessMessage("get_page")
 

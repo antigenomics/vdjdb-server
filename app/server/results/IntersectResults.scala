@@ -6,13 +6,15 @@ import server.database.GlobalDatabase
 import server.wrappers.Filters
 import server.wrappers.alignment.AlignmentHelperResultWrapper
 import server.wrappers.database.{IntersectWrapper, RowWrapper}
+import server.database.GlobalDatabase.IntersectDatabaseResult
+import server.wrappers.summary.SummaryStatisticWrapper
 
 import scala.collection.mutable
 
 /**
   * Created by bvdmitri on 26.06.16.
   */
-class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, List[IntersectWrapper]]) {
+class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, IntersectDatabaseResult]) {
   def this() {
     this(IntersectResults.DEFAULT_PAGE_SIZE, mutable.HashMap())
   }
@@ -23,7 +25,8 @@ class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, L
 
   def getPage(fileName: String, page: Int): List[IntersectWrapper] = {
     results.get(fileName) match {
-      case Some(list) =>
+      case Some(dbResults) =>
+        val list = dbResults.list
         if (page >= 0) {
           var fromIndex: Int = pageSize * page
           fromIndex = if (fromIndex > list.size) list.size else fromIndex
@@ -38,16 +41,26 @@ class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, L
     }
   }
 
+  def getSummaryStatistic(fileName: String) : SummaryStatisticWrapper = {
+    results.get(fileName) match {
+      case Some(dbResults) => 
+        dbResults.summary
+      case None =>
+        null
+    }
+  }
+
   def getTotalItems(fileName: String): Int = {
     results.get(fileName) match {
-      case Some(list) => list.size
+      case Some(dbResults) => dbResults.list.size
       case None => 0
     }
   }
 
   def getHelperList(fileName: String, id: Int) : List[AlignmentHelperResultWrapper] = {
     results.get(fileName) match {
-      case Some(list) =>
+      case Some(dbResults) =>
+        val list = dbResults.list
         val filteredList = list.filter((iw : IntersectWrapper) => iw.id == id)
         if (filteredList.nonEmpty) filteredList.head.alignmentHelperList else List()
       case None =>
@@ -57,7 +70,8 @@ class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, L
 
   def sort(fileName: String, column: String, sortType: String): Unit = {
     if (results.get(fileName).isDefined) {
-      results += (fileName -> results.get(fileName).get.sortWith((e1, e2) => {
+      val dbResults = results.get(fileName).get
+      results += (fileName -> IntersectDatabaseResult(dbResults.list.sortWith((e1, e2) => {
         var m : Boolean = false
         column match {
           case "cdr3aa" =>
@@ -81,7 +95,7 @@ class IntersectResults(var pageSize: Int, var results: mutable.HashMap[String, L
           case "asc" => !m
           case _ => m
         }
-      }))
+      }), dbResults.summary))
     }
   }
 

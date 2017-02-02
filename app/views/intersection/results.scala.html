@@ -1,172 +1,197 @@
-<intersection class="col-md-12 col-lg-12">
-    <div class="box box-solid flat" ng-hide="isFileSelected()">
-        <div class="box-body">
-            <h4>Please select sample</h4>
+<intersection>
+    <div class="col-md-12">
+        <div class="box box-solid flat" ng-hide="isFileSelected()">
+            <div class="box-body">
+                <h4>Please select sample</h4>
+            </div>
         </div>
     </div>
     <div ng-repeat="file in files()">
-        <div class="box box-solid flat" ng-show="isFile(file)">
-            <div class="box-header with-border">
-                <h3 class="box-title">Search preset</h3>
-            </div>
-            <div class="box-body">
-                <div class="col-md-2">
-                    <a class="select_trigger" ng-click="switchSearchParamsActive(file)">{{ file.parameters.presetName }}</a>
-                    <div class="select_drop_container">
-                        <ul ng-show="isSearchParamsActive(file)">
-                            <li ng-click="searchParamsExact(file)"><a>Exact</a></li>
-                            <li ng-click="searchParamsHamming(file)"><a>Hamming</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
-                    <a class="select_trigger" ng-click="switchMaxMismatchesParamsActive(file)">Max mismatches: {{ file.parameters.maxMismatches }}</a>
-                    <div class="select_drop_container">
-                        <ul ng-show="isMaxMismatchesActive(file)">
-                            <li ng-click="maxMismatches(file, 1)"><a>1</a></li>
-                            <li ng-click="maxMismatches(file, 2)"><a>2</a></li>
-                            <li ng-click="maxMismatches(file, 3)"><a>3</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
-                    <a class="select_trigger" ng-click="switchScoringNameParamsActive(file)">Scoring: {{ file.parameters.scoringName }}</a>
-                    <div class="select_drop_container">
-                        <ul ng-show="isScoringNameActive(file)">
-                            <li ng-click="setScoringName(file, 'Dummy')"><a>Dummy</a></li>
-                            <li ng-click="setScoringName(file, 'v1')"><a>v1</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="box-body">
-                <div class="col-md-2">
-                    <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect(file)">Annotate</button>
-                </div>
-            </div>
-        </div>
-        <div class="box" ng-if="isFile(file) && isIntersected(file)">
-            <div class="box-header with-border">
-                <h3 class="box-title">Results for {{ file.fileName }}</h3>
-                <div class="box-tools">
-                    <pagination total-items="file.totalItems" items-per-page="25" ng-model="file.page" max-size="10" class="pagination no-margin pagination-sm pull-right" boundary-links="true" rotate="true" ng-click="changePage(file)">
-                    </pagination>
-                </div>
-            </div>
-            <div class="box-header with-border">
-                <h3 class="box-title"></h3>
-                <div class="box-tools">
-                    <button class="btn btn-flat btn-default" ng-click="exportDocument(file, 'excel')">Export to Excel</button>
-                </div>
-            </div>
-            <div id="table_wrapper" class="box-body" ng-class="{'table_loading':isResultsLoading(file)}">
-                <div class="block_background" ng-if="isResultsLoading(file)"></div>
-                <div class="block_processing" ng-if="isResultsLoading(file)">
-                    <h3>Loading...</h3></div>
-                <div class="text-center" ng-hide="isResultsExist(file) || isResultsLoading(file)">
-                    <h4>No data found</h4>
-                </div>
-                <div id="table_scroll_wrapper" ng-show="isResultsExist(file)">
-                    <table class="table compact">
-                        <thead>
-                            <tr>
-                                <th>Info</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'matches'), 'column_desc_sorted':isColumnDescSorted(file, 'matches')}" ng-click="sort(file, 'matches')"># Matches</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'freq'), 'column_desc_sorted':isColumnDescSorted(file, 'freq')}" ng-click="sort(file, 'freq')">Freq</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'count'), 'column_desc_sorted':isColumnDescSorted(file, 'count')}" ng-click="sort(file, 'count')">Count</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3aa'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3aa')}" ng-click="sort(file, 'cdr3aa')">CDR3aa</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'v'), 'column_desc_sorted':isColumnDescSorted(file, 'v')}" ng-click="sort(file, 'v')">V</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'j'), 'column_desc_sorted':isColumnDescSorted(file, 'j')}" ng-click="sort(file, 'j')">J</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3nt'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3nt')}" ng-click="sort(file, 'cdr3nt')">CDR3nt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat-start="row in file.rows">
-                                <td class="text-center cursor_pointer" ng-click="helperList(file, row)"><i class="fa fa-arrow-down" aria-hidden="true"></i></td>
-                                <td>{{ ::row.matches }}</td>
-                                <td>{{ ::((row.clonotype.freq * 100).toPrecision(2) + '%') }}</td>
-                                <td>{{ ::row.clonotype.count }}</td>
-                                <td>{{ ::row.clonotype.cdr.cdr3aa }}</td>
-                                <td>{{ ::row.clonotype.v }}</td>
-                                <td>{{ ::row.clonotype.j }}</td>
-                                <td>{{ ::row.clonotype.cdr.cdr3nt }}</td>
-                            </tr>
-                            <tr ng-repeat-end class="helper_tr">
-                                <td colspan="8" ng-if="row.showHelpers">
-                                    <div ng-repeat="helper in row.helpers" on-last-repeat>
-                                        <div id="table_wrapper">
-                                            <div id="table_scroll_wrapper">
-                                                <table class="table compact">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Score</th>
-                                                            <th class="column_header" ng-repeat="column in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)"></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>{{ ::(+(helper.score).toFixed(2)) }}</td>
-                                                            <td ng-repeat="entry in ::helper.row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, helper.row.entries, false)"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="alignment_block" colspan="{{ getColumnsLength() + 1 }}">
-                                                                <div class="col-md-12">
-                                                                    <div class="col-md-4 align_right">
-                                                                        <p>Sample query</p>
-                                                                    </div>
-                                                                    <div class="col-md-8 align_left">
-                                                                        <p class="alignment_text">{{ ::helper.alignmentHelper.seq1String }}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-12">
-                                                                    <div class="col-md-4 align_right">
-                                                                        <p></p>
-                                                                    </div>
-                                                                    <div class="col-md-8 align_left">
-                                                                        <p class="alignment_text">{{ ::helper.alignmentHelper.markup }}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-12">
-                                                                    <div class="col-md-4 align_right">
-                                                                        <p>Database query</p>
-                                                                    </div>
-                                                                    <div class="col-md-8 align_left">
-                                                                        <p class="alignment_text">{{ ::helper.alignmentHelper.seq2String }}</p>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th>Info</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'matches'), 'column_desc_sorted':isColumnDescSorted(file, 'matches')}" ng-click="sort(file, 'matches')"># Matches</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'freq'), 'column_desc_sorted':isColumnDescSorted(file, 'freq')}" ng-click="sort(file, 'freq')">Freq</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'count'), 'column_desc_sorted':isColumnDescSorted(file, 'count')}" ng-click="sort(file, 'count')">Count</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3aa'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3aa')}" ng-click="sort(file, 'cdr3aa')">CDR3aa</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'v'), 'column_desc_sorted':isColumnDescSorted(file, 'v')}" ng-click="sort(file, 'v')">V</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'j'), 'column_desc_sorted':isColumnDescSorted(file, 'j')}" ng-click="sort(file, 'j')">J</th>
-                                <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3nt'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3nt')}" ng-click="sort(file, 'cdr3nt')">CDR3nt</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6" ng-if="false">
-            <div class="box" ng-if="isFile(file) && isIntersected(file)">
+        <div class="col-md-12">
+            <div class="box box-solid flat" ng-show="isFile(file)">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Bla bla bla</h3>
+                    <h3 class="box-title">Search preset</h3>
                 </div>
                 <div class="box-body">
-                    asd
+                    <div class="col-md-2">
+                        <a class="select_trigger" ng-click="switchSearchParamsActive(file)">{{ file.parameters.presetName }}</a>
+                        <div class="select_drop_container">
+                            <ul ng-show="isSearchParamsActive(file)">
+                                <li ng-click="searchParamsExact(file)"><a>Exact</a></li>
+                                <li ng-click="searchParamsHamming(file)"><a>Hamming</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
+                        <a class="select_trigger" ng-click="switchMaxMismatchesParamsActive(file)">Max mismatches: {{ file.parameters.maxMismatches }}</a>
+                        <div class="select_drop_container">
+                            <ul ng-show="isMaxMismatchesActive(file)">
+                                <li ng-click="maxMismatches(file, 1)"><a>1</a></li>
+                                <li ng-click="maxMismatches(file, 2)"><a>2</a></li>
+                                <li ng-click="maxMismatches(file, 3)"><a>3</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
+                        <a class="select_trigger" ng-click="switchScoringNameParamsActive(file)">Scoring: {{ file.parameters.scoringName }}</a>
+                        <div class="select_drop_container">
+                            <ul ng-show="isScoringNameActive(file)">
+                                <li ng-click="setScoringName(file, 'Dummy')"><a>Dummy</a></li>
+                                <li ng-click="setScoringName(file, 'v1')"><a>v1</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="col-md-2">
+                        <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect(file)">Annotate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="box" ng-if="isFile(file) && isIntersected(file)">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Results for {{ file.fileName }}</h3>
+                    <div class="box-tools">
+                        <pagination total-items="file.totalItems" items-per-page="25" ng-model="file.page" max-size="10" class="pagination no-margin pagination-sm pull-right" boundary-links="true" rotate="true" ng-click="changePage(file)">
+                        </pagination>
+                    </div>
+                </div>
+                <div class="box-header with-border">
+                    <h3 class="box-title"></h3>
+                    <div class="box-tools">
+                        <button class="btn btn-flat btn-default" ng-click="exportDocument(file, 'excel')">Export to Excel</button>
+                    </div>
+                </div>
+                <div id="table_wrapper" class="box-body" ng-class="{'table_loading':isResultsLoading(file)}">
+                    <div class="block_background" ng-if="isResultsLoading(file)"></div>
+                    <div class="block_processing" ng-if="isResultsLoading(file)">
+                        <h3>Loading...</h3></div>
+                    <div class="text-center" ng-hide="isResultsExist(file) || isResultsLoading(file)">
+                        <h4>No data found</h4>
+                    </div>
+                    <div id="table_scroll_wrapper" ng-show="isResultsExist(file)">
+                        <table class="table compact">
+                            <thead>
+                                <tr>
+                                    <th>Info</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'matches'), 'column_desc_sorted':isColumnDescSorted(file, 'matches')}" ng-click="sort(file, 'matches')"># Matches</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'freq'), 'column_desc_sorted':isColumnDescSorted(file, 'freq')}" ng-click="sort(file, 'freq')">Freq</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'count'), 'column_desc_sorted':isColumnDescSorted(file, 'count')}" ng-click="sort(file, 'count')">Count</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3aa'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3aa')}" ng-click="sort(file, 'cdr3aa')">CDR3aa</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'v'), 'column_desc_sorted':isColumnDescSorted(file, 'v')}" ng-click="sort(file, 'v')">V</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'j'), 'column_desc_sorted':isColumnDescSorted(file, 'j')}" ng-click="sort(file, 'j')">J</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3nt'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3nt')}" ng-click="sort(file, 'cdr3nt')">CDR3nt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat-start="row in file.rows">
+                                    <td class="text-center cursor_pointer" ng-click="helperList(file, row)"><i class="fa fa-arrow-down" aria-hidden="true"></i></td>
+                                    <td>{{ ::row.matches }}</td>
+                                    <td>{{ ::((row.clonotype.freq * 100).toPrecision(2) + '%') }}</td>
+                                    <td>{{ ::row.clonotype.count }}</td>
+                                    <td>{{ ::row.clonotype.cdr.cdr3aa }}</td>
+                                    <td>{{ ::row.clonotype.v }}</td>
+                                    <td>{{ ::row.clonotype.j }}</td>
+                                    <td>{{ ::row.clonotype.cdr.cdr3nt }}</td>
+                                </tr>
+                                <tr ng-repeat-end class="helper_tr">
+                                    <td colspan="8" ng-if="row.showHelpers">
+                                        <div ng-repeat="helper in row.helpers" on-last-repeat>
+                                            <div id="table_wrapper">
+                                                <div id="table_scroll_wrapper">
+                                                    <table class="table compact">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Score</th>
+                                                                <th class="column_header" ng-repeat="column in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{{ ::(+(helper.score).toFixed(2)) }}</td>
+                                                                <td ng-repeat="entry in ::helper.row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, helper.row.entries, false)"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="alignment_block" colspan="{{ getColumnsLength() + 1 }}">
+                                                                    <div class="col-md-12">
+                                                                        <div class="col-md-4 align_right">
+                                                                            <p>Sample query</p>
+                                                                        </div>
+                                                                        <div class="col-md-8 align_left">
+                                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.seq1String }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-12">
+                                                                        <div class="col-md-4 align_right">
+                                                                            <p></p>
+                                                                        </div>
+                                                                        <div class="col-md-8 align_left">
+                                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.markup }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-12">
+                                                                        <div class="col-md-4 align_right">
+                                                                            <p>Database query</p>
+                                                                        </div>
+                                                                        <div class="col-md-8 align_left">
+                                                                            <p class="alignment_text">{{ ::helper.alignmentHelper.seq2String }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Info</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'matches'), 'column_desc_sorted':isColumnDescSorted(file, 'matches')}" ng-click="sort(file, 'matches')"># Matches</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'freq'), 'column_desc_sorted':isColumnDescSorted(file, 'freq')}" ng-click="sort(file, 'freq')">Freq</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'count'), 'column_desc_sorted':isColumnDescSorted(file, 'count')}" ng-click="sort(file, 'count')">Count</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3aa'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3aa')}" ng-click="sort(file, 'cdr3aa')">CDR3aa</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'v'), 'column_desc_sorted':isColumnDescSorted(file, 'v')}" ng-click="sort(file, 'v')">V</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'j'), 'column_desc_sorted':isColumnDescSorted(file, 'j')}" ng-click="sort(file, 'j')">J</th>
+                                    <th ng-class="{'column_asc_sorted':isColumnAscSorted(file, 'cdr3nt'), 'column_desc_sorted':isColumnDescSorted(file, 'cdr3nt')}" ng-click="sort(file, 'cdr3nt')">CDR3nt</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="box" ng-if="isFile(file) && isIntersected(file)">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Search summary</h3>
+                </div>
+                <div class="box-body">
+                    <div class="col-md-10">
+                        <canvas id="bar" class="chart chart-bar" chart-data="file.summary_chart.data" chart-labels="file.summary_chart.labels" chart-series="file.summary_chart.series" height="100px" width="100%"></canvas>
+                    </div>
+                    <div class="col-md-2">
+                        <a class="select_trigger" ng-click="switchSummarySeriesNameTrigger(file)">{{ file.summary_chart.seriesName }}</a>
+                        <div class="select_drop_container">
+                            <ul ng-show="isSummarySeriesNameTriggerActive(file)">
+                                <li ng-click="fileSummaryFrequency(file)"><a>Frequency</a></li>
+                                <li ng-click="fileSummaryUniques(file)"><a>Unique</a></li>
+                                <li ng-click="fileSummaryReads(file)"><a>Reads</a></li>
+                            </ul>
+                        </div>
+                        <br>
+                        <a class="select_trigger" ng-click="switchSummaryDataNameTrigger(file)">{{ file.summary_chart.dataName }}</a>
+                        <div class="select_drop_container">
+                            <ul ng-show="isSummaryDataNameTriggerActive(file)">
+                                <li ng-repeat="(datasetName, set) in file.summary" ng-click="fileSummaryData(file, datasetName)"><a>{{ datasetName }}</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

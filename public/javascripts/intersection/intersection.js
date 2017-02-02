@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'chart.js']);
 
     application.factory('sidebar', ['user', function(userInfo) {
 
@@ -30,7 +30,9 @@
                     maxInsertions: 0, 
                     maxDeletions: 0, 
                     maxMutations: 0
-                }
+                };
+                file.summary = {};
+                file.summary_chart = {};
             }
         });
 
@@ -177,6 +179,7 @@
 
         connection.onMessage(function(message) {
             var response = JSON.parse(message.data);
+            console.log(response)
             var file = {};
             loading = false;
             switch (response.status) {
@@ -192,7 +195,8 @@
                                 file.page = 1;
                                 angular.extend(file.rows, response.rows);
                                 file.loading = false;
-
+                                file.summary = response.summary.data;
+                                fileInitSummary(file)
                             } else {
                                 notify.notice('Intersection', 'You have no file named ' + response.fileName)
                             }
@@ -424,12 +428,76 @@
             })
         }
 
+        function fileInitSummary(file) {
+            file.summary_chart = {}
+            file.summary_chart.seriesNameTrigger = false;
+            file.summary_chart.dataNameTrigger = false;
+            file.summary_chart.dataName = 'mhc.a';
+            file.summary_chart.series = ['Series'];
+            fileSummaryFrequency(file)
+        }
+
+        function fileSummaryReinit(file) {
+            if (file.summary_chart.seriesName === 'Frequency') fileSummaryFrequency(file);
+            if (file.summary_chart.seriesName === 'Unique') fileSummaryUniques(file);
+            if (file.summary_chart.seriesName === 'Reads') fileSummaryReads(file);
+        }
+
+        function fileSummaryUniques(file) {
+            var data = [[]];
+            var labels = [];
+            angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
+                labels.push(name);
+                data[0].push(counters.unique);
+            })
+            file.summary_chart.data = data;
+            file.summary_chart.labels = labels;
+            file.summary_chart.seriesName = 'Unique';
+            file.summary_chart.seriesNameTrigger = false;
+        }
+
+        function fileSummaryFrequency(file) {
+            var data = [[]];
+            var labels = [];
+            angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
+                labels.push(name);
+                data[0].push(counters.frequency.toPrecision(2));
+            })
+            file.summary_chart.data = data;
+            file.summary_chart.labels = labels;
+            file.summary_chart.seriesName = 'Frequency';
+            file.summary_chart.seriesNameTrigger = false;
+        }
+
+        function fileSummaryReads(file) {
+            var data = [[]];
+            var labels = [];
+            angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
+                labels.push(name);
+                data[0].push(counters.read);
+            })   
+            file.summary_chart.data = data;
+            file.summary_chart.labels = labels;
+            file.summary_chart.seriesName = 'Reads';
+            file.summary_chart.seriesNameTrigger = false;
+        }
+
+        function fileSummaryData(file, name) {
+            file.summary_chart.dataName = name;
+            file.summary_chart.dataNameTrigger = false;
+            fileSummaryReinit(file);
+        }
+
         return {
             intersect: intersect,
             changePage: changePage,
             sort: sort,
             helperList: helperList,
-            exportDocument: exportDocument
+            exportDocument: exportDocument,
+            fileSummaryUniques: fileSummaryUniques,
+            fileSummaryFrequency: fileSummaryFrequency,
+            fileSummaryReads: fileSummaryReads,
+            fileSummaryData: fileSummaryData
         }
     }]);
 
@@ -474,6 +542,32 @@
                 $scope.clipNoFlash = clipNoFlash;
                 $scope.copyToClip = copyToClip;
                 $scope.copyToClipNotification = copyToClipNotification;
+
+                $scope.fileSummaryUniques = intersection.fileSummaryUniques;
+                $scope.fileSummaryFrequency = intersection.fileSummaryFrequency;
+                $scope.fileSummaryReads = intersection.fileSummaryReads;
+                $scope.fileSummaryData = intersection.fileSummaryData;
+
+                $scope.switchSummarySeriesNameTrigger = switchSummarySeriesNameTrigger;
+                $scope.isSummarySeriesNameTriggerActive = isSummarySeriesNameTriggerActive;
+                $scope.switchSummaryDataNameTrigger = switchSummaryDataNameTrigger;
+                $scope.isSummaryDataNameTriggerActive = isSummaryDataNameTriggerActive;
+
+                function switchSummarySeriesNameTrigger(file) {
+                    file.summary_chart.seriesNameTrigger = !file.summary_chart.seriesNameTrigger;
+                }
+
+                function isSummarySeriesNameTriggerActive(file) {
+                    return file.summary_chart.seriesNameTrigger;
+                }
+
+                function switchSummaryDataNameTrigger(file) {
+                    file.summary_chart.dataNameTrigger = !file.summary_chart.dataNameTrigger;
+                }
+
+                function isSummaryDataNameTriggerActive(file) {
+                    return file.summary_chart.dataNameTrigger;
+                }
 
                 function isResultsLoading(file) {
                     return file.loading;

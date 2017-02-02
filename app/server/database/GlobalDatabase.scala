@@ -16,11 +16,15 @@ import controllers.IntersectionAPI.IntersectParametersRequest
 import server.wrappers.database.{ColumnWrapper, IntersectWrapper, PresetWrapper, RowWrapper}
 import server.Configuration
 import server.wrappers.Filters
+import server.wrappers.summary.SummaryStatisticWrapper
 import com.antigenomics.vdjdb.scoring.DummyAlignmentScoring
 import com.milaboratory.core.tree.TreeSearchParameters
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
+
+import com.antigenomics.vdjdb.stat.ClonotypeSearchSummary
+import play.api.libs.json.Json
 
 /**
   * Created by bvdmitri on 16.03.16.
@@ -62,9 +66,15 @@ object GlobalDatabase extends SynchronizedAccess {
       results.headOption
     }
 
-  def intersect(sample: Sample, filters: Filters, parameters: IntersectParametersRequest) : List[IntersectWrapper] =
+  case class IntersectDatabaseResult(list: List[IntersectWrapper], summary: SummaryStatisticWrapper)
+  object IntersectDatabaseResult {
+    implicit val intersectDatabaseResultsWrites = Json.writes[IntersectDatabaseResult]
+  }
+
+  def intersect(sample: Sample, filters: Filters, parameters: IntersectParametersRequest) : IntersectDatabaseResult =
     synchronizeRead { implicit lock =>
       val buffer = new ListBuffer[IntersectWrapper]()
+      var summary: ClonotypeSearchSummary = null
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
         var preset: SequenceSearcherPreset = new SequenceSearcherPreset()
@@ -86,8 +96,9 @@ object GlobalDatabase extends SynchronizedAccess {
           id += 1
         })
 
+        summary = new ClonotypeSearchSummary(intersectedResults, sample, ClonotypeSearchSummary.FIELDS_STARBURST)
       }
-      buffer.toList
+      IntersectDatabaseResult(buffer.toList, SummaryStatisticWrapper.wrap(summary))
     }
 
   def isParametersValid(parameters: IntersectParametersRequest): Boolean = {

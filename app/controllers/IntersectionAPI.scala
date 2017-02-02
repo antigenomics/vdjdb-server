@@ -116,7 +116,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
                     val fileName = intersectRequest.fileName
                     intersectResults.reinit(fileName, sample, filters, intersectRequest.parameters)
                     intersectResults.defaultSort(fileName)
-                    channel push toJson(IntersectSuccessMessage(fileName, intersectResults.getTotalItems(fileName), intersectResults.getPage(fileName, 0)))
+                    channel push toJson(IntersectSuccessMessage(fileName, intersectResults.getTotalItems(fileName), intersectResults.getPage(fileName, 0), intersectResults.getSummaryStatistic(fileName)))
                     if (filters.warnings.nonEmpty) {
                       channel push toJson(WarningListMessage(filters.warnings))
                     }
