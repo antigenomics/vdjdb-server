@@ -476,3 +476,9 @@ body {
 #ex1Slider .slider-selection {
 	background: #BABABA;
 }
+
+p.vcenter {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 10px;
+}
