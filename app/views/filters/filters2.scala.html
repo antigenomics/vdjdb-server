@@ -1,3 +1,4 @@
+<filters-v2>
 <div class="row">
     <div class="col-md-6">
         <div class="panel-group">
@@ -7,7 +8,7 @@
                         <a data-toggle="collapse" href="#collapse-TCR">TCR</a>
                     </h3>
                 </div>
-                <div id="collapse-TCR" class="panel-collapse collapse">
+                <filters-tcr id="collapse-TCR" class="panel-collapse collapse">
                     <div class="panel-body">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -21,7 +22,7 @@
                                     <div class="col-xs-4">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="" checked>
+                                                <input type="checkbox" ng-model="general.human">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 Human
@@ -29,7 +30,7 @@
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="" checked>
+                                                <input type="checkbox" ng-model="general.monkey">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 Monkey
@@ -37,7 +38,7 @@
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="" checked>
+                                                <input type="checkbox" ng-model="general.mouse">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 Mouse
@@ -50,7 +51,7 @@
                                     <div class="col-xs-4">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="" checked>
+                                                <input type="checkbox" ng-model="general.tra">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 TRA
@@ -58,7 +59,7 @@
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="" checked>
+                                                <input type="checkbox" ng-model="general.trb">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 TRB
@@ -195,7 +196,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </filters-tcr>
             </div>
         </div>
     </div>
@@ -539,3 +540,4 @@
         </div>
     </div>
 </div>
+</filters-v2>

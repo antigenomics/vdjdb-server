@@ -324,6 +324,11 @@
                 })
             });
 
+            console.log({
+                textFilters: textFiltersRequest,
+                sequenceFilters: sequenceFilters
+            });
+
             return {
                 textFilters: textFiltersRequest,
                 sequenceFilters: sequenceFilters

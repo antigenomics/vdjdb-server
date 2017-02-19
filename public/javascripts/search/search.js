@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var application = angular.module('searchPage', ['notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
+    var application = angular.module('searchPage', ['notifications', 'filters', 'filters_v2', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
 
     application.config(['ngClipProvider', function(ngClipProvider) {
         ngClipProvider.setPath('/assets/lib/angular/plugins/zeroclipboard/ZeroClipboard.swf');
@@ -23,7 +23,7 @@
         }
     }]);
 
-    application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'table', 'notify', 'LoggerService', function ($websocket, filters, table, notify, LoggerService) {
+    application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'filters_v2', 'table', 'notify', 'LoggerService', function ($websocket, filters, filters_v2, table, notify, LoggerService) {
 
         var connected = false;
         var connection = $websocket('ws://' + location.host + '/search/connect');
@@ -177,7 +177,7 @@
                 sortRule.sortType = defaultSortRule.sortType;
                 connection.send({
                     action: 'search',
-                    data: filters.getFiltersRequest()
+                    data: filters_v2.getFilters()
                 });
             } else if (loading) {
                 notify.info('Search', 'Loading...');

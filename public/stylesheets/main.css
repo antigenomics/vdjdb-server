@@ -22,7 +22,7 @@ body {
 }
 
 .cube1, .cube2 {
-    background-color: #605ca8;
+    background-color: #337ab7;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -317,8 +317,8 @@ body {
 }
 
 #table_wrapper table {
-    width: 98%;
-    margin-left: 1%;
+    width: 100%;
+    margin-left: 0%;
 }
 
 #table_wrapper.table_loading {

@@ -1,109 +1,128 @@
 @main("VDJdb: search") {
-
-    <script src="@routes.Assets.at("lib/jquery/jquery-ui.min.js")" type="text/javascript"></script>
-    <link href="@routes.Assets.at("lib/jquery/jquery-ui.min.css")" rel="stylesheet">
-    <link href="@routes.Assets.at("lib/jquery/jquery-ui.structure.min.css")" rel="stylesheet">
-    <link href="@routes.Assets.at("lib/jquery/jquery-ui.theme.min.css")" rel="stylesheet">
-
-
-
-    <script src="@routes.Assets.at("lib/angular/plugins/bootstrap/ui-bootstrap-tpls-0.12.1.min.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ZeroClipboard.min.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ng-clip.min.js")" type="text/javascript"></script>
-
-    <script src="@routes.Assets.at("javascripts/table.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/filters.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/search/search.js")" type="text/javascript"></script>
-
-    <!-- temp -->
-    <link href="@routes.Assets.at("lib/slider/slider.min.css")" rel="stylesheet">
-    <script src="@routes.Assets.at("lib/slider/slider.min.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/slider.js")" type="text/javascript"></script>
-
-
-
-    @views.html.navbar(false)
-
-    <div ng-app="searchPage" class="wrapper">
-        <div class="container-fluid">
-            @views.html.search.description()
-            @views.html.search.filters2()
-
-            <div class="panel panel-primary">
-            <div class="panel-body">
-            </div>
-            </div>
-
-            @views.html.filters.filters()
-            <search-websocket class="row" ng-hide="isFiltersError() || !isFiltersLoaded()">
-                <div class="col-md-12">
-                    <div class="box box-solid with-border">
-                        <div class="box-header" ng-hide="isLoading()">
-                            <button class="btn bg-purple btn-flat" ng-click="searchWS()">Refresh</button>
-                            <select name="selectPageSize" id="selectPageSize" class="pull-right" ng-model="userPageSize" ng-change="changePageSize()" convert-to-number>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                            <label class="pull-right" for="selectPageSize">Page Size:</label>
-                        </div>
-                        <div class="box-body" ng-show="isLoading()">
-                            <div class="spinner">
-                                <div class="cube1"></div>
-                                <div class="cube2"></div>
+<script src="@routes.Assets.at("lib/jquery/jquery-ui.min.js")" type="text/javascript"></script>
+<link href="@routes.Assets.at("lib/jquery/jquery-ui.min.css")" rel="stylesheet">
+<link href="@routes.Assets.at("lib/jquery/jquery-ui.structure.min.css")" rel="stylesheet">
+<link href="@routes.Assets.at("lib/jquery/jquery-ui.theme.min.css")" rel="stylesheet">
+<script src="@routes.Assets.at("lib/angular/plugins/bootstrap/ui-bootstrap-tpls-0.12.1.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ZeroClipboard.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ng-clip.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/table.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/filters.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/filters-v2.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/search/search.js")" type="text/javascript"></script>
+<!-- temp -->
+<link href="@routes.Assets.at("lib/slider/slider.min.css")" rel="stylesheet">
+<script src="@routes.Assets.at("lib/slider/slider.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/slider.js")" type="text/javascript"></script>
+@views.html.navbar(false)
+<div ng-app="searchPage" class="wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading text-center">
+                        <h3>Database browser</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                The database can be searched using TCR, antigen, MHC and metadata field filters, click on the panels below to expand them. Detailed information for each filter can be found by hovering over the question marks. Use the buttons below to refresh the table or reset the filters. Filtered table can be exported as an XLS or a plain-text CSV file.
                             </div>
                         </div>
-                        <div id="table_wrapper" class="box-body" ng-show="!isLoading()">
-                            <div class="block_background" ng-if="isPageLoading()"></div>
-                            <div class="block_processing" ng-if="isPageLoading()"><h3>Loading...</h3></div>
-                            <div class="text-center" ng-if="isConnectionBroken()">
-                                <h4>No connection to database. Please refresh the page.</h4>
-                            </div>
-                            <div ng-if="isSearchStarted()">
-                                <pagination total-items="totalItems()"
-                                items-per-page="pageSize()" ng-model="page.currentPage"
-                                max-size="10" class="pagination-sm" boundary-links="true"
-                                rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                </pagination>
-                                <button class="btn btn-flat btn-default pull-right" ng-click="exportDocument('excel')">Export to Excel</button>
-                                <div id="table_scroll_wrapper">
-                                    <table class="table table-hover table-bordered compact">
-                                        <thead>
-                                            <tr>
-                                                <th class="column_header" ng-repeat="(index, column) in getColumns()"
-                                                ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column"
-                                                ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr ng-repeat="(rowIndex, row) in getData()" on-last-repeat="row" ng-class="{'complex_parent':row.complexFound, 'complex_child':row.complex}">
-                                                <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, row.entries)"></td>
-                                            </tr>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th class="column_header" ng-repeat="(index, column) in getColumns()"
-                                                ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column"
-                                                ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
-                                                </th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                        <br>
+                        <div class="row">
+                            <div class="col-md-10">
+                                <button type="button" class="btn btn-primary" ng-click="searchWS()">Refresh</button>
+                                <button type="button" class="btn btn-danger">Reset</button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                                        Export table <span class="caret"></span></button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
+                                        <li><a href="#">As CSV</a></li>
+                                    </ul>
                                 </div>
-                                <pagination total-items="totalItems()"
-                                items-per-page="pageSize()" ng-model="page.currentPage"
-                                max-size="10" class="pagination-sm" boundary-links="true"
-                                rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                </pagination>
-                                <div class="text-center" ng-if="!isDataFound()">
-                                    <h4>No data found</h4>
+                            </div>
+                            <div class="col-xs-2">
+                                <div class="input-group mb-2 pull-right">
+                                    <div class="input-group-addon">Page size</div>
+                                    <select name="selectPageSize" id="selectPageSize" class="pull-right form-control" ng-model="userPageSize" ng-change="changePageSize()" convert-to-number>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </search-websocket>
+            </div>
         </div>
+        @views.html.filters.filters2()
+        <search-websocket>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-body" ng-if="isLoading()">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="spinner">
+                                    <div class="cube1"></div>
+                                    <div class="cube2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body" ng-if="!isLoading()">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="table_wrapper">
+                                    <div class="block_background" ng-if="isPageLoading()"></div>
+                                    <div class="block_processing" ng-if="isPageLoading()">
+                                        <h3>Loading...</h3></div>
+                                    <div class="text-center" ng-if="isConnectionBroken()">
+                                        <h4>No connection to database. Please refresh the page.</h4>
+                                    </div>
+                                    <div ng-if="isSearchStarted()">
+                                        <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-sm" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                        </pagination>
+                                        <div id="table_scroll_wrapper">
+                                            <table class="table table-hover table-bordered compact">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr ng-repeat="(rowIndex, row) in getData()" on-last-repeat="row" ng-class="{'complex_parent':row.complexFound, 'complex_child':row.complex}">
+                                                        <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, row.entries)"></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                        </th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                        <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-sm" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                        </pagination>
+                                        <div class="text-center" ng-if="!isDataFound()">
+                                            <h4>No data found</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </search-websocket>
+        @views.html.filters.filters()
     </div>
+</div>
+
 }
