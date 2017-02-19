@@ -1,8 +1,22 @@
 
+.select_drop {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
 .select_drop_container {
-    position:relative;
+    display: none;
+    position: absolute;
     font-size: 12px;
     color: #777;
+    width: 100%;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.select_drop:hover .select_drop_container {
+    display: block;
 }
 
 .select_trigger {
@@ -64,7 +78,7 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     height: auto;
-    max-height: 117px;
+    max-height: 180px;
     overflow-y: scroll;
 }
 

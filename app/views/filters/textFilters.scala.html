@@ -17,18 +17,21 @@
                         <i class="fa fa-question pull-right" aria-hidden="true"></i>
                     </td>
                     <td width="30%">
+                        <div class="select_drop">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
-                        <div class="select_drop_container">
-                            <ul ng-show="isColumnActive(filter)">
+                        <div class="select_drop_container" ng-class="{'select_drop_container_active':isColumnActive(filter)}">
+                            <ul>
                                 <li ng-repeat="column in textFiltersColumns" ng-click="clickTextColumn(filter, column)"><a>{{ ::column.title }}</a></li>
                             </ul>
                         </div>
+                        </div>
                     </td>
                     <td width="30%">
+                        <div class="select_drop">
                         <input id="text_filter_{{ ::filter.id }}" class="form-control input-sm" type="text" placeholder="Value" ng-model="filter.value" 
                                 ng-click="filter.inputFocused = !filter.inputFocused">
-                        <div class="select_drop_container">
-                            <ul ng-if="filter.inputFocused && filter.column.autocomplete">
+                        <div class="select_drop_container" ng-class="{'select_drop_container_active':filter.inputFocused && filter.column.autocomplete}">
+                            <ul>
                                 <li>Suggestions</li>
                                 <li ng-repeat="value in filter.column.values | filterBySubstring:filter.value" 
                                     ng-click="filter.value = value; filter.inputFocused = false">
@@ -36,13 +39,16 @@
                                 </li>
                             </ul>
                         </div>
+                        </div>
                     </td>
                     <td width="29%">
+                        <div class="select_drop">
                         <a class="select_trigger" ng-click="switchTypeVisible(filter)">{{ filter.filterType.title }}</a>
-                        <div class="select_drop_container">
-                            <ul ng-show="isTypeActive(filter)">
+                        <div class="select_drop_container" ng-class="{'select_drop_container_active':isTypeActive(filter)}">
+                            <ul>
                                 <li ng-repeat="typeIndex in filter.types" ng-click="clickType(filter, typeIndex)"><a>{{ ::textFiltersTypes[typeIndex].title }}</a></li>
                             </ul>
+                        </div>
                         </div>
                     </td>
                     <td width="5%">

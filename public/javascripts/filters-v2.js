@@ -15,6 +15,18 @@
 		var connection = $websocket('ws://' + location.host + '/filters/connect');
 		var pingWebSocket = null;
 
+		var textFiltersColumns = [];
+        var sequenceFiltersColumns = [];
+
+        var textFiltersTypes = Object.freeze([
+            { name: 'substring', title: 'Substring match', allowNegative: true, description: 'substring' },
+            { name: 'exact', title: 'Full match', allowNegative: true, description: 'exact' },
+            { name: 'level', title: 'Greater or equals', allowNegative: true, description: 'level' },
+            { name: 'frequency', title: 'Greater or equals', allowNegative: false, description: 'frequency' },
+            { name: 'identification', title: 'Tags and keywords', allowNegative: false, description: 'identification' },
+            { name: 'json', title: 'Tags and keywords', allowNegative: false, description: 'json' }  
+        ]);
+
 		connection.onOpen(function() {
             connection.send({
                 action: 'columns',
@@ -35,6 +47,7 @@
                 case 'success':
                     switch (response.action) {
                         case 'columns':
+                        	initialize(response.columns);
                             table.setColumns(response.columns);
                             columnsLoading = false;
                             break;
@@ -76,8 +89,96 @@
         	return filters;
         }
 
+        function initialize(columns) {
+
+        	var text = [];
+        	var seq = [];
+
+            angular.forEach(columns, function(column) {
+                var meta = column.metadata;
+                if (meta.searchable === '1') {
+                    if (meta.columnType === 'txt') {
+                        text.push({
+                            name: column.name,
+                            title: meta.title,
+                            types: (function() {
+                                if (meta.title === 'Gene') {
+                                    return [1];
+                                }
+                                if (meta.dataType === 'uint')
+                                    return [2];
+                                return [0, 1]
+                            }()),
+                            allowNegative: (function() {
+                                return meta.dataType !== 'uint';
+                            }()),
+                            autocomplete: column.autocomplete,
+                            values: column.values,
+                            defaultFilterType: (function() {
+                                if (meta.dataType === 'uint')
+                                    return textFiltersTypes[2];
+                                return textFiltersTypes[1];
+                            }())
+                        })
+                    } else if (meta.columnType === 'seq') {
+                        text.push({
+                            name: column.name,
+                            title: meta.title,
+                            types: [0, 1],
+                            allowNegative: true,
+                            autocomplete: false,
+                            values: [],
+                            defaultFilterType: textFiltersTypes[1]
+                        });
+                        seq.push({
+                            name: column.name,
+                            title: meta.title,
+                            types: [0, 1],
+                            allowNegative: true,
+                            autocomplete: false,
+                            values: []
+                        })
+                    }
+                }
+            });
+            text.push({
+                name: 'meta',
+                title: 'Meta',
+                types: [5],
+                allowNegative: false,
+                autocomplete: false,
+                values: [],
+                defaultFilterType: textFiltersTypes[5]
+            });
+            text.push({
+                name: 'method',
+                title: 'Frequency',
+                types: [3],
+                allowNegative: false,
+                autocomplete: false,
+                values: [],
+                defaultFilterType: textFiltersTypes[3]
+            });
+            text.push({
+                name: 'method',
+                title: 'Method',
+                types: [4],
+                allowNegative: false,
+                autocomplete: false,
+                values: [],
+                defaultFilterType: textFiltersTypes[4]
+            })
+            columnsLoading = false;
+
+            //just for angular digest cycle todo
+            angular.extend(textFiltersColumns, text);
+            angular.extend(sequenceFiltersColumns, seq);
+        }
+
 		return {
-			getFilters: getFilters
+			getFilters: getFilters,
+			textFiltersColumns: textFiltersColumns,
+			sequenceFiltersColumns: sequenceFiltersColumns
 		}
 
 	}]);
@@ -91,6 +192,11 @@
 
 			tra: true,
 			trb: true
+		}
+
+		var germline_tcr = {
+			variable: '',
+			joining: ''
 		}
 
 		function getFilters() {
@@ -141,11 +247,75 @@
 	application.directive('filtersTcr', function() {
 		return {
 			restrict: 'E',
-			controller: ['$scope', 'filters_v2_tcr', function($scope, filters_tcr) {
+			controller: ['$scope', 'filters_v2', 'filters_v2_tcr', function($scope, filters, filters_tcr) {
 				$scope.general_tcr = filters_tcr.general_tcr;
+
+				$scope.textColumns = filters.textFiltersColumns;
+
+				$scope.appendVSegment = appendVSegment;
+				$scope.vSegment = {
+					apply: false, 
+					autocomplete: [],
+					value: ''
+				};
+
+				$scope.appendJSegment = appendJSegment;
+				$scope.jSegment = {
+					apply: false,
+					autocomplete: [],
+					value: ''
+				}
+
+				var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+					if (filters.textFiltersColumns.length != 0) {
+						findAutocompleteValues($scope.vSegment.autocomplete, $scope.jSegment.autocomplete, filters.textFiltersColumns);
+						console.log(filters.textFiltersColumns);
+						console.log($scope.jSegment.autocomplete);
+						textColumnsWatcher();
+					}
+				})
+
+				function findAutocompleteValues(vAutocomplete, jAutocomplete, columns) {
+					angular.forEach(columns, function(column) {
+						if (column.name == 'v.segm') angular.extend(vAutocomplete, column.values);
+						if (column.name == 'j.segm') angular.extend(jAutocomplete, column.values);
+					})
+				}
+
+				function appendVSegment(value) {
+					var v = $scope.vSegment.value.split(',');
+					v[v.length - 1] = value;
+					$scope.vSegment.value = v.join(",");
+				}
+
+				function appendJSegment(value) {
+					var j = $scope.jSegment.value.split(',');
+					j[j.length - 1] = value;
+					$scope.jSegment.value = j.join(',');
+				}
 			}]
 		}
 	})
+
+	application.filter('filterSubstringComma', function() {
+        return function(data, value) {
+        	//trim
+        	var commaValue = value.replace(/\s/g, ""); 
+        	if (value.indexOf(',') !== -1) {
+        		var values = commaValue.split(',');
+        		commaValue = values[values.length - 1];
+        		console.log(commaValue);
+        	}
+
+            if (data instanceof Array) {
+                return data.filter(function(item) {
+                    return item.indexOf(commaValue) !== -1;
+                })
+            } else {
+                return []
+            }
+        }
+    })
 
 
 	application.factory('filters_v2_mhc', [function() {

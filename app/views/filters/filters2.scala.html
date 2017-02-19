@@ -82,14 +82,22 @@
                                     <div class="col-xs-1">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="">
+                                                <input type="checkbox" ng-model="vSegment.apply">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                             </label>
                                         </div>
                                     </div>
                                     <div class="col-xs-7">
-                                        <input class="form-control" type="text">
+                                    <div class="select_drop">
+                                        <input class="form-control input-sm" type="text" placeholder="Comma separated V segments list" ng-model="vSegment.value">
+                                        <div class="select_drop_container select_drop_container_active">
+                                        <ul>
+                                            <li>Suggestions</li>
+                                            <li ng-repeat="value in vSegment.autocomplete | filterSubstringComma:vSegment.value" ng-click="appendVSegment(value)">{{ ::value }}</li>
+                                    </ul>
+                                    </div>
+                                    </div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -99,14 +107,22 @@
                                     <div class="col-xs-1 vcenter">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="">
+                                                <input type="checkbox" ng-model="jSegment.apply">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                             </label>
                                         </div>
                                     </div>
                                     <div class="col-xs-7 vcenter">
-                                        <input class="form-control" type="text">
+                                        <div class="select_drop">
+                                        <input class="form-control input-sm" type="text" placeholder="Comma separated J segments list" ng-model="jSegment.value">
+                                        <div class="select_drop_container select_drop_container_active">
+                                        <ul>
+                                            <li>Suggestions</li>
+                                            <li ng-repeat="value in jSegment.autocomplete | filterSubstringComma:jSegment.value" ng-click="appendJSegment(value)">{{ ::value }}</li>
+                                        </ul>
+                                        </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

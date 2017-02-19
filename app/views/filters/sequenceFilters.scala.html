@@ -24,11 +24,13 @@
                         <i class="fa fa-question pull-right" aria-hidden="true"></i>
                     </td>
                     <td width="20%">
+                        <div class="select_drop">
                         <a class="select_trigger" ng-click="switchColumnVisible(filter)">{{ filter.columnTitle }}</a>
-                        <div class="select_drop_container">
-                            <ul ng-show="isColumnActive(filter)">
+                        <div class="select_drop_container" ng-class="{'select_drop_container_active':isColumnActive(filter)}">
+                            <ul>
                                 <li ng-repeat="column in sequenceFiltersColumns" ng-click="clickSequenceColumn(filter, column)"><a>{{ ::column.title }}</a></li>
                             </ul>
+                        </div>
                         </div>
                     </td>
                     <td width="25%">
