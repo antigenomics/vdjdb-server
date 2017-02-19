@@ -28,6 +28,12 @@
         <div class="container-fluid">
             @views.html.search.description()
             @views.html.search.filters2()
+
+            <div class="panel panel-primary">
+            <div class="panel-body">
+            </div>
+            </div>
+
             @views.html.filters.filters()
             <search-websocket class="row" ng-hide="isFiltersError() || !isFiltersLoaded()">
                 <div class="col-md-12">
