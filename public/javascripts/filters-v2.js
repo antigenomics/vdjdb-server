@@ -7,7 +7,7 @@
 
 	var application = angular.module('filters_v2', ['ngWebSocket', 'table', 'notifications']);
 
-	application.factory('filters_v2', ['$websocket', 'table', 'notify', 'filters_v2_tcr', function ($websocket, table, notify, filters_tcr) {
+	application.factory('filters_v2', ['$websocket', 'table', 'notify', 'filters_v2_tcr', 'filters_v2_mhc', function ($websocket, table, notify, filters_tcr, filters_mhc) {
 
 		var columnsLoading = true;
         var error = false;
@@ -71,6 +71,7 @@
         	};
 
         	filters.textFilters.push_array(filters_tcr.getFilters())
+        	filters.textFilters.push_array(filters_mhc.getFilters())
 
         	return filters;
         }
@@ -83,7 +84,7 @@
 
 	application.factory('filters_v2_tcr', [function() {
 
-		var general = {
+		var general_tcr = {
 			human: true,
 			monkey: true,
 			mouse: true,
@@ -103,12 +104,12 @@
 		function getGeneralFilters() {
 
 			var filters = []
-			if (general.human == false) addSpeciesFilter(filters, true, 'HomoSapiens');
-			if (general.monkey == false) addSpeciesFilter(filters, true, 'MacacaMulatta');
-			if (general.mouse == false) addSpeciesFilter(filters, true, 'MusMusculus');
+			if (general_tcr.human == false) addSpeciesFilter(filters, true, 'HomoSapiens');
+			if (general_tcr.monkey == false) addSpeciesFilter(filters, true, 'MacacaMulatta');
+			if (general_tcr.mouse == false) addSpeciesFilter(filters, true, 'MusMusculus');
 
-			if (general.tra == false) addGeneFilter(filters, true, 'TRA');
-			if (general.trb == false) addGeneFilter(filters, true, 'TRB');
+			if (general_tcr.tra == false) addGeneFilter(filters, true, 'TRA');
+			if (general_tcr.trb == false) addGeneFilter(filters, true, 'TRB');
 
 			return filters;
 		}
@@ -132,7 +133,7 @@
 		}
 
 		return {
-			general: general,
+			general_tcr: general_tcr,
 			getFilters: getFilters
 		}
 	}]);
@@ -141,12 +142,60 @@
 		return {
 			restrict: 'E',
 			controller: ['$scope', 'filters_v2_tcr', function($scope, filters_tcr) {
-				$scope.general = filters_tcr.general;
+				$scope.general_tcr = filters_tcr.general_tcr;
 			}]
 		}
 	})
 
 
+	application.factory('filters_v2_mhc', [function() {
+
+		var general_mhc = {
+			mhc1_class: true,
+			mhc2_class: true
+		};
+
+		function getFilters() {
+			var filters = [];
+
+			filters.push_array(getGeneralFilters());
+
+			return filters;
+		}
+
+		function getGeneralFilters() {
+
+			var filters = []
+
+			if (general_mhc.mhc1_class == false) addMHCGeneralFilter(filters, true, 'MHCI');
+			if (general_mhc.mhc2_class == false) addMHCGeneralFilter(filters, true, 'MHCII');
+
+			return filters;
+		}
+
+		function addMHCGeneralFilter(filters, negative, value) {
+			filters.push({
+				columnId: 'mhc.class',
+				filterType: 'exact', 
+				negative: negative,
+				value: value
+			})
+		}
+
+		return {
+			general_mhc: general_mhc,
+			getFilters: getFilters
+		}
+	}]);
+
+	application.directive('filtersMhc', function() {
+		return {
+			restrict: 'E',
+			controller: ['$scope', 'filters_v2_mhc', function($scope, filters_mhc) {
+				$scope.general_mhc = filters_mhc.general_mhc;
+			}]
+		}
+	})
 
 
 }())

@@ -22,7 +22,7 @@
                                     <div class="col-xs-4">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" ng-model="general.human">
+                                                <input type="checkbox" ng-model="general_tcr.human">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 Human
@@ -30,7 +30,7 @@
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" ng-model="general.monkey">
+                                                <input type="checkbox" ng-model="general_tcr.monkey">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 Monkey
@@ -38,7 +38,7 @@
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" ng-model="general.mouse">
+                                                <input type="checkbox" ng-model="general_tcr.mouse">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 Mouse
@@ -51,7 +51,7 @@
                                     <div class="col-xs-4">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" ng-model="general.tra">
+                                                <input type="checkbox" ng-model="general_tcr.tra">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 TRA
@@ -59,7 +59,7 @@
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" ng-model="general.trb">
+                                                <input type="checkbox" ng-model="general_tcr.trb">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 TRB
@@ -323,7 +323,7 @@
                         </a>
                     </h4>
                 </div>
-                <div id="collapse-MHC" class="panel-collapse collapse">
+                <filters-mhc id="collapse-MHC" class="panel-collapse collapse">
                     <div class="panel-body">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -337,7 +337,7 @@
                                     <div class="col-xs-8">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="" checked>
+                                                <input type="checkbox" ng-model="general_mhc.mhc1_class">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 MHCI
@@ -345,7 +345,7 @@
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" value="" checked>
+                                                <input type="checkbox" ng-model="general_mhc.mhc2_class">
                                                 <span class="cr"><i
                                                         class="cr-icon glyphicon glyphicon-ok"></i></span>
                                                 MHCII
@@ -397,7 +397,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </filters-mhc>
             </div>
         </div>
     </div>
