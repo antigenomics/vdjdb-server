@@ -13,7 +13,7 @@
 <!-- temp -->
 <link href="@routes.Assets.at("lib/slider/slider.min.css")" rel="stylesheet">
 <script src="@routes.Assets.at("lib/slider/slider.min.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("javascripts/slider.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/tooltip.js")" type="text/javascript"></script>
 @views.html.navbar(false)
 <div ng-app="searchPage" class="wrapper">
     <div class="container-fluid">
@@ -21,12 +21,22 @@
             <div class="col-md-12">
                 <div class="panel panel-primary">
                     <div class="panel-heading text-center">
-                        <h3>Database browser</h3>
+                        <h2>
+                        Database browser
+                        </h2>
                     </div>
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-12">
-                                The database can be searched using TCR, antigen, MHC and metadata field filters, click on the panels below to expand them. Detailed information for each filter can be found by hovering over the question marks. Use the buttons below to refresh the table or reset the filters. Filtered table can be exported as an XLS or a plain-text CSV file.
+                                <p>The table below shows VDJdb records, more information for each column contents is displayed when hovering over the column name. In case a paired TCR chain (alpha or beta) is available for a given record, it can be fetched by clicking the plus sign to the left of the record. A comprehensive specification of VDJdb record fields/columns can be found <a href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md'>here</a>.</p>
+                                <p>The database can be searched using T-cell receptor (TCR), antigen, major histocompatibility complex (MHC) and record metadata field filters:
+                                    <ul>
+                                    <li>Click on the corresponding panels below to expand the filters.</li>
+                                    <li>Detailed information for each filter can be found by hovering over the question marks.</li>
+                                    <li>Use the buttons below to refresh the table or reset the filters.</li>
+                                    <li>Filtered table can be exported as an XLS or a plain-text CSV file.</li>
+                                    </ul>
+                                </p>
                             </div>
                         </div>
                         <br>
