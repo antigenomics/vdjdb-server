@@ -185,6 +185,8 @@
 
 	application.factory('filters_v2_tcr', [function() {
 
+// TCR
+
 		var general_tcr = {
 			human: true,
 			monkey: true,
@@ -194,52 +196,223 @@
 			trb: true
 		}
 
-		var germline_tcr = {
-			variable: '',
-			joining: ''
+		var vSegment = {
+			apply: false,
+			value: ''
+		}
+
+		var jSegment = {
+		    apply: false,
+		    value: ''
+        }
+
+        var cdr3Pattern = {
+            apply: false,
+        	value: '',
+        	substring: false
+        }
+
+        var cdr3Hamming = {
+            apply: false,
+        	value: '',
+        	s: 0,
+        	i: 0,
+        	d: 0
+        }
+
+// AG
+
+		var agSpecies = {
+			apply: false,
+			value: ''
+		}
+
+		var agGene = {
+			apply: false,
+			value: ''
+		}
+
+		var agSequence = {
+			apply: false,
+			value: ''
+		}
+
+        var agPattern = {
+            apply: false,
+        	value: '',
+        	substring: false
+        }
+
+// MHC
+
+		var mhcClass = {
+			mhci: true,
+			mhcii: true
+		}
+
+		var mhcA = {
+			apply: false,
+			value: ''
+		}
+
+		var mhcB = {
+			apply: false,
+			value: ''
+		}
+
+// META
+
+		var pmIds = {
+			apply: false,
+			value: ''
+		}
+
+		var metaTags = {
+			methodSort: true,
+			methodCulture: true,
+			methodOther: true,
+			seqSanger: true,
+			seqAmplicon: true,
+			seqSingleCell: true,
+			nonCanonical: false,
+			unmapped: false
+		}
+
+		var minConfScore = {
+			value: 0
 		}
 
 		function getFilters() {
-			var filters = [];
+			var filters = { textFilters = [], sequenceFilters = []}
 
-			filters.push_array(getGeneralFilters());
+			if (general_tcr.human == false) addExactFilter(filters, 'species', 'HomoSapiens');
+			if (general_tcr.monkey == false) addExactFilter(filters, 'species', 'MacacaMulatta');
+			if (general_tcr.mouse == false) addExactFilter(filters, 'species', 'MusMusculus');
+			if (general_tcr.tra == false) addExactFilter(filters, 'gene', 'TRA');
+			if (general_tcr.trb == false) addExactFilter(filters, 'gene', 'TRB');
+
+			if (vSegment.apply == true) addCsTextFilter(filters, 'v.segm', vSegment.value);
+			if (jSegment.apply == true) addCsTextFilter(filters, 'j.segm', jSegment.value);
+
+			if (cdr3Pattern.apply == true) addSequencePatternFilter(filters, "cdr3", cdr3Pattern.substring, cdr3Pattern.value);
+			if (cdr3Hamming.apply == true) addHammingFilter(filters, "cdr3", cdr3Hamming.s, cdr3Hamming.i, cdr3Hamming.d, cdr3Hamming.value);
+
+
+
+			if (agSpecies.apply == true) addCsTextFilterExact(filters, 'antigen.species', agSpecies.value);
+			if (agGene.apply == true) addCsTextFilterExact(filters, 'antigen.gene', agGene.value);
+
+			if (agSequence.apply == true) addCsTextFilterExact(filters, 'antigen.epitope', agSequence.value);
+			if (agPattern.apply == true) addSequencePatternFilter(filters, "antigen.epitope", agPattern.substring, agPattern.value);
+
+
+
+			if (mhcClass.mhci == false) addExactFilter(filters, 'mhc.class', 'MHCI');
+			if (mhcClass.mhcii == false) addExactFilter(filters, 'mhc.class', 'MHCII');
+
+			if (mhcA.apply == true) addCsTextFilter(filters, 'mhc.a', mhcA.value);
+			if (mhcB.apply == true) addCsTextFilter(filters, 'mhc.b', mhcB.value);
+
+
+
+			if (pmIds.apply == true) addCsTextFilterExact(filters, 'reference.id', pmIds.value);
+
+			if (metaTags.methodSort == false) addExactFilter(filters, 'web.method', 'sort');
+			if (metaTags.methodCulture == false) addExactFilter(filters, 'web.method', 'culture');
+			if (metaTags.methodOther == false) addExactFilter(filters, 'web.method', 'other');
+
+			if (metaTags.seqSanger == false) addExactFilter(filters, 'web.method.seq', 'sanger');
+			if (metaTags.seqAmplicon == false) addExactFilter(filters, 'web.method.seq', 'amplicon');
+			if (metaTags.seqSingleCell == false) addExactFilter(filters, 'web.method.seq', 'singlecell');
+
+			if (metaTags.nonCanonical == false) addExactFilter(filters, 'web.cdr3fix.nc', 'yes');
+			if (metaTags.unmapped == false) addExactFilter(filters, 'web.cdr3fix.unmp', 'yes');
+
+			if (minConfScore.value > 0) addScoreFilter(filters, minConfScore.value);
 
 			return filters;
 		}
 
-		function getGeneralFilters() {
+// Filter types
 
-			var filters = []
-			if (general_tcr.human == false) addSpeciesFilter(filters, true, 'HomoSapiens');
-			if (general_tcr.monkey == false) addSpeciesFilter(filters, true, 'MacacaMulatta');
-			if (general_tcr.mouse == false) addSpeciesFilter(filters, true, 'MusMusculus');
-
-			if (general_tcr.tra == false) addGeneFilter(filters, true, 'TRA');
-			if (general_tcr.trb == false) addGeneFilter(filters, true, 'TRB');
-
-			return filters;
-		}
-
-		function addGeneFilter(filters, negative, value) {
-			filters.push({
-				columnId: 'gene',
+		function addExactFilter(filters, column, value) {
+			filters.textFilters.push({
+				columnId: column,
 				filterType: 'exact',
-				negative: negative,
+				negative: true,
 				value: value
 			})
 		}
 
-		function addSpeciesFilter(filters, negative, value) {
-			filters.push({
-				columnId: 'species',
-				filterType: 'exact', 
-				negative: negative,
-				value: value
-			})
-		}
+		function addCsTextFilter(filters, column, value) {
+            filters.textFilters.push({
+                columnId: column,
+                filterType: 'substring_set',
+				negative: false,
+                value: value
+            })
+        }
+
+		function addCsTextFilterExact(filters, column, value) {
+		    filters.textFilters.push({
+		        columnId: column,
+		        filterType: 'exact_set',
+				negative: false,
+		        value: value
+		    })
+        }
+
+        function addSequencePatternFilter(filters, column, substring, value) {
+            filters.textFilters.push({
+                columnId: column,
+                filterType: 'pattern',
+                negative: false,
+                value: groomSequencePattern(substring, value)
+            })
+        }
+
+        function groomSequencePattern(substring, value) {
+            if (substring == false) value = '^' + value + '$'
+            return value.replace(/X/g, ".")
+        }
+
+        function addHammingFilter(filters, column, s, i, d, value) {
+            filters.sequenceFilters.push({
+                columnId: column,
+                mutations: s,
+                insertions: i,
+                deletions: d,
+                mismatches: s + i + d,
+                query: value
+            })
+        }
+
+		function addScoreFilter(filters, value) {
+		    filters.push({
+		        columnId: 'vdjdb.score',
+		        filterType: 'level',
+		        negative: false,
+		        value: value
+		    })
+        }
+
 
 		return {
 			general_tcr: general_tcr,
+			vSegment: vSegment,
+			jSegment: jSegment,
+			cdr3Pattern: cdr3Pattern,
+			cdr3Hamming: cdr3Hamming,
+			agSpecies: agSpecies,
+			agGene: agGene,
+			agSequence: agSequence,
+			agPattern: agPattern,
+			mhcClass: mhcClass,
+			mhcA: mhcA,
+			mhcB: mhcB,
+			pmIds: pmIds,
+			metaTags: metaTags,
+			minConfScore: minConfScore,
 			getFilters: getFilters
 		}
 	}]);

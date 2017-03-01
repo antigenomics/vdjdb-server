@@ -42,14 +42,12 @@ object Filters {
           case _ =>
             filter.filterType match {
               case "exact" => textFilters.add(new ExactTextFilter(filter.columnId, filter.value, filter.negative))
+              case "substring_set" => textFilters.add(new SubstringSetTextFilter(filter.columnId, filter.value, filter.negative))
+              case "exact_set" => textFilters.add(new ExactSetTextFilter(filter.columnId, filter.value, filter.negative))
               case "pattern" => textFilters.add(new PatternTextFilter(filter.columnId, filter.value, filter.negative))
-              case "substring" => textFilters.add(new SubstringTextFilter(filter.columnId, filter.value, filter.negative))
               case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
-              case "frequency" => textFilters.add(new FieldLevelFilter(filter.columnId, "frequency", filter.value))
-              case "identification" => textFilters.add(new FieldSubstringFilter(filter.columnId, "identification", filter.value))
-              case "json" => textFilters.add(new JSONSubstringFilter(filter.columnId, filter.value))
               case _ =>
-                warnings += ("Text filter ignored for " + filter.columnId + ": please select filter type")
+                warnings += ("Text filter ignored for " + filter.columnId + ": incorrect filter type")
             }
         }
       } else {
