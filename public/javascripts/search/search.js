@@ -431,7 +431,6 @@
                 function copyToClipNotification() {
                     notify.info('Meta information', 'Data has been copied to clipboard');
                 }
-
             }]
         }
     });
@@ -471,7 +470,6 @@
             }
         };
     });
-
 }());
 
 

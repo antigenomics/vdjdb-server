@@ -96,7 +96,7 @@ object GlobalDatabase extends SynchronizedAccess {
           id += 1
         })
 
-        summary = new ClonotypeSearchSummary(intersectedResults, sample, ClonotypeSearchSummary.FIELDS_STARBURST)
+        summary = new ClonotypeSearchSummary(intersectedResults, sample, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
       }
       IntersectDatabaseResult(buffer.toList, SummaryStatisticWrapper.wrap(summary))
     }
