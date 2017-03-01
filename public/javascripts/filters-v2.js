@@ -170,7 +170,7 @@
             }
 
     		function addScoreFilter(filters, value) {
-    		    filters.push({
+    		    filters.textFilters.push({
     		        columnId: 'vdjdb.score',
     		        filterType: 'level',
     		        negative: false,
@@ -283,6 +283,25 @@
 					j[j.length - 1] = value;
 					$scope.j_segment.value = j.join(',');
 				}
+
+				$scope.incrementS = function() {
+                    $scope.cdr3_hamming.s++;
+                };
+                $scope.decrementS = function() {
+                    $scope.cdr3_hamming.s--;
+                };
+				$scope.incrementI = function() {
+                    $scope.cdr3_hamming.i++;
+                };
+                $scope.decrementI = function() {
+                    $scope.cdr3_hamming.i--;
+                };
+				$scope.incrementD = function() {
+                    $scope.cdr3_hamming.d++;
+                };
+                $scope.decrementD = function() {
+                    $scope.cdr3_hamming.d--;
+                };
 			}]
 		}
 	})
@@ -409,11 +428,13 @@
 
 		var mhc_a = {
 			apply: false,
+			autocomplete: [ ],
 			value: ''
 		}
 
 		var mhc_b = {
 			apply: false,
+			autocomplete: [ ],
 			value: ''
 		}
 
@@ -436,10 +457,39 @@
 	application.directive('filtersMhc', function() {
 		return {
 			restrict: 'E',
-			controller: ['$scope', 'filters_v2_mhc', function($scope, filters_mhc) {
+			controller: ['$scope', 'filters_v2', 'filters_v2_mhc', function($scope, filters, filters_mhc) {
 				$scope.mhc_class = filters_mhc.mhc_class;
 				$scope.mhc_a = filters_mhc.mhc_a;
 				$scope.mhc_b = filters_mhc.mhc_b;
+
+                $scope.appendMhcA = appendMhcA;
+				$scope.appendMhcB = appendMhcB;
+
+				var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+					if (filters.textFiltersColumns.length != 0) {
+						findAutocompleteValues($scope.mhc_a.autocomplete, $scope.mhc_b.autocomplete, filters.textFiltersColumns);
+						textColumnsWatcher();
+					}
+				})
+
+				function findAutocompleteValues(mhcAAutocomplete, mhcBAutocomplete, columns) {
+					angular.forEach(columns, function(column) {
+						if (column.name == 'mhc.a') angular.extend(mhcAAutocomplete, column.values);
+						if (column.name == 'mhc.b') angular.extend(mhcBAutocomplete, column.values);
+					})
+				}
+
+				function appendMhcA(value) {
+					var x = $scope.mhc_a.value.split(',');
+					x[x.length - 1] = value;
+					$scope.mhc_a.value = x.join(",");
+				}
+
+				function appendMhcB(value) {
+					var x = $scope.mhc_b.value.split(',');
+					x[x.length - 1] = value;
+					$scope.mhc_b.value = x.join(",");
+				}
 			}]
 		}
 	})
@@ -449,6 +499,7 @@
 	application.factory('filters_v2_meta', [function() {
 		var pm_ids = {
 			apply: false,
+			autocomplete: [],
 			value: ''
 		}
 
@@ -468,7 +519,7 @@
 		}
 
         function updateFilters(filters) {
-			if (pm_ids.apply == true) addCsTextFilterExact(filters, 'reference.id', pmIds.value);
+			if (pm_ids.apply == true) addCsTextFilterExact(filters, 'reference.id', pm_ids.value);
 
 			if (meta_tags.methodSort == false) addExactFilter(filters, 'web.method', 'sort');
 			if (meta_tags.methodCulture == false) addExactFilter(filters, 'web.method', 'culture');
@@ -495,10 +546,38 @@
 	application.directive('filtersMeta', function() {
 		return {
 			restrict: 'E',
-			controller: ['$scope', 'filters_v2_meta', function($scope, filters_meta) {
+			controller: ['$scope', 'filters_v2', 'filters_v2_meta', function($scope, filters, filters_meta) {
 				$scope.pm_ids = filters_meta.pm_ids;
 				$scope.meta_tags = filters_meta.meta_tags;
 				$scope.min_conf_score = filters_meta.min_conf_score;
+
+                $scope.appendPmId = appendPmId;
+
+				var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+					if (filters.textFiltersColumns.length != 0) {
+						findAutocompleteValues($scope.pm_ids.autocomplete, filters.textFiltersColumns);
+						textColumnsWatcher();
+					}
+				})
+
+				function findAutocompleteValues(pmIdsAutocomplete, columns) {
+					angular.forEach(columns, function(column) {
+						if (column.name == 'reference.id') angular.extend(pmIdsAutocomplete, column.values);
+					})
+				}
+
+				function appendPmId(value) {
+					var x = $scope.pm_ids.value.split(',');
+					x[x.length - 1] = value;
+					$scope.pm_ids.value = x.join(",");
+				}
+
+				$scope.incrementScore = function() {
+                    $scope.min_conf_score.value++;
+                };
+                $scope.decrementScore = function() {
+                    $scope.min_conf_score.value--;
+                };
 			}]
 		}
 	})
