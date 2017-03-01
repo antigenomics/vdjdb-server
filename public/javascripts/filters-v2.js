@@ -94,95 +94,23 @@
         }
 
         function initialize(columns) {
-
         	var text = [];
-        	var seq = [];
 
             angular.forEach(columns, function(column) {
-                var meta = column.metadata;
-                if (meta.searchable === '1') {
-                    if (meta.columnType === 'txt') {
-                        text.push({
+                text.push({
                             name: column.name,
-                            title: meta.title,
-                            types: (function() {
-                                if (meta.title === 'Gene') {
-                                    return [1];
-                                }
-                                if (meta.dataType === 'uint')
-                                    return [2];
-                                return [0, 1]
-                            }()),
-                            allowNegative: (function() {
-                                return meta.dataType !== 'uint';
-                            }()),
-                            autocomplete: column.autocomplete,
-                            values: column.values,
-                            defaultFilterType: (function() {
-                                if (meta.dataType === 'uint')
-                                    return textFiltersTypes[2];
-                                return textFiltersTypes[1];
-                            }())
+                            values: column.values
                         })
-                    } else if (meta.columnType === 'seq') {
-                        text.push({
-                            name: column.name,
-                            title: meta.title,
-                            types: [0, 1],
-                            allowNegative: true,
-                            autocomplete: false,
-                            values: [],
-                            defaultFilterType: textFiltersTypes[1]
-                        });
-                        seq.push({
-                            name: column.name,
-                            title: meta.title,
-                            types: [0, 1],
-                            allowNegative: true,
-                            autocomplete: false,
-                            values: []
-                        })
-                    }
-                }
-            });
-            text.push({
-                name: 'meta',
-                title: 'Meta',
-                types: [5],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[5]
-            });
-            text.push({
-                name: 'method',
-                title: 'Frequency',
-                types: [3],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[3]
-            });
-            text.push({
-                name: 'method',
-                title: 'Method',
-                types: [4],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[4]
             })
+
             columnsLoading = false;
 
-            //just for angular digest cycle todo
             angular.extend(textFiltersColumns, text);
-            angular.extend(sequenceFiltersColumns, seq);
         }
 
 		return {
 			getFilters: getFilters,
-			textFiltersColumns: textFiltersColumns,
-			sequenceFiltersColumns: sequenceFiltersColumns
+			textFiltersColumns: textFiltersColumns
 		}
 
 	}]);
@@ -333,8 +261,6 @@
 				var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
 					if (filters.textFiltersColumns.length != 0) {
 						findAutocompleteValues($scope.v_segment.autocomplete, $scope.j_segment.autocomplete, filters.textFiltersColumns);
-						console.log(filters.textFiltersColumns);
-						console.log($scope.j_segment.autocomplete);
 						textColumnsWatcher();
 					}
 				})
@@ -368,7 +294,6 @@
         	if (value.indexOf(',') !== -1) {
         		var values = commaValue.split(',');
         		commaValue = values[values.length - 1];
-        		console.log(commaValue);
         	}
 
             if (data instanceof Array) {
@@ -386,16 +311,19 @@
 	application.factory('filters_v2_ag', [function() {
         var ag_species = {
 			apply: false,
+			autocomplete: [ ],
 			value: ''
 		}
 
 		var ag_gene = {
 			apply: false,
+            autocomplete: [ ],
 			value: ''
 		}
 
 		var ag_sequence = {
 			apply: false,
+            autocomplete: [ ],
 			value: ''
 		}
 
@@ -425,11 +353,48 @@
 	application.directive('filtersAg', function() {
 		return {
 			restrict: 'E',
-			controller: ['$scope', 'filters_v2_ag', function($scope, filters_ag) {
+			controller: ['$scope', 'filters_v2', 'filters_v2_ag', function($scope, filters, filters_ag) {
 				$scope.ag_species = filters_ag.ag_species;
 				$scope.ag_gene = filters_ag.ag_gene;
 				$scope.ag_sequence = filters_ag.ag_sequence;
 				$scope.ag_pattern = filters_ag.ag_pattern;
+
+				$scope.appendAgSpecies = appendAgSpecies;
+				$scope.appendAgGene = appendAgGene;
+				$scope.appendAgSequence = appendAgSequence;
+
+				var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+					if (filters.textFiltersColumns.length != 0) {
+						findAutocompleteValues($scope.ag_species.autocomplete, $scope.ag_gene.autocomplete, $scope.ag_sequence.autocomplete, filters.textFiltersColumns);
+						textColumnsWatcher();
+					}
+				})
+
+				function findAutocompleteValues(agSpeciesAutocomplete, agGeneAutocomplete, agSequenceAutocomplete, columns) {
+					angular.forEach(columns, function(column) {
+						if (column.name == 'antigen.species') angular.extend(agSpeciesAutocomplete, column.values);
+						if (column.name == 'antigen.gene') angular.extend(agGeneAutocomplete, column.values);
+						if (column.name == 'antigen.epitope') angular.extend(agSequenceAutocomplete, column.values);
+					})
+				}
+
+				function appendAgSpecies(value) {
+					var x = $scope.ag_species.value.split(',');
+					x[x.length - 1] = value;
+					$scope.ag_species.value = x.join(",");
+				}
+
+				function appendAgGene(value) {
+					var x = $scope.ag_gene.value.split(',');
+					x[x.length - 1] = value;
+					$scope.ag_gene.value = x.join(",");
+				}
+
+				function appendAgSequence(value) {
+					var x = $scope.ag_sequence.value.split(',');
+					x[x.length - 1] = value;
+					$scope.ag_sequence.value = x.join(",");
+				}
 			}]
 		}
 	});
