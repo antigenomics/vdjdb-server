@@ -6,6 +6,7 @@
     module.factory('table', function() {
         var columns = [];
         var columnsLength = 0;
+        var cdr3FixColumnIndex = -1;
 
         function getColumns() {
             return columns;
@@ -20,12 +21,20 @@
                 if (column.metadata.visible === "1") columnsLength += 1;
             });
             columns.splice(0, columns.length);
-            angular.extend(columns, newcolumns)
+            angular.extend(columns, newcolumns);
+            cdr3FixColumnIndex = getCdr3FixIndex();
         }
 
         function columnByName(columnName) {
             for (var i = 0; i < columns.length; i++) {
                 if (columns[i].name === columnName) return columns[i];
+            }
+            return null;
+        }
+
+        function getCdr3FixIndex() {
+            for (var i = 0; i < columns.length; i++) {
+                if (columns[i].name === "cdr3fix") return i;
             }
             return null;
         }
@@ -37,7 +46,7 @@
             var columnName = column.name;
             var dataType = columnMeta.dataType;
             if (columnName === 'cdr3') {
-                var cdr3fix = JSON.parse(entries[entries.length - 2].value);
+                var cdr3fix = JSON.parse(entries[cdr3FixColumnIndex].value);
                 var vend = cdr3fix['vEnd'];
                 var jstart = cdr3fix['jStart'];
                 var vRegion = '', jRegion = '', otherRegion = '';
@@ -82,7 +91,7 @@
             if (dataType === 'url') {
                 if (value.indexOf('PMID') >= 0) {
                     var id = value.substring(5, value.length);
-                    value = 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                    value = 'PMID:<a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
                 } else if (value.indexOf('http') >= 0) {
                     var domain;
                     //find & remove protocol (http, ftp, etc.) and get domain

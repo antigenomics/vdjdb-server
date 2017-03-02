@@ -32,6 +32,7 @@ object Filters {
     val warnings = ListBuffer[String]()
     val textFilters : util.ArrayList[TextFilter] = new util.ArrayList[TextFilter]()
     val columns = GlobalDatabase.getColumns
+
     text.foreach(filter => {
       if (columns.map(column => column.name).indexOf(filter.columnId) >= 0) {
         filter.value match {
@@ -52,6 +53,7 @@ object Filters {
         warnings += ("Bad text filter - " + filter + " - wrong column")
       }
     })
+
     val sequenceFilters : util.ArrayList[SequenceFilter] = new util.ArrayList[SequenceFilter]()
     sequence.foreach(filter => {
       filter.columnId match {

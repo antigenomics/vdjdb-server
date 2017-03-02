@@ -86,13 +86,13 @@ body {
     width: 100%;
     height: 50px;
     z-index: 20000;
-    background-color: #ffffff;
-    border-bottom: 2px solid #605ca8;
+    background-color: #3e3e3e;
+    border-bottom: 2px solid #3e3e3e;
 }
 
 .index_navbar {
     position: fixed;
-    top: 15px;
+    top: 13px;
     left: 15%;
     width: 70%;
     height: 35px;
@@ -102,7 +102,7 @@ body {
 
 .index_navbar > .navbar_cell {
     float: left;
-    width: 100px;
+    width: 150px;
     height: 100%;
     cursor: pointer;
     margin: auto;
@@ -111,7 +111,7 @@ body {
 }
 
 .navbar_cell:hover {
-    border-bottom: 4px solid #605ca8;
+    border-bottom: 6px solid #ffffff;
 }
 
 .brand_cell {
@@ -132,7 +132,8 @@ body {
 
 .index_navbar > .navbar_cell > a {
     text-decoration: none;
-    color: #605ca8;
+    color: #ffffff;
+    font-size: large;
 }
 
 .auth_wrapper {
@@ -402,6 +403,7 @@ body {
 .panel-title > a:hover,
 .panel-title > a:active,
 .panel-title > a:focus  {
+    color: #ffffff;
     text-decoration:none;
 }
 
@@ -487,4 +489,38 @@ div.tooltip-inner {
     max-width: 350px;
     white-space:pre-wrap;
     text-align: left;
+}
+
+.panel-primary > .panel-heading {
+  color: #f7f7f7;
+  background-color: #01665e !important;
+  border-color: #01665e !important;
+  border-radius: 0 !important;
+}
+
+.panel-primary {
+  border-color: #01665e !important;
+  border-radius: 0 !important;
+}
+
+.btn-primary {
+  color: #f7f7f7;
+  background-color: #01665e !important;
+  border-color: #01665e !important;
+  border-radius: 0 !important;
+}
+
+.btn-danger {
+  color: #f7f7f7;
+  background-color: #b2182b;
+  border-color: #b2182b;
+  border-radius: 0 !important;
+}
+
+.btn-default {
+  border-radius: 0 !important;
+}
+
+.panel-default {
+  border-radius: 0 !important;
 }

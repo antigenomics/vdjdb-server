@@ -345,6 +345,10 @@
                 $scope.copyToClip = copyToClip;
                 $scope.copyToClipNotification = copyToClipNotification;
 
+                $scope.reloadRoute = function() {
+                   $route.reload();
+                }
+
                 function isShowPagination() {
                     if (!SearchDatabaseAPI.isDataFound() || SearchDatabaseAPI.isLoading()) return false;
                     return $scope.totalItems() > 0;

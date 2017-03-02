@@ -174,7 +174,7 @@
     		        columnId: 'vdjdb.score',
     		        filterType: 'level',
     		        negative: false,
-    		        value: value
+    		        value: value.toString()
     		    })
             }
 
@@ -193,25 +193,21 @@
         }
 
         var v_segment = {
-            apply: false,
             autocomplete: [ ],
             value: ''
         }
 
         var j_segment = {
-            apply: false,
             autocomplete: [ ],
             value: ''
         }
 
         var cdr3_pattern = {
-            apply: false,
             value: '',
             substring: false
         }
 
         var cdr3_hamming = {
-            apply: false,
             value: '',
             s: 0,
             i: 0,
@@ -225,11 +221,11 @@
             if (general_tcr.tra == false) addExactFilter(filters, 'gene', 'TRA');
             if (general_tcr.trb == false) addExactFilter(filters, 'gene', 'TRB');
 
-            if (v_segment.apply == true) addCsTextFilter(filters, 'v.segm', v_segment.value);
-            if (j_segment.apply == true) addCsTextFilter(filters, 'j.segm', j_segment.value);
+            if (v_segment.value.length > 0) addCsTextFilter(filters, 'v.segm', v_segment.value);
+            if (j_segment.value.length > 0) addCsTextFilter(filters, 'j.segm', j_segment.value);
 
-            if (cdr3_pattern.apply == true) addSequencePatternFilter(filters, "cdr3", cdr3_pattern.substring, cdr3_pattern.value);
-            if (cdr3_hamming.apply == true) addHammingFilter(filters, "cdr3", cdr3_hamming.s, cdr3_hamming.i, cdr3_hamming.d, cdr3_hamming.value);
+            if (cdr3_pattern.value.length > 0) addSequencePatternFilter(filters, "cdr3", cdr3_pattern.substring, cdr3_pattern.value);
+            if (cdr3_hamming.value.length > 0) addHammingFilter(filters, "cdr3", cdr3_hamming.s, cdr3_hamming.i, cdr3_hamming.d, cdr3_hamming.value);
         }
 
         return {
@@ -267,8 +263,8 @@
 
 				function findAutocompleteValues(vAutocomplete, jAutocomplete, columns) {
 					angular.forEach(columns, function(column) {
-						if (column.name == 'v.segm') angular.extend(vAutocomplete, column.values);
-						if (column.name == 'j.segm') angular.extend(jAutocomplete, column.values);
+						if (column.name == 'v.segm') angular.extend(vAutocomplete, column.values.sort());
+						if (column.name == 'j.segm') angular.extend(jAutocomplete, column.values.sort());
 					})
 				}
 
@@ -329,35 +325,31 @@
 
 	application.factory('filters_v2_ag', [function() {
         var ag_species = {
-			apply: false,
 			autocomplete: [ ],
 			value: ''
 		}
 
 		var ag_gene = {
-			apply: false,
             autocomplete: [ ],
 			value: ''
 		}
 
 		var ag_sequence = {
-			apply: false,
             autocomplete: [ ],
 			value: ''
 		}
 
         var ag_pattern = {
-            apply: false,
         	value: '',
         	substring: false
         }
 
         function updateFilters(filters) {
-			if (ag_species.apply == true) addCsTextFilterExact(filters, 'antigen.species', ag_species.value);
-			if (ag_gene.apply == true) addCsTextFilterExact(filters, 'antigen.gene', ag_gene.value);
+			if (ag_species.value.length > 0) addCsTextFilterExact(filters, 'antigen.species', ag_species.value);
+			if (ag_gene.value.length > 0) addCsTextFilterExact(filters, 'antigen.gene', ag_gene.value);
 
-			if (ag_sequence.apply == true) addCsTextFilterExact(filters, 'antigen.epitope', ag_sequence.value);
-			if (ag_pattern.apply == true) addSequencePatternFilter(filters, "antigen.epitope", ag_pattern.substring, agPattern.value);
+			if (ag_sequence.value.length > 0) addCsTextFilterExact(filters, 'antigen.epitope', ag_sequence.value);
+			if (ag_pattern.value.length > 0) addSequencePatternFilter(filters, "antigen.epitope", ag_pattern.substring, ag_pattern.value);
         }
 
         return {
@@ -391,9 +383,9 @@
 
 				function findAutocompleteValues(agSpeciesAutocomplete, agGeneAutocomplete, agSequenceAutocomplete, columns) {
 					angular.forEach(columns, function(column) {
-						if (column.name == 'antigen.species') angular.extend(agSpeciesAutocomplete, column.values);
-						if (column.name == 'antigen.gene') angular.extend(agGeneAutocomplete, column.values);
-						if (column.name == 'antigen.epitope') angular.extend(agSequenceAutocomplete, column.values);
+						if (column.name == 'antigen.species') angular.extend(agSpeciesAutocomplete, column.values.sort());
+						if (column.name == 'antigen.gene') angular.extend(agGeneAutocomplete, column.values.sort());
+						if (column.name == 'antigen.epitope') angular.extend(agSequenceAutocomplete, column.values.sort());
 					})
 				}
 
@@ -427,13 +419,11 @@
 		}
 
 		var mhc_a = {
-			apply: false,
 			autocomplete: [ ],
 			value: ''
 		}
 
 		var mhc_b = {
-			apply: false,
 			autocomplete: [ ],
 			value: ''
 		}
@@ -442,8 +432,8 @@
 			if (mhc_class.mhci == false) addExactFilter(filters, 'mhc.class', 'MHCI');
 			if (mhc_class.mhcii == false) addExactFilter(filters, 'mhc.class', 'MHCII');
 
-			if (mhc_a.apply == true) addCsTextFilter(filters, 'mhc.a', mhc_a.value);
-			if (mhc_b.apply == true) addCsTextFilter(filters, 'mhc.b', mhc_b.value);
+			if (mhc_a.value.length > 0) addCsTextFilter(filters, 'mhc.a', mhc_a.value);
+			if (mhc_b.value.length > 0) addCsTextFilter(filters, 'mhc.b', mhc_b.value);
         }
 
         return {
@@ -474,8 +464,8 @@
 
 				function findAutocompleteValues(mhcAAutocomplete, mhcBAutocomplete, columns) {
 					angular.forEach(columns, function(column) {
-						if (column.name == 'mhc.a') angular.extend(mhcAAutocomplete, column.values);
-						if (column.name == 'mhc.b') angular.extend(mhcBAutocomplete, column.values);
+						if (column.name == 'mhc.a') angular.extend(mhcAAutocomplete, column.values.sort());
+						if (column.name == 'mhc.b') angular.extend(mhcBAutocomplete, column.values.sort());
 					})
 				}
 
@@ -498,7 +488,6 @@
 
 	application.factory('filters_v2_meta', [function() {
 		var pm_ids = {
-			apply: false,
 			autocomplete: [],
 			value: ''
 		}
@@ -519,7 +508,7 @@
 		}
 
         function updateFilters(filters) {
-			if (pm_ids.apply == true) addCsTextFilterExact(filters, 'reference.id', pm_ids.value);
+			if (pm_ids.value.length > 0) addCsTextFilterExact(filters, 'reference.id', pm_ids.value);
 
 			if (meta_tags.methodSort == false) addExactFilter(filters, 'web.method', 'sort');
 			if (meta_tags.methodCulture == false) addExactFilter(filters, 'web.method', 'culture');
@@ -562,7 +551,7 @@
 
 				function findAutocompleteValues(pmIdsAutocomplete, columns) {
 					angular.forEach(columns, function(column) {
-						if (column.name == 'reference.id') angular.extend(pmIdsAutocomplete, column.values);
+						if (column.name == 'reference.id') angular.extend(pmIdsAutocomplete, column.values.sort());
 					})
 				}
 

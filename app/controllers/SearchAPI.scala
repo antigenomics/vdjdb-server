@@ -1,6 +1,8 @@
 package controllers
 
 
+import java.io.{PrintWriter, StringWriter}
+
 import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
 import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import play.api.libs.json._
@@ -15,6 +17,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import server.websocket._
 import server.websocket.search._
 import server.websocket.search.WebSocketSearchMessages._
+
 import scala.collection.JavaConversions._
 
 
@@ -144,7 +147,10 @@ object SearchAPI extends Controller {
           }
         } catch {
           case e : Exception =>
-            print(e)
+            val sw = new StringWriter
+            e.printStackTrace(new PrintWriter(sw))
+            println(sw.toString)
+
             channel push toJson(ErrorMessage("Invalid request"))
         }
     }

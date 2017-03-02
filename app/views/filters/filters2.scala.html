@@ -83,7 +83,7 @@
                                     <h4 class="panel-title">
                                         Germline sequence
                                         <span data-toggle="tooltip" data-placement="right"
-                                              title="</p>Specify Variable (V) and Joining (J) segment filters.</p><p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma.</p><p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...', 'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p><p>Check the box to the left of the textbox to enable each filter.</p>"
+                                              title="</p>Specify Variable (V) and Joining (J) segment filters.</p><p>Click on the text field to see the list of known V/J segment IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma.</p><p>Incomplete queries will be treated as substrings. For example 'TRBV7' will match 'TRBV7-2*01, TRBV7-2*02, ... and TRBV7-9*01, TRBV7-9*02, ...', 'TRBV7-2' will match 'TRBV7-2*01, TRBV7-2*02, ...', etc.</p>"
                                               class="glyphicon glyphicon-question-sign">
                                         </span>
                                     </h4>
@@ -93,16 +93,7 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Variable segment(s)</p>
                                         </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" ng-model="v_segment.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-7">
+                                        <div class="col-xs-8">
                                             <div class="select_drop">
                                                 <input class="form-control" type="text"
                                                        placeholder="Comma separated list of V segments, start typing to see suggestions..."
@@ -121,16 +112,7 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Joining segment(s)</p>
                                         </div>
-                                        <div class="col-xs-1 vcenter">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" ng-model="j_segment.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-7 vcenter">
+                                        <div class="col-xs-8 vcenter">
                                             <div class="select_drop">
                                                 <input class="form-control" type="text"
                                                        placeholder="Comma separated list of J segments, start typing to see suggestions..."
@@ -153,7 +135,7 @@
                                     <h4 class="panel-title">
                                         CDR3
                                         <span data-toggle="tooltip" data-placement="right"
-                                              title="<p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p><p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p><p>Hamming distance filter expects complete sequence with no wildcards, and user can specify the number of substitutions, insertions and deletions allowed during the search.</p><p>Check the box to the left of the textbox to enable each filter.</p>"
+                                              title="<p>Narrow search to a specific CDR3 motif or sequence different by no more than the specified number of mismatches from the query.</p><p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'CASSL[ASR]PGATNEKLFF' will search for 'CASSLaPGATNEKLFF', 'CASSLsPGATNEKLFF' and 'CASSLrPGATNEKLFF'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p><p>Hamming distance filter expects complete sequence with no wildcards, and user can specify the number of substitutions, insertions and deletions allowed during the search.</p>"
                                               class="glyphicon glyphicon-question-sign">
                                     </span>
                                     </h4>
@@ -163,17 +145,8 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Sequence or pattern</p>
                                         </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="cdr3_pattern.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-5">
-                                            <input class="form-control" type="text" ng-model="cdr3_pattern.value">
+                                        <div class="col-xs-6">
+                                            <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." ng-model="cdr3_pattern.value">
                                         </div>
                                         <div class="col-xs-2">
                                             <div class="checkbox">
@@ -190,50 +163,41 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">By hamming distance</p>
                                         </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="cdr3_hamming.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-5">
-                                            <input class="form-control" type="text" ng-model="cdr3_hamming.value">
+                                        <div class="col-xs-6">
+                                            <input class="form-control" type="text" placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." ng-model="cdr3_hamming.value">
                                         </div>
                                         <div class="col-xs-3">
                                             Substitutions
                                             <div class="input-group">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementS()" ng-disabled="cdr3_hamming.s<=0">-</button>
+                                                <button class="btn btn-default" type="button" ng-click="decrementS()" ng-disabled="cdr3_hamming.s<=0"><span class="glyphicon glyphicon-minus"></span></button>
                                             </span>
                                                 <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;"
                                                        value="0" ng-model="cdr3_hamming.s">
                                                 <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementS()" ng-disabled="cdr3_hamming.s>=5">+</button>
+                                                <button class="btn btn-default" type="button" ng-click="incrementS()" ng-disabled="cdr3_hamming.s>=5"><span class="glyphicon glyphicon-plus"></span></button>
                                             </span>
                                             </div>
                                             Insertions
                                             <div class="input-group">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementI()" ng-disabled="cdr3_hamming.i<=0">-</button>
+                                                <button class="btn btn-default" type="button" ng-click="decrementI()" ng-disabled="cdr3_hamming.i<=0"><span class="glyphicon glyphicon-minus"></span></button>
                                             </span>
                                                 <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;"
                                                        value="0" ng-model="cdr3_hamming.i">
                                                 <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementI()" ng-disabled="cdr3_hamming.i>=3">+</button>
+                                                <button class="btn btn-default" type="button" ng-click="incrementI()" ng-disabled="cdr3_hamming.i>=3"><span class="glyphicon glyphicon-plus"></span></button>
                                             </span>
                                             </div>
                                             Deletions
                                             <div class="input-group">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementD()" ng-disabled="cdr3_hamming.d<=0">-</button>
+                                                <button class="btn btn-default" type="button" ng-click="decrementD()" ng-disabled="cdr3_hamming.d<=0"><span class="glyphicon glyphicon-minus"></span></button>
                                             </span>
                                                 <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;"
                                                        value="0" ng-model="cdr3_hamming.d">
                                                 <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementD()" ng-disabled="cdr3_hamming.d>=3">+</button>
+                                                <button class="btn btn-default" type="button" ng-click="incrementD()" ng-disabled="cdr3_hamming.d>=3"><span class="glyphicon glyphicon-plus"></span></button>
                                             </span>
                                             </div>
                                         </div>
@@ -263,7 +227,7 @@
                                         Origin
 
                                         <span data-toggle="tooltip" data-placement="right"
-                                              title="</p>List the representative parent species and genes of the antigen.</p><p>Click on the text field to see the list of known species/genes, start typing to narrow the list. Multiple species/genes can be selected by separating them with a comma.</p><p>Check the box to the left of the textbox to enable each filter.</p>"
+                                              title="</p>List the representative parent species and genes of the antigen.</p><p>Click on the text field to see the list of known species/genes, start typing to narrow the list. Multiple species/genes can be selected by separating them with a comma.</p>"
                                               class="glyphicon glyphicon-question-sign">
                                     </span>
                                     </h4>
@@ -273,16 +237,7 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Source species</p>
                                         </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="ag_species.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-7">
+                                        <div class="col-xs-8">
                                             <div class="select_drop">
                                                 <input class="form-control" type="text"
                                                        placeholder="Comma separated list of antigen species, start typing to see suggestions..."
@@ -301,16 +256,7 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Parent gene</p>
                                         </div>
-                                        <div class="col-xs-1 vcenter">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="ag_gene.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-7 vcenter">
+                                        <div class="col-xs-8 vcenter">
                                             <div class="select_drop">
                                                 <input class="form-control" type="text"
                                                        placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
@@ -333,7 +279,7 @@
                                     <h4 class="panel-title">
                                         Epitope
                                         <span data-toggle="tooltip" data-placement="right"
-                                              title="</p>Specify the epitope sequences or sequence pattern.</p><p>In case of searching for a set of sequences click on the text field to the right of 'Sequence(s)', start typing to narrow the list. Multiple sequences can be selected by separating them with a comma.</p><p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'GILG[FG]VFTL' will search for 'GILGgVFTL' and 'GILGfVFTL'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p><p>Check the box to the left of the textbox to enable each filter.</p>"
+                                              title="</p>Specify the epitope sequences or sequence pattern.</p><p>In case of searching for a set of sequences click on the text field to the right of 'Sequence(s)', start typing to narrow the list. Multiple sequences can be selected by separating them with a comma.</p><p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'GILG[FG]VFTL' will search for 'GILGgVFTL' and 'GILGfVFTL'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>"
                                               class="glyphicon glyphicon-question-sign">
                                     </span>
                                     </h4>
@@ -343,16 +289,7 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Sequence(s)</p>
                                         </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="ag_sequence.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-7">
+                                        <div class="col-xs-8">
                                             <div class="select_drop">
                                                 <input class="form-control" type="text"
                                                        placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
@@ -371,17 +308,8 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Sequence or pattern</p>
                                         </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="ag_pattern.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-5">
-                                            <input class="form-control" type="text" ng-model="ag_pattern.value">
+                                        <div class="col-xs-6">
+                                            <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. LLFG[FY][AP]VYV or LLFGXXXYV." ng-model="ag_pattern.value">
                                         </div>
                                         <div class="col-xs-2">
                                             <div class="checkbox">
@@ -456,7 +384,7 @@
                                     <h4 class="panel-title">
                                         Haplotype
                                         <span data-toggle="tooltip" data-placement="right"
-                                              title="</p>Specify first and second MHC allele filters.</p><p>Click on the text field to see the list of known MHC allele IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma.</p><p>Incomplete queries will be treated as substrings. For example 'HLA-A*02' will match 'HLA-A*02, HLA-A*02, HLA-A*02:01 etc'.</p><p>The second MHC allele is only meaningful for MHC class II and is set to B2M (beta 2 microglobulin) for MHC class I records.</p><p>Check the box to the left of the textbox to enable each filter.</p>"
+                                              title="</p>Specify first and second MHC allele filters.</p><p>Click on the text field to see the list of known MHC allele IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma.</p><p>Incomplete queries will be treated as substrings. For example 'HLA-A*02' will match 'HLA-A*02, HLA-A*02, HLA-A*02:01 etc'.</p><p>The second MHC allele is only meaningful for MHC class II and is set to B2M (beta 2 microglobulin) for MHC class I records.</p>"
                                               class="glyphicon glyphicon-question-sign">
                                     </span>
                                     </h4>
@@ -466,16 +394,7 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">First chain allele(s)</p>
                                         </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="mhc_a.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-7">
+                                        <div class="col-xs-8">
                                             <div class="select_drop">
                                                 <input class="form-control" type="text"
                                                        placeholder="Comma separated list of MHC alleles, start typing to see suggestions..."
@@ -494,16 +413,7 @@
                                         <div class="col-xs-3">
                                             <p class="vcenter">Second chain allele(s)</p>
                                         </div>
-                                        <div class="col-xs-1 vcenter">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="mhc_b.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-7 vcenter">
+                                        <div class="col-xs-8 vcenter">
                                             <div class="select_drop">
                                                 <input class="form-control" type="text"
                                                        placeholder="Comma separated list of MHC alleles, start typing to see suggestions..."
@@ -542,24 +452,15 @@
                                     <h4 class="panel-title">
                                         General
                                         <span data-toggle="tooltip" data-placement="right"
-                                              title="<p>Publication ID and assay type filtering.</p><p>Specify the list of Pubmed IDs to search for: click on the text field to see the list of known IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma. Check the box to the left of the textbox to enable the filter.</p><p>Assay types and sequencing methods can be selected by using corresponding checkboxes, for more information see VDJdb specification.</p>"
+                                              title="<p>Publication ID and assay type filtering.</p><p>Specify the list of Pubmed IDs to search for: click on the text field to see the list of known IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma.</p><p>Assay types and sequencing methods can be selected by using corresponding checkboxes, for more information see VDJdb specification.</p>"
                                               class="glyphicon glyphicon-question-sign">
                                     </span>
                                     </h4>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
-                                        <div class="col-xs-2">
+                                        <div class="col-xs-3">
                                             <p class="vcenter">Pubmed ID(s)</p>
-                                        </div>
-                                        <div class="col-xs-1">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" value="" ng-model="pm_ids.apply">
-                                                    <span class="cr"><i
-                                                            class="cr-icon glyphicon glyphicon-ok"></i></span>
-                                                </label>
-                                            </div>
                                         </div>
                                         <div class="col-xs-8">
                                             <div class="select_drop">
@@ -663,12 +564,12 @@
                                         <div class="col-xs-3">
                                             <div class="input-group">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementScore()" ng-disabled="min_conf_score.value<=0">-</button>
+                                                <button class="btn btn-default" type="button" ng-click="decrementScore()" ng-disabled="min_conf_score.value<=0"><span class="glyphicon glyphicon-minus"></span></button>
                                             </span>
                                                 <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;"
                                                        value="0" ng-model="min_conf_score.value">
                                                 <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementScore()" ng-disabled="min_conf_score.value>=3">+</button>
+                                                <button class="btn btn-default" type="button" ng-click="incrementScore()" ng-disabled="min_conf_score.value>=3"><span class="glyphicon glyphicon-plus"></span></button>
                                             </span>
                                             </div>
                                         </div>

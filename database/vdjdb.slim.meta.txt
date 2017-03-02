@@ -3,7 +3,6 @@ complex.id	txt
 gene	txt
 cdr3	seq
 v.segm	txt
-d.segm	txt
 j.segm	txt
 species	txt
 mhc.a	txt
