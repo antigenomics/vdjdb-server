@@ -305,10 +305,13 @@
             checkFile(file, function() {
                 if (filters_v2.checkErrors()) {
                     if (filters_v2.checkSequencePattern()) {
-                        notify.erro('Search', 'Invalid sequence pattern');
+                        notify.error('Search', 'Invalid cdr3 sequence pattern');
                     }
                     if (filters_v2.checkHamming()) {
                         notify.error('Search', 'Invalid hamming query');
+                    }
+                    if (filters_v2.checkAntigentSequencePattern()) {
+                        notify.error('Search', 'Invalid antigen sequence pattern');   
                     }
                 } else {
                     connection.send({

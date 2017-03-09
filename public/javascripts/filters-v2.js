@@ -107,13 +107,18 @@
                 filters_meta.resetFilters();
             }
 
+            function checkErrors() {
+                return filters_tcr.checkErrors() || filters_ag.checkAntigentSequencePattern();
+            }
+
             return {
                 getFilters: getFilters,
                 resetFilters: resetFilters,
                 columns: columns,
-                checkErrors: filters_tcr.checkErrors,
+                checkErrors: checkErrors,
                 checkSequencePattern: filters_tcr.checkSequencePattern,
-                checkHamming: filters_tcr.checkHamming
+                checkHamming: filters_tcr.checkHamming,
+                checkAntigentSequencePattern: filters_ag.checkAntigentSequencePattern
             }
 
         }]);
@@ -405,6 +410,35 @@
             ag_pattern = '';
         }
 
+        function checkAntigentSequencePattern() {
+            var leftBracketStart = false;
+            var error = false;
+
+            if (ag_pattern.value.length > 100) return true;
+
+            var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+
+            for (var i = 0; i < ag_pattern.value.length; i++) {
+                var char = ag_pattern.value[i];
+                if (char === '[') {
+                    if (leftBracketStart === true) {
+                        error = true
+                        break
+                    }
+                    leftBracketStart = true
+                } else if (char === ']') {
+                    leftBracketStart = false;
+                } else {
+                    if (char != 'X' && allowed_chars.indexOf(char) === -1) {
+                        error = true;
+                        break;
+                    }
+                }
+            }
+
+            return leftBracketStart || error;
+        }
+
         function updateFilters(filters) {
             if (ag_species.value.length > 0) addCsTextFilterExact(filters, 'antigen.species', ag_species.value);
             if (ag_gene.value.length > 0) addCsTextFilterExact(filters, 'antigen.gene', ag_gene.value);
@@ -419,7 +453,8 @@
             ag_sequence: ag_sequence,
             ag_pattern: ag_pattern,
             updateFilters: updateFilters,
-            resetFilters: resetFilters
+            resetFilters: resetFilters,
+            checkAntigentSequencePattern: checkAntigentSequencePattern
         }
     }]);
 
@@ -435,6 +470,8 @@
                 $scope.appendAgSpecies = appendAgSpecies;
                 $scope.appendAgGene = appendAgGene;
                 $scope.appendAgSequence = appendAgSequence;
+
+                $scope.checkAntigentSequencePattern = filters_ag.checkAntigentSequencePattern;
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
                     if (filters.columns.length != 0) {

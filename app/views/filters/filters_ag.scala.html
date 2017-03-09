@@ -101,7 +101,10 @@
                                         <p class="p_label">Sequence or pattern</p>
                                     </div>
                                     <div class="col-xs-5">
-                                        <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. LLFG[FY][AP]VYV or LLFGXXXYV." ng-model="ag_pattern.value">
+                                        <div class="form-group" ng-class="{'has-error has-feedback':checkAntigentSequencePattern()}">
+                                            <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. LLFG[FY][AP]VYV or LLFGXXXYV." ng-model="ag_pattern.value">
+                                            <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="checkAntigentSequencePattern()"></span>
+                                        </div>
                                     </div>
                                     <div class="col-xs-1">
                                         <p class="p_label">Substring</p>
