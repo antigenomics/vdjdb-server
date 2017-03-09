@@ -1,133 +1,69 @@
 @main("VDJdb: search") {
-<script src="@routes.Assets.at("lib/jquery/jquery-ui.min.js")" type="text/javascript"></script>
-<link href="@routes.Assets.at("lib/jquery/jquery-ui.min.css")" rel="stylesheet">
-<link href="@routes.Assets.at("lib/jquery/jquery-ui.structure.min.css")" rel="stylesheet">
-<link href="@routes.Assets.at("lib/jquery/jquery-ui.theme.min.css")" rel="stylesheet">
-<script src="@routes.Assets.at("lib/angular/plugins/bootstrap/ui-bootstrap-tpls-0.12.1.min.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ZeroClipboard.min.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ng-clip.min.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("javascripts/table.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("javascripts/filters.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("javascripts/filters-v2.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("javascripts/search/search.js")" type="text/javascript"></script>
-<!-- temp -->
-<script src="@routes.Assets.at("javascripts/misc.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("javascripts/tooltip.js")" type="text/javascript"></script>
-@views.html.navbar(false)
-<div ng-app="searchPage" class="wrapper">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading text-center">
-                        <h2 class="panel-title">
-                        Database browser
-                        </h2>
-                    </div>
-                    <div class="panel-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <p>The table below shows VDJdb records, more information for each column contents is displayed when hovering over the column name. In case a paired TCR chain (alpha or beta) is available for a given record, it can be fetched by clicking the plus sign to the left of the record. A comprehensive specification of VDJdb record fields/columns can be found <a href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md'>here</a>.</p>
-                                <p>The database can be searched using T-cell receptor (TCR), antigen, major histocompatibility complex (MHC) and record metadata field filters:
+    <script src="@routes.Assets.at("lib/jquery/jquery-ui.min.js")" type="text/javascript"></script>
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.structure.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("lib/jquery/jquery-ui.theme.min.css")" rel="stylesheet">
+    <script src="@routes.Assets.at("lib/angular/plugins/bootstrap/ui-bootstrap-tpls-0.12.1.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ZeroClipboard.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/angular/plugins/zeroclipboard/ng-clip.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/table.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/filters.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/filters-v2.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/search/search.js")" type="text/javascript"></script>
+    @views.html.navbar(false)
+    <div ng-app="searchPage" class="wrapper">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading text-center">
+                            <h2 class="panel-title">
+                                Database browser
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p>The table below shows VDJdb records, more information for each column contents is displayed when hovering over the column name. In case a paired TCR chain (alpha or beta) is available for a given record, it can be fetched by clicking the plus sign to the left of the record. A comprehensive specification of VDJdb record fields/columns can be found <a href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md'>here</a>.</p>
+                                    <p>The database can be searched using T-cell receptor (TCR), antigen, major histocompatibility complex (MHC) and record metadata field filters:</p>
                                     <ul>
-                                    <li>Click on the corresponding panels below to expand the filters.</li>
-                                    <li>Detailed information for each filter can be found by hovering over the question marks.</li>
-                                    <li>Use the buttons below to refresh the table or reset the filters.</li>
-                                    <li>Filtered table can be exported as an XLS or a plain-text CSV file.</li>
+                                        <li>Click on the corresponding panels below to expand the filters.</li>
+                                        <li>Detailed information for each filter can be found by hovering over the question marks.</li>
+                                        <li>Use the buttons below to refresh the table or reset the filters.</li>
+                                        <li>Filtered table can be exported as an XLS or a plain-text CSV file.</li>
                                     </ul>
-                                </p>
-                            </div>
-                        </div>
-                        <br>
-                        <div class="row">
-                            <div class="col-md-9">
-                                <button type="button" class="btn btn-primary" onclick = "scrollDown()" ng-click="searchWS()">Refresh table</button>
-                                <button type="button" class="btn btn-danger">Reset filters</button>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="input-group mb-2 pull-right">
-                                    <div class="input-group-addon">Page size</div>
-                                    <select name="selectPageSize" id="selectPageSize" class="pull-right form-control" ng-model="userPageSize" ng-change="changePageSize()" convert-to-number>
-                                        <option value="25">25</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
+
                                 </div>
                             </div>
-                            <div class="col-md-1">
-                                <div class="btn-group pull-right">
-                                    <button type="button" class="pull-right btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                        Export table <span class="caret"></span></button>
-                                    <ul class="dropdown-menu" role="menu">
-                                        <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
-                                        <li><a href="#">As CSV</a></li>
-                                    </ul>
+                            <br>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <button type="button" class="btn btn-primary" ng-click="searchWS()">Refresh table</button>
+                                    <button type="button" class="btn btn-danger">Reset filters</button>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @views.html.filters.filters2()
-        <search-websocket>
-        <div class="row scroll-down-to">
-            <div class="col-md-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading text-center">
-                        <h3 class="panel-title">
-                            Results
-                        </h3>
-                    </div>
-                    <div class="panel-body" ng-if="isLoading()">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="spinner">
-                                    <div class="cube1"></div>
-                                    <div class="cube2"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel-body" ng-if="!isLoading()">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div id="table_wrapper">
-                                    <div class="block_background" ng-if="isPageLoading()"></div>
-                                    <div class="block_processing" ng-if="isPageLoading()">
-                                        <h3>Loading...</h3></div>
-                                    <div class="text-center" ng-if="isConnectionBroken()">
-                                        <h4>No connection to database. Please refresh the page.</h4>
+                                <div class="col-md-2">
+                                    <div class="form-group select_drop">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Page size</span>
+                                            <input class="form-control" type="text" ng-model="userPageSize" readonly>
+                                        </div>
+                                        <div class="select_drop_container select_drop_container_active">
+                                            <ul>
+                                                <li ng-click="selectPageSize(25)">25</li>
+                                                <li ng-click="selectPageSize(50)">50</li>
+                                                <li ng-click="selectPageSize(100)">100</li>
+                                            </ul>
+                                        </div>
                                     </div>
-                                    <div ng-if="isSearchStarted()">
-                                        <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                        </pagination>
-                                        <div id="table_scroll_wrapper">
-                                            <table class="table table-hover table-bordered compact">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr ng-repeat="(rowIndex, row) in getData()" on-last-repeat="row" ng-class="{'complex_parent':row.complexFound, 'complex_child':row.complex}">
-                                                        <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, row.entries)"></td>
-                                                    </tr>
-                                                </tbody>
-                                                <tfoot>
-                                                    <tr>
-                                                        <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
-                                                        </th>
-                                                    </tr>
-                                                </tfoot>
-                                            </table>
-                                        </div>
-                                        <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                        </pagination>
-                                        <div class="text-center" ng-if="!isDataFound()">
-                                            <h4>No data found</h4>
-                                        </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <div class="btn-group pull-right">
+                                        <button type="button" class="pull-right btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            Export table <span class="caret"></span></button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
+                                            <li><a href="#">As CSV</a></li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -135,9 +71,75 @@
                     </div>
                 </div>
             </div>
+            @views.html.filters.filters2()
+            <search-websocket>
+                <div class="row scroll-down-to">
+                    <div class="col-md-12">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading text-center">
+                                <h3 class="panel-title">
+                                    Results
+                                </h3>
+                            </div>
+                            <div class="panel-body" ng-if="isLoading()">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="spinner">
+                                            <div class="cube1"></div>
+                                            <div class="cube2"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-body" ng-if="!isLoading()">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div id="table_wrapper">
+                                            <div class="block_background" ng-if="isPageLoading()"></div>
+                                            <div class="block_processing" ng-if="isPageLoading()">
+                                                <h3>Loading...</h3></div>
+                                            <div class="text-center" ng-if="isConnectionBroken()">
+                                                <h4>No connection to database. Please refresh the page.</h4>
+                                            </div>
+                                            <div ng-if="isSearchStarted()">
+                                                <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                                </pagination>
+                                                <div id="table_scroll_wrapper">
+                                                    <table class="table table-hover table-bordered compact">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr ng-repeat="(rowIndex, row) in getData()" on-last-repeat="row" ng-class="{'complex_parent':row.complexFound, 'complex_child':row.complex}">
+                                                                <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, row.entries)"></td>
+                                                            </tr>
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <tr>
+                                                                <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                                </th>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                                <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                                </pagination>
+                                                <div class="text-center" ng-if="!isDataFound()">
+                                                    <h4>No data found</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </search-websocket>
         </div>
-        </search-websocket>
     </div>
-</div>
 
 }

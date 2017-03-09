@@ -338,6 +338,7 @@
 
                 $scope.isShowPagination = isShowPagination;
                 $scope.changePageSize = changePageSize;
+                $scope.selectPageSize = selectPageSize;
                 $scope.isComplex = isComplex;
                 $scope.isComplexParent = isComplexParent;
 
@@ -346,8 +347,8 @@
                 $scope.copyToClipNotification = copyToClipNotification;
 
                 $scope.reloadRoute = function() {
-                   $route.reload();
-                }
+                    $route.reload();
+                };
 
                 function isShowPagination() {
                     if (!SearchDatabaseAPI.isDataFound() || SearchDatabaseAPI.isLoading()) return false;
@@ -362,6 +363,7 @@
                     $scope.page.currentPage = 1;
                     searchStarted = true;
                     SearchDatabaseAPI.searchWS();
+                    $('html,body').animate({scrollTop: $(".scroll-down-to").offset().top}, 'slow');
                 }
 
                 function pageChanged() {
@@ -375,6 +377,11 @@
                 function changePageSize() {
                     $scope.page.currentPage = 1;
                     SearchDatabaseAPI.changePageSize($scope.userPageSize);
+                }
+
+                function selectPageSize(size) {
+                    $scope.userPageSize = size;
+                    changePageSize();
                 }
 
                 function clickRow(rowIndex, row) {
