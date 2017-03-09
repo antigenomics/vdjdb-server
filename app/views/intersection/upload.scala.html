@@ -69,16 +69,16 @@
                                             <text ng-hide="isWaitForUpload(file) || isError(file)">{{ file.tooltip }}</text>
                                         </td>
                                         <td width="20%">
-                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file)">Upload</button>
-                                            <button class="btn btn-flat btn-sm bg-purple" ng-click="removeFile(file)" ng-show="isWaitForUpload(file)">X</button>
+                                            <button class="btn btn-primary" ng-click="uploadFile(file)" ng-show="isWaitForUpload(file)">Upload</button>
+                                            <button class="btn btn-primary" ng-click="removeFile(file)" ng-show="isWaitForUpload(file)">X</button>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         <div class="box-footer">
-                            <button class="btn btn-flat bg-purple btn-sm" ng-click="addNewButtonClick()">Choose file(s)</button>
-                            <button class="btn btn-red pull-right bg-purple btn-sm" ng-click="uploadAll()" ng-show="isWaitingExists()">Upload all</button>
+                            <button class="btn btn-primary" ng-click="addNewButtonClick()">Choose file(s)</button>
+                            <button class="btn btn-primary pull-right" ng-click="uploadAll()" ng-show="isWaitingExists()">Upload all</button>
                             <form id="fileupload" method="POST" action="" enctype="multipart/form-data" class="hidden_fileupload_form">
                                 <input type="file" name="file" multiple/>
                             </form>
