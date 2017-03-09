@@ -11,7 +11,7 @@ import utils.CommonUtils
   */
 class ExcelConverter extends DocumentConverter {
   override def convert(searchResults: SearchResults): Option[String] = {
-    var rows = searchResults.results
+    val rows = searchResults.results
     val wb = new HSSFWorkbook()
     val sheet = wb.createSheet("SearchResults")
 
@@ -44,19 +44,19 @@ class ExcelConverter extends DocumentConverter {
     })
 
     sizes.zipWithIndex.foreach {
-      case (size, i) => sheet.setColumnWidth(i, if (sizes(i) > 255) 255 * 256 else sizes(i) * 256)
+      case (_, i) => sheet.setColumnWidth(i, if (sizes(i) > 255) 255 * 256 else sizes(i) * 256)
     }
 
     val uniqueString = CommonUtils.randomAlphaString(20)
     val outputDirPath = "/tmp/" + uniqueString + "/"
     CommonUtils.createDir(outputDirPath)
     try {
-      val fileOutputStream = new FileOutputStream(outputDirPath + "SearchResults.xls")
+      val fileOutputStream = new FileOutputStream(outputDirPath + "SearchResults" + getExtension)
       wb.write(fileOutputStream)
       fileOutputStream.close()
       Some(uniqueString)
     } catch  {
-      case e: Exception => None
+      case _: Exception => None
     }
   }
   override def getExtension : String = ".xls"

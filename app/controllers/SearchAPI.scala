@@ -75,7 +75,7 @@ object SearchAPI extends Controller {
 
   def search = LimitedAction(parse.json) { implicit request =>
     request.body.validate[FiltersRequest].map {
-      case filtersRequest =>
+      filtersRequest =>
         val filters = Filters.parse(filtersRequest)
         Ok(toJson(GlobalDatabase.search(filters)))
     }.recoverTotal {
