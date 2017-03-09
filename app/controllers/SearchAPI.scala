@@ -8,6 +8,7 @@ import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.libs.json.Json.toJson
+import server.Configuration
 import server.database.GlobalDatabase
 import server.results.SearchResults
 import server.wrappers.{Filters, ServerResponse}

@@ -230,6 +230,10 @@
             cdr3_hamming.d = 0;
         }
 
+        function checkErrors() {
+
+        }
+
         function updateFilters(filters) {
             if (general_tcr.human == false) addExactFilter(filters, 'species', 'HomoSapiens');
             if (general_tcr.monkey == false) addExactFilter(filters, 'species', 'MacacaMulatta');

@@ -329,6 +329,7 @@
                 $scope.isColumnDescSorted = SearchDatabaseAPI.isColumnDescSorted;
 
                 $scope.getColumns = table.getColumns;
+                $scope.getVisibleColumns = table.getVisibleColumns;
                 $scope.entryValue = table.entryValue;
                 $scope.isEntryVisible = table.isEntryVisible;
                 $scope.columnHeader = table.columnHeader;
@@ -376,7 +377,9 @@
                 }
 
                 setTimeout(function() {
-                    search()
+                    $scope.page.currentPage = 1;
+                    searchStarted = true;
+                    SearchDatabaseAPI.searchWS();
                 }, 1000);
 
                 function pageChanged() {
@@ -463,7 +466,7 @@
         return function (scope, element, attrs) {
             if (scope.$last) setTimeout(function () {
                 scope.$emit('onRepeatLast', element, attrs);
-            }, 1);
+            }, 100);
         };
     });
 

@@ -12,6 +12,12 @@
             return columns;
         }
 
+        function getVisibleColumns() {
+            return columns.filter(function(column) {
+                return column.metadata.visible === "1";
+            });
+        }
+
         function getColumnsLength() {
             return columnsLength;
         }
@@ -179,6 +185,7 @@
 
         return {
             getColumns: getColumns,
+            getVisibleColumns: getVisibleColumns,
             getColumnsLength: getColumnsLength,
             setColumns: setColumns,
             entryValue: entryValue,

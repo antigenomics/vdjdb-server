@@ -108,7 +108,7 @@
                                                     <table class="table table-hover table-bordered compact">
                                                         <thead>
                                                             <tr>
-                                                                <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                                <th class="column_header" ng-repeat="(index, column) in getVisibleColumns()" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
                                                                 </th>
                                                             </tr>
                                                         </thead>
@@ -119,7 +119,7 @@
                                                         </tbody>
                                                         <tfoot>
                                                             <tr>
-                                                                <th class="column_header" ng-repeat="(index, column) in getColumns()" ng-if="isColumnVisible(column)" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
+                                                                <th class="column_header" ng-repeat="(index, column) in getVisibleColumns()" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(index)" ng-class="{'column_asc_sorted':isColumnAscSorted(index), 'column_desc_sorted':isColumnDescSorted(index)}">
                                                                 </th>
                                                             </tr>
                                                         </tfoot>
