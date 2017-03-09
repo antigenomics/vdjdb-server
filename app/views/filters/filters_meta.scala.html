@@ -29,7 +29,7 @@
                                     <div class="col-xs-8">
                                         <div class="select_drop">
                                             <input class="form-control" type="text" placeholder="Comma separated list of Pubmed IDs, start typing to see suggestions..." ng-model="pm_ids.value">
-                                            <div class="select_drop_container select_drop_container_active">
+                                            <div class="select_drop_container">
                                                 <ul>
                                                     <li ng-repeat="value in pm_ids.autocomplete | filterSubstringComma:pm_ids.value" ng-click="appendPmId(value)">{{ ::value }}
                                                     </li>

@@ -32,7 +32,7 @@
                                             <input class="form-control" type="text"
                                             placeholder="Comma separated list of antigen species, start typing to see suggestions..."
                                             ng-model="ag_species.value">
-                                            <div class="select_drop_container select_drop_container_active">
+                                            <div class="select_drop_container">
                                                 <ul>
                                                     <li ng-repeat="value in ag_species.autocomplete | filterSubstringComma:ag_species.value"
                                                     ng-click="appendAgSpecies(value)">{{ ::value }}
@@ -52,7 +52,7 @@
                                             <input class="form-control" type="text"
                                             placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
                                             ng-model="ag_gene.value">
-                                            <div class="select_drop_container select_drop_container_active">
+                                            <div class="select_drop_container">
                                                 <ul>
                                                     <li ng-repeat="value in ag_gene.autocomplete | filterSubstringComma:ag_gene.value"
                                                     ng-click="appendAgGene(value)">{{ ::value }}
@@ -85,7 +85,7 @@
                                             <input class="form-control" type="text"
                                             placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
                                             ng-model="ag_sequence.value">
-                                            <div class="select_drop_container select_drop_container_active">
+                                            <div class="select_drop_container">
                                                 <ul>
                                                     <li ng-repeat="value in ag_sequence.autocomplete | filterSubstringComma:ag_sequence.value"
                                                     ng-click="appendAgSequence(value)">{{ ::value }}

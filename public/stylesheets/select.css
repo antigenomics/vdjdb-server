@@ -18,6 +18,10 @@
     z-index: 1;
 }
 
+.select_drop_container_active {
+    display: inline-block;
+}
+
 .select_drop:hover .select_drop_container {
     display: inline-block;
 }
