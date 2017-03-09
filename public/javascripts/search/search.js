@@ -182,17 +182,30 @@
 
         function searchWS() {
             if (connected && !loading) {
-                $(".row_popover").popover('destroy');
-                loading = true;
-                sortRule.columnId = defaultSortRule.columnId;
-                sortRule.sortType = defaultSortRule.sortType;
-                connection.send({
-                    action: 'search',
-                    data: filters_v2.getFilters()
-                });
+                if (filters_v2.checkErrors()) {
+                    if (filters_v2.checkSequencePattern()) {
+                        notify.error('Search', 'Invalid sequence pattern');
+                    }
+                    if (filters_v2.checkHamming()) {
+                        notify.error('Search', 'Invalid hamming query');
+                    }
+                    return false;
+                } else {
+                    $(".row_popover").popover('destroy');
+                    loading = true;
+                    sortRule.columnId = defaultSortRule.columnId;
+                    sortRule.sortType = defaultSortRule.sortType;
+                    connection.send({
+                        action: 'search',
+                        data: filters_v2.getFilters()
+                    });
+                    return true;
+                }
             } else if (loading) {
                 notify.info('Search', 'Loading...');
+                return false;
             }
+            return false;
         }
 
         function resetFilters() {
@@ -378,8 +391,9 @@
 
                 function search() {
                     $scope.page.currentPage = 1;
-                    SearchDatabaseAPI.searchWS();
-                    $('html,body').animate({scrollTop: $(".scroll-down-to").offset().top}, 'slow');
+                    if (SearchDatabaseAPI.searchWS()) {
+                        $('html,body').animate({scrollTop: $(".scroll-down-to").offset().top}, 'slow');
+                    }
                 }
 
                 function reset() {

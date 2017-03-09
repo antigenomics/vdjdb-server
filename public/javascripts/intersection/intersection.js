@@ -303,14 +303,23 @@
 
         function intersect(file) {
             checkFile(file, function() {
-                connection.send({
-                    action: 'intersect',
-                    data: {
-                        filters: filters_v2.getFilters(),
-                        fileName: file.fileName,
-                        parameters: file.parameters
+                if (filters_v2.checkErrors()) {
+                    if (filters_v2.checkSequencePattern()) {
+                        notify.erro('Search', 'Invalid sequence pattern');
                     }
-                })
+                    if (filters_v2.checkHamming()) {
+                        notify.error('Search', 'Invalid hamming query');
+                    }
+                } else {
+                    connection.send({
+                        action: 'intersect',
+                        data: {
+                            filters: filters_v2.getFilters(),
+                            fileName: file.fileName,
+                            parameters: file.parameters
+                        }
+                    })
+                }
             })
         }
 

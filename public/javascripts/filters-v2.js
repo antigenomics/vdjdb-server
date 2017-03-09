@@ -110,7 +110,10 @@
             return {
                 getFilters: getFilters,
                 resetFilters: resetFilters,
-                columns: columns
+                columns: columns,
+                checkErrors: filters_tcr.checkErrors,
+                checkSequencePattern: filters_tcr.checkSequencePattern,
+                checkHamming: filters_tcr.checkHamming
             }
 
         }]);
@@ -231,7 +234,50 @@
         }
 
         function checkErrors() {
+            return checkSequencePattern() || checkHamming();
+        }
 
+        function checkSequencePattern() {
+            var leftBracketStart = false;
+            var error = false;
+
+            if (cdr3_pattern.value.length > 100) return true;
+
+            var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+
+            for (var i = 0; i < cdr3_pattern.value.length; i++) {
+                var char = cdr3_pattern.value[i];
+                if (char === '[') {
+                    if (leftBracketStart === true) {
+                        error = true
+                        break
+                    }
+                    leftBracketStart = true
+                } else if (char === ']') {
+                    leftBracketStart = false;
+                } else {
+                    if (char != 'X' && allowed_chars.indexOf(char) === -1) {
+                        error = true;
+                        break;
+                    }
+                }
+            }
+
+            return leftBracketStart || error;
+        }
+
+        function checkHamming() {
+            if (cdr3_hamming.value.length > 50) return true;
+
+            var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+
+            for (var i = 0; i < cdr3_hamming.value.length; i++) {
+                var char = cdr3_hamming.value[i];
+                if (allowed_chars.indexOf(char) === -1) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         function updateFilters(filters) {
@@ -255,7 +301,10 @@
             cdr3_pattern: cdr3_pattern,
             cdr3_hamming: cdr3_hamming,
             updateFilters: updateFilters,
-            resetFilters: resetFilters
+            resetFilters: resetFilters,
+            checkSequencePattern: checkSequencePattern,
+            checkHamming: checkHamming,
+            checkErrors: checkErrors
         }
     }]);
 
@@ -274,6 +323,9 @@
 
                 $scope.appendVSegment = appendVSegment;
                 $scope.appendJSegment = appendJSegment;
+
+                $scope.checkSequencePattern = filters_tcr.checkSequencePattern;
+                $scope.checkHamming = filters_tcr.checkHamming;
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
                     if (filters.columns.length != 0) {

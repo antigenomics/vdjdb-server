@@ -369,15 +369,15 @@ body {
 }
 
 .complex_parent {
-    border-top: 2px solid #605ca8;
-    border-left: 3px solid #605ca8;
-    border-right: 2px solid #605ca8;
+    border-top: 2px solid #01665e;
+    border-left: 3px solid #01665e;
+    border-right: 2px solid #01665e;
 }
 
 .complex_child {
-    border-left: 3px solid #605ca8;
-    border-right: 2px solid #605ca8;
-    border-bottom: 2px solid #605ca8;
+    border-left: 3px solid #01665e;
+    border-right: 2px solid #01665e;
+    border-bottom: 2px solid #01665e;
 }
 
 .cursor_pointer {
