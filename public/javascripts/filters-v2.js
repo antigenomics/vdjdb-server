@@ -88,10 +88,10 @@
                     sequenceFilters: []
                 };
 
-                filters_tcr.updateFilters(filters)
-                filters_mhc.updateFilters(filters)
-                filters_ag.updateFilters(filters)
-                filters_meta.updateFilters(filters)
+                filters_tcr.updateFilters(filters);
+                filters_mhc.updateFilters(filters);
+                filters_ag.updateFilters(filters);
+                filters_meta.updateFilters(filters);
 
                 return filters;
             }
@@ -104,15 +104,23 @@
                         name: column.name,
                         values: column.values
                     })
-                })
+                });
 
                 columnsLoading = false;
 
                 angular.extend(textFiltersColumns, text);
             }
 
+            function resetFilters() {
+                filters_tcr.resetFilters();
+                filters_mhc.resetFilters();
+                filters_ag.resetFilters();
+                filters_meta.resetFilters();
+            }
+
             return {
                 getFilters: getFilters,
+                resetFilters: resetFilters,
                 textFiltersColumns: textFiltersColumns
             }
 
@@ -193,28 +201,44 @@
             mouse: true,
             tra: true,
             trb: true
-        }
+        };
 
         var v_segment = {
             autocomplete: [ ],
             value: ''
-        }
+        };
 
         var j_segment = {
             autocomplete: [ ],
             value: ''
-        }
+        };
 
         var cdr3_pattern = {
             value: '',
             substring: false
-        }
+        };
 
         var cdr3_hamming = {
             value: '',
             s: 0,
             i: 0,
             d: 0
+        };
+
+        function resetFilters() {
+            general_tcr.human = true;
+            general_tcr.monkey = true;
+            general_tcr.mouse = true;
+            general_tcr.tra = true;
+            general_tcr.trb = true;
+            v_segment.value = '';
+            j_segment.value = '';
+            cdr3_pattern.value = '';
+            cdr3_pattern.substring = false;
+            cdr3_hamming.value = '';
+            cdr3_hamming.s = 0;
+            cdr3_hamming.i = 0;
+            cdr3_hamming.d = 0;
         }
 
         function updateFilters(filters) {
@@ -237,7 +261,8 @@
             j_segment: j_segment,
             cdr3_pattern: cdr3_pattern,
             cdr3_hamming: cdr3_hamming,
-            updateFilters: updateFilters
+            updateFilters: updateFilters,
+            resetFilters: resetFilters
         }
     }]);
 
@@ -262,7 +287,7 @@
                         findAutocompleteValues($scope.v_segment.autocomplete, $scope.j_segment.autocomplete, filters.textFiltersColumns);
                         textColumnsWatcher();
                     }
-                })
+                });
 
                 function findAutocompleteValues(vAutocomplete, jAutocomplete, columns) {
                     angular.forEach(columns, function(column) {
@@ -303,7 +328,7 @@
                 };
             }]
         }
-    })
+    });
 
     application.filter('filterSubstringComma', function() {
         return function(data, value) {
@@ -322,7 +347,7 @@
                 return []
             }
         }
-    })
+    });
 
 //////////////// ANTIGEN
 
@@ -330,21 +355,28 @@
         var ag_species = {
             autocomplete: [ ],
             value: ''
-        }
+        };
 
         var ag_gene = {
             autocomplete: [ ],
             value: ''
-        }
+        };
 
         var ag_sequence = {
             autocomplete: [ ],
             value: ''
-        }
+        };
 
         var ag_pattern = {
             value: '',
             substring: false
+        };
+
+        function resetFilters() {
+            ag_species.value = '';
+            ag_gene.value = '';
+            ag_sequence = '';
+            ag_pattern = '';
         }
 
         function updateFilters(filters) {
@@ -360,7 +392,8 @@
             ag_gene: ag_gene,
             ag_sequence: ag_sequence,
             ag_pattern: ag_pattern,
-            updateFilters: updateFilters
+            updateFilters: updateFilters,
+            resetFilters: resetFilters
         }
     }]);
 
@@ -382,7 +415,7 @@
                         findAutocompleteValues($scope.ag_species.autocomplete, $scope.ag_gene.autocomplete, $scope.ag_sequence.autocomplete, filters.textFiltersColumns);
                         textColumnsWatcher();
                     }
-                })
+                });
 
                 function findAutocompleteValues(agSpeciesAutocomplete, agGeneAutocomplete, agSequenceAutocomplete, columns) {
                     angular.forEach(columns, function(column) {
@@ -419,16 +452,23 @@
         var mhc_class = {
             mhci: true,
             mhcii: true
-        }
+        };
 
         var mhc_a = {
             autocomplete: [ ],
             value: ''
-        }
+        };
 
         var mhc_b = {
             autocomplete: [ ],
             value: ''
+        };
+
+        function resetFilters() {
+            mhc_class.mhci = true;
+            mhc_class.mhcii = true;
+            mhc_a.value = '';
+            mhc_b.value = '';
         }
 
         function updateFilters(filters) {
@@ -443,7 +483,8 @@
             mhc_class: mhc_class,
             mhc_a: mhc_a,
             mhc_b: mhc_b,
-            updateFilters: updateFilters
+            updateFilters: updateFilters,
+            resetFilters: resetFilters
         }
     }]);
 
@@ -463,7 +504,7 @@
                         findAutocompleteValues($scope.mhc_a.autocomplete, $scope.mhc_b.autocomplete, filters.textFiltersColumns);
                         textColumnsWatcher();
                     }
-                })
+                });
 
                 function findAutocompleteValues(mhcAAutocomplete, mhcBAutocomplete, columns) {
                     angular.forEach(columns, function(column) {
@@ -485,7 +526,7 @@
                 }
             }]
         }
-    })
+    });
 
 //////////////// META
 
@@ -493,7 +534,7 @@
         var pm_ids = {
             autocomplete: [],
             value: ''
-        }
+        };
 
         var meta_tags = {
             methodSort: true,
@@ -504,10 +545,22 @@
             seqSingleCell: true,
             nonCanonical: false,
             unmapped: false
-        }
+        };
 
         var min_conf_score = {
             value: 0
+        };
+
+        function resetFilters() {
+            pm_ids.value = '';
+            meta_tags.methodSort = true;
+            meta_tags.methodCulture = true;
+            meta_tags.methodOther = true;
+            meta_tags.seqSanger = true;
+            meta_tags.seqAmplicon = true;
+            meta_tags.seqSingleCell = true;
+            meta_tags.nonCanonical = false;
+            meta_tags.unmapped = false;
         }
 
         function updateFilters(filters) {
@@ -531,7 +584,8 @@
             pm_ids: pm_ids,
             meta_tags: meta_tags,
             min_conf_score: min_conf_score,
-            updateFilters: updateFilters
+            updateFilters: updateFilters,
+            resetFilters: resetFilters
         }
     }]);
 

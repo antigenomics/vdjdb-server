@@ -184,6 +184,10 @@
             }
         }
 
+        function resetFilters() {
+            filters_v2.resetFilters();
+        }
+
         function changePage(pageV) {
             if (connected && !loading) {
                 $(".row_popover").popover('destroy');
@@ -272,17 +276,17 @@
         }
 
         function isColumnAscSorted(index) {
-            if (sortRule.columnId === index && sortRule.sortType === 'asc') return true;
-            return false;
+            return sortRule.columnId === index && sortRule.sortType === 'asc';
+
         }
 
         function isColumnDescSorted(index) {
-            if (sortRule.columnId === index && sortRule.sortType === 'desc') return true;
-            return false;
+            return sortRule.columnId === index && sortRule.sortType === 'desc';
         }
 
         return {
             searchWS: searchWS,
+            resetFilters: resetFilters,
             sortDatabase: sortDatabase,
             changePageSize: changePageSize,
             getData: getData,
@@ -331,7 +335,8 @@
                 $scope.isColumnVisible = table.isColumnVisible;
 
                 $scope.pageChanged = pageChanged;
-                $scope.searchWS = search;
+                $scope.search = search;
+                $scope.reset = reset;
                 $scope.sortDatabase = sortDatabase;
                 $scope.isSearchStarted = isSearchStarted;
                 $scope.clickRow = clickRow;
@@ -364,6 +369,10 @@
                     searchStarted = true;
                     SearchDatabaseAPI.searchWS();
                     $('html,body').animate({scrollTop: $(".scroll-down-to").offset().top}, 'slow');
+                }
+
+                function reset() {
+                    SearchDatabaseAPI.resetFilters();
                 }
 
                 function pageChanged() {
