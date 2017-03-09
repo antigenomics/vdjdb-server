@@ -259,9 +259,16 @@
                     }
                     leftBracketStart = true
                 } else if (char === ']') {
+                    if (leftBracketStart === false) {
+                        error = true;
+                        break;
+                    } else if (cdr3_pattern.value[i - 1] === '[') {
+                        error = true;
+                        break;
+                    }
                     leftBracketStart = false;
                 } else {
-                    if (char != 'X' && allowed_chars.indexOf(char) === -1) {
+                    if (char != 'X' && allowed_chars.indexOf(char) === -1 || char == ' ') {
                         error = true;
                         break;
                     }
@@ -278,7 +285,7 @@
 
             for (var i = 0; i < cdr3_hamming.value.length; i++) {
                 var char = cdr3_hamming.value[i];
-                if (allowed_chars.indexOf(char) === -1) {
+                if (allowed_chars.indexOf(char) === -1 || char === ' ') {
                     return true;
                 }
             }
@@ -427,9 +434,16 @@
                     }
                     leftBracketStart = true
                 } else if (char === ']') {
+                    if (leftBracketStart === false) {
+                        error = true;
+                        break;
+                    } else if (ag_pattern.value[i - 1] === '[') {
+                        error = true;
+                        break;
+                    } 
                     leftBracketStart = false;
                 } else {
-                    if (char != 'X' && allowed_chars.indexOf(char) === -1) {
+                    if (char != 'X' && allowed_chars.indexOf(char) === -1 || char === ' ') {
                         error = true;
                         break;
                     }
