@@ -24,7 +24,7 @@
     }]);
 
     application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'filters_v2', 'table', 'notify', 'LoggerService', function ($websocket, filters, filters_v2, table, notify, LoggerService) {
-
+        var searchStarted = false;
         var connected = false;
         var connection = $websocket('ws://' + location.host + '/search/connect');
         var defaultSortRule = {
@@ -128,7 +128,14 @@
         connection.onOpen(function() {
             LoggerService.log('Connected to the database');
             connected = true;
-            loading = false;
+            loading = true;
+            sortRule.columnId = defaultSortRule.columnId;
+            sortRule.sortType = defaultSortRule.sortType;
+            connection.send({
+                action: 'search',
+                data: filters_v2.getFilters()
+            });
+            searchStarted = true;
             pingWebSocket = setInterval(function() {
                 connection.send({
                     action: 'ping',
@@ -136,6 +143,10 @@
                 });
             }, 10000)
         });
+
+        function isSearchStarted() {
+            return searchStarted;
+        }
 
         function isConnected() {
             return connected;
@@ -292,6 +303,7 @@
             changePageSize: changePageSize,
             getData: getData,
             isDataFound: isDataFound,
+            isSearchStarted: isSearchStarted,
             getTotalItems: getTotalItems,
             getPageSize: getPageSize,
             changePage: changePage,
@@ -311,8 +323,6 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'SearchDatabaseAPI', 'table', 'notify', function($scope, SearchDatabaseAPI, table, notify) {
-                var searchStarted  = false;
-
                 $scope.page = {
                     currentPage: 1
                 };
@@ -363,12 +373,11 @@
                 }
 
                 function isSearchStarted() {
-                    return searchStarted;
+                    return SearchDatabaseAPI.isSearchStarted();
                 }
 
                 function search() {
                     $scope.page.currentPage = 1;
-                    searchStarted = true;
                     SearchDatabaseAPI.searchWS();
                     $('html,body').animate({scrollTop: $(".scroll-down-to").offset().top}, 'slow');
                 }
@@ -376,12 +385,6 @@
                 function reset() {
                     SearchDatabaseAPI.resetFilters();
                 }
-
-                setTimeout(function() {
-                    $scope.page.currentPage = 1;
-                    searchStarted = true;
-                    SearchDatabaseAPI.searchWS();
-                }, 1000);
 
                 function pageChanged() {
                     SearchDatabaseAPI.changePage($scope.page.currentPage - 1);
