@@ -28,7 +28,7 @@
         var connected = false;
         var connection = $websocket('ws://' + location.host + '/search/connect');
         var defaultSortRule = {
-            columnId: 0,
+            columnId: 'gene',
             sortType: 'asc'
         };
         var data = [];
@@ -203,16 +203,17 @@
             }
         }
 
-        function sortDatabase(index, page) {
+        function sortDatabase(columnId, page) {
+            console.log(columnId)
             if (connected && !loading) {
                 $(".row_popover").popover('destroy');
                 pageLoading = true;
-                if (sortRule.columnId === index) {
+                if (sortRule.columnId === columnId) {
                     sortRule.sortType = sortRule.sortType === 'asc' ? 'desc' : 'asc';
                 } else {
                     sortRule.sortType = 'desc';
                 }
-                sortRule.columnId = index;
+                sortRule.columnId = columnId;
                 connection.send({
                     action: 'sort',
                     data: {

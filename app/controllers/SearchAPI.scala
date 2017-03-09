@@ -109,7 +109,7 @@ object SearchAPI extends Controller {
               val page = (requestData \ "page").asOpt[Int].getOrElse(0)
               channel push toJson(GetPageSuccessMessage(searchResults.getPage(page), page))
             case "sort" =>
-              val columnId = (requestData \ "columnId").asOpt[Int].getOrElse(1)
+              val columnId = (requestData \ "columnId").asOpt[String].getOrElse("gene")
               val sortType = (requestData \ "sortType").asOpt[String].getOrElse("asc")
               val page = (requestData \ "page").asOpt[Int].getOrElse(0)
               searchResults.sort(columnId, sortType)
