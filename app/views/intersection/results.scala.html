@@ -177,7 +177,7 @@
                     </div>
                     <div class="col-md-2">
                         <a class="select_trigger" ng-click="switchSummarySeriesNameTrigger(file)">{{ file.summary_chart.seriesName }}</a>
-                        <div class="select_drop_container">
+                        <div class="select_drop_container select_drop_container_active">
                             <ul ng-show="isSummarySeriesNameTriggerActive(file)">
                                 <li ng-click="fileSummaryFrequency(file)"><a>Frequency</a></li>
                                 <li ng-click="fileSummaryUniques(file)"><a>Unique</a></li>
@@ -186,7 +186,7 @@
                         </div>
                         <br>
                         <a class="select_trigger" ng-click="switchSummaryDataNameTrigger(file)">{{ file.summary_chart.dataName }}</a>
-                        <div class="select_drop_container">
+                        <div class="select_drop_container select_drop_container_active">
                             <ul ng-show="isSummaryDataNameTriggerActive(file)">
                                 <li ng-repeat="(datasetName, set) in file.summary" ng-click="fileSummaryData(file, datasetName)"><a>{{ datasetName }}</a></li>
                             </ul>
