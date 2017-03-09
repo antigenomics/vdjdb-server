@@ -375,6 +375,10 @@
                     SearchDatabaseAPI.resetFilters();
                 }
 
+                setTimeout(function() {
+                    search()
+                }, 1000);
+
                 function pageChanged() {
                     SearchDatabaseAPI.changePage($scope.page.currentPage - 1);
                 }

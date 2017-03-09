@@ -20,17 +20,7 @@
             var connection = $websocket('ws://' + location.host + '/filters/connect');
             var pingWebSocket = null;
 
-            var textFiltersColumns = [];
-            var sequenceFiltersColumns = [];
-
-            var textFiltersTypes = Object.freeze([
-                { name: 'substring', title: 'Substring match', allowNegative: true, description: 'substring' },
-                { name: 'exact', title: 'Full match', allowNegative: true, description: 'exact' },
-                { name: 'level', title: 'Greater or equals', allowNegative: true, description: 'level' },
-                { name: 'frequency', title: 'Greater or equals', allowNegative: false, description: 'frequency' },
-                { name: 'identification', title: 'Tags and keywords', allowNegative: false, description: 'identification' },
-                { name: 'json', title: 'Tags and keywords', allowNegative: false, description: 'json' }
-            ]);
+            var columns = [];
 
             connection.onOpen(function() {
                 connection.send({
@@ -47,7 +37,6 @@
 
             connection.onMessage(function(message) {
                 var response = JSON.parse(message.data);
-                var filter = {};
                 switch (response.status) {
                     case 'success':
                         switch (response.action) {
@@ -96,11 +85,11 @@
                 return filters;
             }
 
-            function initialize(columns) {
-                var text = [];
+            function initialize(new_columns) {
+                var tmp = [];
 
-                angular.forEach(columns, function(column) {
-                    text.push({
+                angular.forEach(new_columns, function(column) {
+                    tmp.push({
                         name: column.name,
                         values: column.values
                     })
@@ -108,7 +97,7 @@
 
                 columnsLoading = false;
 
-                angular.extend(textFiltersColumns, text);
+                angular.extend(columns, tmp);
             }
 
             function resetFilters() {
@@ -121,7 +110,7 @@
             return {
                 getFilters: getFilters,
                 resetFilters: resetFilters,
-                textFiltersColumns: textFiltersColumns
+                columns: columns
             }
 
         }]);
@@ -270,7 +259,7 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'filters_v2', 'filters_v2_tcr', function($scope, filters, filters_tcr) {
-                $scope.textColumns = filters.textFiltersColumns;
+                $scope.textColumns = filters.columns;
 
                 $scope.general_tcr = filters_tcr.general_tcr;
 
@@ -283,8 +272,8 @@
                 $scope.appendJSegment = appendJSegment;
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
-                    if (filters.textFiltersColumns.length != 0) {
-                        findAutocompleteValues($scope.v_segment.autocomplete, $scope.j_segment.autocomplete, filters.textFiltersColumns);
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.v_segment.autocomplete, $scope.j_segment.autocomplete, filters.columns);
                         textColumnsWatcher();
                     }
                 });
@@ -307,25 +296,6 @@
                     j[j.length - 1] = value;
                     $scope.j_segment.value = j.join(',');
                 }
-
-                $scope.incrementS = function() {
-                    $scope.cdr3_hamming.s++;
-                };
-                $scope.decrementS = function() {
-                    $scope.cdr3_hamming.s--;
-                };
-                $scope.incrementI = function() {
-                    $scope.cdr3_hamming.i++;
-                };
-                $scope.decrementI = function() {
-                    $scope.cdr3_hamming.i--;
-                };
-                $scope.incrementD = function() {
-                    $scope.cdr3_hamming.d++;
-                };
-                $scope.decrementD = function() {
-                    $scope.cdr3_hamming.d--;
-                };
             }]
         }
     });
@@ -411,8 +381,8 @@
                 $scope.appendAgSequence = appendAgSequence;
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
-                    if (filters.textFiltersColumns.length != 0) {
-                        findAutocompleteValues($scope.ag_species.autocomplete, $scope.ag_gene.autocomplete, $scope.ag_sequence.autocomplete, filters.textFiltersColumns);
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.ag_species.autocomplete, $scope.ag_gene.autocomplete, $scope.ag_sequence.autocomplete, filters.columns);
                         textColumnsWatcher();
                     }
                 });
@@ -500,8 +470,8 @@
                 $scope.appendMhcB = appendMhcB;
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
-                    if (filters.textFiltersColumns.length != 0) {
-                        findAutocompleteValues($scope.mhc_a.autocomplete, $scope.mhc_b.autocomplete, filters.textFiltersColumns);
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.mhc_a.autocomplete, $scope.mhc_b.autocomplete, filters.columns);
                         textColumnsWatcher();
                     }
                 });
@@ -600,8 +570,8 @@
                 $scope.appendPmId = appendPmId;
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
-                    if (filters.textFiltersColumns.length != 0) {
-                        findAutocompleteValues($scope.pm_ids.autocomplete, filters.textFiltersColumns);
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.pm_ids.autocomplete, filters.columns);
                         textColumnsWatcher();
                     }
                 });

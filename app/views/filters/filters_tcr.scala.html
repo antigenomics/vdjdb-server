@@ -150,42 +150,24 @@
                                 </div>
                                 <br>
                                 <div class="row">
-                                    <div class="col-xs-3">
+                                    <div class="col-xs-3" style="margin-top: 15px">
                                         <p class="p_label">By hamming distance</p>
                                     </div>
-                                    <div class="col-xs-6">
+                                    <div class="col-xs-6" style="margin-top: 15px">
                                         <input class="form-control" type="text" placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." ng-model="cdr3_hamming.value">
                                     </div>
                                     <div class="col-xs-3">
-                                        Substitutions
-                                        <div class="input-group">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementS()" ng-disabled="cdr3_hamming.s<=0"><span class="glyphicon glyphicon-minus"></span></button>
-                                            </span>
-                                            <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;" value="0" ng-model="cdr3_hamming.s">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementS()" ng-disabled="cdr3_hamming.s>=5"><span class="glyphicon glyphicon-plus"></span></button>
-                                            </span>
+                                        <div class="col-xs-12">
+                                            Substitutions
+                                            <input class="form-control" value="0" type="number" min="0" max="5" ng-model="cdr3_hamming.s">
                                         </div>
-                                        Insertions
-                                        <div class="input-group">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementI()" ng-disabled="cdr3_hamming.i<=0"><span class="glyphicon glyphicon-minus"></span></button>
-                                            </span>
-                                            <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;" value="0" ng-model="cdr3_hamming.i">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementI()" ng-disabled="cdr3_hamming.i>=3"><span class="glyphicon glyphicon-plus"></span></button>
-                                            </span>
+                                        <div class="col-xs-12">
+                                            Insertions
+                                            <input class="form-control" value="0" type="number" min="0" max="3" ng-model="cdr3_hamming.i">
                                         </div>
-                                        Deletions
-                                        <div class="input-group">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementD()" ng-disabled="cdr3_hamming.d<=0"><span class="glyphicon glyphicon-minus"></span></button>
-                                            </span>
-                                            <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;" value="0" ng-model="cdr3_hamming.d">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementD()" ng-disabled="cdr3_hamming.d>=3"><span class="glyphicon glyphicon-plus"></span></button>
-                                            </span>
+                                        <div class="col-xs-12">
+                                            Deletions
+                                            <input class="form-control" value="0" type="number" min="0" max="3" ng-model="cdr3_hamming.d">
                                         </div>
                                     </div>
                                 </div>
