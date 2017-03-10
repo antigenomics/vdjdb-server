@@ -413,8 +413,8 @@
         function resetFilters() {
             ag_species.value = '';
             ag_gene.value = '';
-            ag_sequence = '';
-            ag_pattern = '';
+            ag_sequence.value = '';
+            ag_pattern.value = '';
         }
 
         function checkAntigentSequencePattern() {
