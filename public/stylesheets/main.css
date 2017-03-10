@@ -93,8 +93,8 @@ body {
 .index_navbar {
     position: fixed;
     top: 13px;
-    left: 15%;
-    width: 70%;
+    left: 10%;
+    width: 80%;
     height: 35px;
     z-index: 20000;
     color: #1abc9c;
@@ -102,7 +102,7 @@ body {
 
 .index_navbar > .navbar_cell {
     float: left;
-    width: 150px;
+    width: 130px;
     height: 100%;
     cursor: pointer;
     margin: auto;
@@ -116,10 +116,16 @@ body {
 
 .brand_cell {
     position: fixed;
-    left: 100px;
-    top: 0px;
-    font-size: xx-large;
-    width: 150px !important;
+    left: 10px;
+    top: 1px;
+    height: 49px;
+}
+
+.brand_cell img {
+    width: auto;
+    height: 100%;
+    border: 0 none;
+    box-shadow: none;
 }
 
 .cell_right {
