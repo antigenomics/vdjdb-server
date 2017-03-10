@@ -91,7 +91,7 @@ object SearchAPI extends Controller {
 
     val in = Iteratee.foreach[JsValue] {
       websocketMessage  =>
-        if (!LimitedAction.allow(request.remoteAddress)) {
+        if (!LimitedAction.allow(request)) {
           channel push LimitedAction.LimitErrorMessage
         } else try {
           val searchRequest = Json.fromJson[SearchWebSocketRequest](websocketMessage).get
