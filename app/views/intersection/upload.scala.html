@@ -35,7 +35,7 @@
                                         <td></td>
                                         <td>
                                             <a class="select_trigger" ng-click="clickCommonSoftwareType()">{{ commonSoftwareType.title }}</a>
-                                            <div class="select_drop_container">
+                                            <div class="select_drop_container select_drop_container_active">
                                                 <ul ng-show="isShowCommonSoftwareType()">
                                                     <li ng-repeat="software in ::softwareTypes" ng-click="changeCommonSoftwareType(software)"><a>{{ ::software.title }}</a></li>
                                                 </ul>
@@ -53,7 +53,7 @@
                                         <td width="15%">
                                             <div ng-show="isWaitForUpload(file)">
                                                 <a class="select_trigger" ng-click="softwareTypeSwitch(file)">{{ file.softwareTypeTitle }}</a>
-                                                <div class="select_drop_container">
+                                                <div class="select_drop_container select_drop_container_active">
                                                     <ul ng-show="isShowSoftwareTypeSelection(file)">
                                                         <li ng-repeat="software in ::softwareTypes" ng-click="changeFileSoftwareType(file, software)"><a>{{ ::software.title }}</a></li>
                                                     </ul>
