@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var application = angular.module('searchPage', ['notifications', 'filters', 'filters_v2', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
+    var application = angular.module('searchPage', ['notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table']);
 
     application.config(['ngClipProvider', function(ngClipProvider) {
         ngClipProvider.setPath('/assets/lib/angular/plugins/zeroclipboard/ZeroClipboard.swf');
@@ -23,7 +23,7 @@
         }
     }]);
 
-    application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'filters_v2', 'table', 'notify', 'LoggerService', function ($websocket, filters, filters_v2, table, notify, LoggerService) {
+    application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'table', 'notify', 'LoggerService', function ($websocket, filters, table, notify, LoggerService) {
         var searchStarted = false;
         var connected = false;
         var connection = $websocket('ws://' + location.host + '/search/connect');
@@ -91,7 +91,6 @@
                             var link = response.link;
                             var exportType = response.exportType;
                             elem.href = '/search/doc/' + exportType + '/' + link;
-                            console.log(elem.href);
                             document.body.appendChild(elem);
                             elem.click();
                             break;
@@ -133,7 +132,7 @@
             sortRule.sortType = defaultSortRule.sortType;
             connection.send({
                 action: 'search',
-                data: filters_v2.getFilters()
+                data: filters.getFilters()
             });
             searchStarted = true;
             pingWebSocket = setInterval(function() {
@@ -182,14 +181,14 @@
 
         function searchWS() {
             if (connected && !loading) {
-                if (filters_v2.checkErrors()) {
-                    if (filters_v2.checkSequencePattern()) {
+                if (filters.checkErrors()) {
+                    if (filters.checkSequencePattern()) {
                         notify.error('Search', 'Invalid cdr3 sequence pattern');
                     }
-                    if (filters_v2.checkHamming()) {
+                    if (filters.checkHamming()) {
                         notify.error('Search', 'Invalid hamming query');
                     }
-                    if (filters_v2.checkAntigentSequencePattern()) {
+                    if (filters.checkAntigentSequencePattern()) {
                         notify.error('Search', 'Invalid antigen sequence pattern');   
                     }
                     return false;
@@ -200,7 +199,7 @@
                     sortRule.sortType = defaultSortRule.sortType;
                     connection.send({
                         action: 'search',
-                        data: filters_v2.getFilters()
+                        data: filters.getFilters()
                     });
                     return true;
                 }
@@ -212,7 +211,7 @@
         }
 
         function resetFilters() {
-            filters_v2.resetFilters();
+            filters.resetFilters();
         }
 
         function changePage(pageV) {
@@ -231,7 +230,6 @@
         }
 
         function sortDatabase(columnId, page) {
-            console.log(columnId)
             if (connected && !loading) {
                 $(".row_popover").popover('destroy');
                 pageLoading = true;

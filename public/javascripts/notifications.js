@@ -13,30 +13,32 @@
         };
 
         function success(title, text) {
-            notify(title, text, 'success')
+            notify(title, text, 'success', 3000)
         }
 
         function error(title, text) {
-            notify(title, text, 'error')
+            notify(title, text, 'error', 3000)
         }
 
         function info(title, text) {
-            notify(title, text, 'info')
+            notify(title, text, 'info', 1000)
         }
 
         function notice(title, text) {
-            notify(title, text, 'notice')
+            notify(title, text, 'notice', 1000)
         }
 
         function removeNotifications() {
             PNotify.removeAll();
         }
 
-        function notify(title, text, type) {
+        function notify(title, text, type, delay) {
+
             var options = {
                 title: title,
                 text: text,
-                type: type
+                type: type,
+                delay: typeof delay != 'undefined' ? delay : 1000
             };
             angular.extend(options, defaultOptions);
             new PNotify(options);

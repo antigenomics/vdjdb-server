@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'filters_v2', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'chart.js']);
+    var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'chart.js']);
 
     application.factory('sidebar', ['user', function(userInfo) {
 
@@ -166,7 +166,7 @@
         }
     });
 
-    application.factory('intersection', ['$websocket', 'sidebar', 'table', 'notify', 'filters', 'filters_v2', 'user', function($websocket, sidebar, table, notify, filters, filters_v2, userInfo) {
+    application.factory('intersection', ['$websocket', 'sidebar', 'table', 'notify', 'filters', 'user', function($websocket, sidebar, table, notify, filters, userInfo) {
 
         var connected = false;
         var connectionError = false;
@@ -176,7 +176,6 @@
 
         connection.onMessage(function(message) {
             var response = JSON.parse(message.data);
-            console.log(response);
             var file = {};
             loading = false;
             switch (response.status) {
@@ -242,7 +241,6 @@
                             var link = response.link;
                             var exportType = response.exportType;
                             elem.href = '/intersection/doc/' + exportType + '/' + link;
-                            console.log(elem.href);
                             document.body.appendChild(elem);
                             elem.click();
                             file.loading = false;
@@ -303,21 +301,21 @@
 
         function intersect(file) {
             checkFile(file, function() {
-                if (filters_v2.checkErrors()) {
-                    if (filters_v2.checkSequencePattern()) {
+                if (filters.checkErrors()) {
+                    if (filters.checkSequencePattern()) {
                         notify.error('Search', 'Invalid cdr3 sequence pattern');
                     }
-                    if (filters_v2.checkHamming()) {
+                    if (filters.checkHamming()) {
                         notify.error('Search', 'Invalid hamming query');
                     }
-                    if (filters_v2.checkAntigentSequencePattern()) {
+                    if (filters.checkAntigentSequencePattern()) {
                         notify.error('Search', 'Invalid antigen sequence pattern');   
                     }
                 } else {
                     connection.send({
                         action: 'intersect',
                         data: {
-                            filters: filters_v2.getFilters(),
+                            filters: filters.getFilters(),
                             fileName: file.fileName,
                             parameters: file.parameters
                         }

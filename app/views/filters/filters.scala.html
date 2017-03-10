@@ -1,16 +1,10 @@
-
-<!-- Select styling -->
-<link href="@routes.Assets.at("stylesheets/select.css")" rel="stylesheet">
-
-<filters class="row">
-    <div class="col-md-12" ng-if="!isFiltersLoaded()">
-        @views.html.filters.loadingFilters()
+<filters-v2>
+    <div class="row">
+        @views.html.filters.filters_tcr()
+        @views.html.filters.filters_ag()
     </div>
-    <div class="col-md-12" ng-if="isFiltersLoaded() && !isFiltersError()">
-        @views.html.filters.textFilters()
-        @views.html.filters.sequenceFilters()
+    <div class="row">
+        @views.html.filters.filters_mhc()
+        @views.html.filters.filters_meta()
     </div>
-    <div class="col-md-12" ng-if="isFiltersError()">
-        @views.html.filters.errorFilters()
-    </div>
-</filters>
+</filters-v2>
