@@ -133,9 +133,9 @@
                                         <p class="p_label">Sequence or pattern</p>
                                     </div>
                                     <div class="col-xs-6">
-                                    <div class="form-group" ng-class="{'has-error has-feedback':checkSequencePattern()}">
-                                        <input class="form-control" ng-pattern="" type="text" placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." ng-model="cdr3_pattern.value">
-                                        <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="checkSequencePattern()"></span>
+                                    <div class="form-group" ng-class="{'has-error has-feedback':!isSequencePatternValid()}">
+                                        <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." ng-model="cdr3_pattern.value" ng-change="checkSequencePattern()">
+                                        <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="!isSequencePatternValid()"></span>
                                     </div>
                                     </div>
                                     <div class="col-xs-1">
@@ -157,9 +157,9 @@
                                         <p class="p_label">By hamming distance</p>
                                     </div>
                                     <div class="col-xs-6" style="margin-top: 15px">
-                                        <div class="form-group" ng-class="{'has-error has-feedback':checkHamming()}">
-                                            <input class="form-control" type="text" placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." ng-model="cdr3_hamming.value">
-                                            <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="checkHamming()"></span>
+                                        <div class="form-group" ng-class="{'has-error has-feedback':!isHammingPatternValid()}">
+                                            <input class="form-control" type="text" placeholder="Complete amino acid sequence, e.g. CASSLAPGATNEKLFF." ng-model="cdr3_hamming.value" ng-change="checkHamming()">
+                                            <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="!isHammingPatternValid()"></span>
                                         </div>
                                     </div>
                                     <div class="col-xs-3">

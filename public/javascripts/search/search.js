@@ -181,18 +181,7 @@
 
         function searchWS() {
             if (connected && !loading) {
-                if (filters.checkErrors()) {
-                    if (filters.checkSequencePattern()) {
-                        notify.error('Search', 'Invalid cdr3 sequence pattern');
-                    }
-                    if (filters.checkHamming()) {
-                        notify.error('Search', 'Invalid hamming query');
-                    }
-                    if (filters.checkAntigentSequencePattern()) {
-                        notify.error('Search', 'Invalid antigen sequence pattern');   
-                    }
-                    return false;
-                } else {
+                if (filters.isValid()) {
                     $(".row_popover").popover('destroy');
                     loading = true;
                     sortRule.columnId = defaultSortRule.columnId;
@@ -202,6 +191,12 @@
                         data: filters.getFilters()
                     });
                     return true;
+                } else {
+                    var errors = filters.getErrors();
+                    angular.forEach(errors, function(error) {
+                        notify.error('Search', error);
+                    });
+                    return false;
                 }
             } else if (loading) {
                 notify.info('Search', 'Loading...');

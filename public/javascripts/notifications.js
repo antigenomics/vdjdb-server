@@ -38,7 +38,7 @@
                 title: title,
                 text: text,
                 type: type,
-                delay: typeof delay != 'undefined' ? delay : 1000
+                delay: typeof delay !== 'undefined' ? delay : 1000
             };
             angular.extend(options, defaultOptions);
             new PNotify(options);

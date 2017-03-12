@@ -301,16 +301,11 @@
 
         function intersect(file) {
             checkFile(file, function() {
-                if (filters.checkErrors()) {
-                    if (filters.checkSequencePattern()) {
-                        notify.error('Search', 'Invalid cdr3 sequence pattern');
-                    }
-                    if (filters.checkHamming()) {
-                        notify.error('Search', 'Invalid hamming query');
-                    }
-                    if (filters.checkAntigentSequencePattern()) {
-                        notify.error('Search', 'Invalid antigen sequence pattern');   
-                    }
+                if (!filters.isValid()) {
+                    var errors = filters.getErrors();
+                    angular.forEach(errors, function(error) {
+                        notify.error('Search', error);
+                    });
                 } else {
                     connection.send({
                         action: 'intersect',

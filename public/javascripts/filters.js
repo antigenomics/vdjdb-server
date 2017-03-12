@@ -103,18 +103,30 @@
                 filters_meta.resetFilters();
             }
 
-            function checkErrors() {
-                return filters_tcr.checkErrors() || filters_ag.checkAntigentSequencePattern();
+            function isValid() {
+                return filters_ag.isAntigenSequenceValid() && filters_tcr.isSequencePatternValid() && filters_tcr.isHammingPatternValid();
+            }
+
+            function getErrors() {
+                var errors = [];
+                if (!filters_ag.isAntigenSequenceValid()) {
+                    errors.push('Invalid antigen sequence pattern')
+                }
+                if (!filters_tcr.isSequencePatternValid()) {
+                    errors.push('Invalid cdr3 sequence pattern')
+                }
+                if (!filters_tcr.isHammingPatternValid()) {
+                    errors.push('Invalid hamming query')
+                }
+                return errors;
             }
 
             return {
                 getFilters: getFilters,
                 resetFilters: resetFilters,
                 columns: columns,
-                checkErrors: checkErrors,
-                checkSequencePattern: filters_tcr.checkSequencePattern,
-                checkHamming: filters_tcr.checkHamming,
-                checkAntigentSequencePattern: filters_ag.checkAntigentSequencePattern
+                isValid: isValid,
+                getErrors: getErrors
             }
 
         }]);
@@ -208,11 +220,13 @@
 
         var cdr3_pattern = {
             value: '',
+            valid: true,
             substring: false
         };
 
         var cdr3_hamming = {
             value: '',
+            valid: true,
             s: 0,
             i: 0,
             d: 0
@@ -234,15 +248,16 @@
             cdr3_hamming.d = 0;
         }
 
-        function checkErrors() {
-            return checkSequencePattern() || checkHamming();
-        }
-
         function checkSequencePattern() {
+            cdr3_pattern.value =  cdr3_pattern.value.toUpperCase();
+
             var leftBracketStart = false;
             var error = false;
 
-            if (cdr3_pattern.value.length > 100) return true;
+            if (cdr3_pattern.value.length > 100) {
+                cdr3_pattern.valid = false;
+                return;
+            }
 
             var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
 
@@ -250,7 +265,7 @@
                 var char = cdr3_pattern.value[i];
                 if (char === '[') {
                     if (leftBracketStart === true) {
-                        error = true
+                        error = true;
                         break
                     }
                     leftBracketStart = true
@@ -271,21 +286,35 @@
                 }
             }
 
-            return leftBracketStart || error;
+            cdr3_pattern.valid =  !(leftBracketStart || error);
         }
 
         function checkHamming() {
-            if (cdr3_hamming.value.length > 50) return true;
+            cdr3_hamming.value =  cdr3_hamming.value.toUpperCase();
+
+            if (cdr3_hamming.value.length > 50) {
+                cdr3_hamming.valid = false;
+                return;
+            }
 
             var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
 
             for (var i = 0; i < cdr3_hamming.value.length; i++) {
                 var char = cdr3_hamming.value[i];
                 if (allowed_chars.indexOf(char) === -1 || char === ' ') {
-                    return true;
+                    cdr3_hamming.valid = false;
+                    return;
                 }
             }
-            return false;
+            cdr3_hamming.valid = true;
+        }
+
+        function isSequencePatternValid() {
+            return cdr3_pattern.valid;
+        }
+
+        function isHammingPatternValid() {
+            return cdr3_hamming.valid;
         }
 
         function updateFilters(filters) {
@@ -312,7 +341,8 @@
             resetFilters: resetFilters,
             checkSequencePattern: checkSequencePattern,
             checkHamming: checkHamming,
-            checkErrors: checkErrors
+            isSequencePatternValid: isSequencePatternValid,
+            isHammingPatternValid: isHammingPatternValid
         }
     }]);
 
@@ -333,7 +363,10 @@
                 $scope.appendJSegment = appendJSegment;
 
                 $scope.checkSequencePattern = filters_tcr.checkSequencePattern;
+                $scope.isSequencePatternValid = filters_tcr.isSequencePatternValid;
                 $scope.checkHamming = filters_tcr.checkHamming;
+                $scope.isHammingPatternValid = filters_tcr.isHammingPatternValid;
+
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
                     if (filters.columns.length != 0) {
@@ -403,6 +436,7 @@
 
         var ag_pattern = {
             value: '',
+            valid: true,
             substring: false
         };
 
@@ -413,7 +447,9 @@
             ag_pattern.value = '';
         }
 
-        function checkAntigentSequencePattern() {
+        function checkAntigenSequencePattern() {
+            ag_pattern.value = ag_pattern.value.toUpperCase();
+
             var leftBracketStart = false;
             var error = false;
 
@@ -425,7 +461,7 @@
                 var char = ag_pattern.value[i];
                 if (char === '[') {
                     if (leftBracketStart === true) {
-                        error = true
+                        error = true;
                         break
                     }
                     leftBracketStart = true
@@ -446,7 +482,11 @@
                 }
             }
 
-            return leftBracketStart || error;
+            ag_pattern.valid = !(leftBracketStart || error);
+        }
+
+        function isAntigenSequenceValid() {
+            return ag_pattern.valid;
         }
 
         function updateFilters(filters) {
@@ -464,7 +504,8 @@
             ag_pattern: ag_pattern,
             updateFilters: updateFilters,
             resetFilters: resetFilters,
-            checkAntigentSequencePattern: checkAntigentSequencePattern
+            isAntigenSequenceValid: isAntigenSequenceValid,
+            checkAntigenSequencePattern: checkAntigenSequencePattern
         }
     }]);
 
@@ -481,7 +522,8 @@
                 $scope.appendAgGene = appendAgGene;
                 $scope.appendAgSequence = appendAgSequence;
 
-                $scope.checkAntigentSequencePattern = filters_ag.checkAntigentSequencePattern;
+                $scope.checkAntigenSequencePattern = filters_ag.checkAntigenSequencePattern;
+                $scope.isAntigenSequenceValid = filters_ag.isAntigenSequenceValid;
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
                     if (filters.columns.length != 0) {
