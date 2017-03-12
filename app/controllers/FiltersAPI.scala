@@ -48,7 +48,7 @@ object FiltersAPI extends Controller {
 
         } catch {
           case e : Exception =>
-            channel push toJson(ErrorMessage("Invalid request"))
+            channel push toJson(ErrorMessage("Invalid request" ))
         }
     }
 

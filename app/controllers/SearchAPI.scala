@@ -1,11 +1,14 @@
 package controllers
 
 
+import java.io.{PrintWriter, StringWriter}
+
 import com.antigenomics.vdjdb.scoring.SequenceSearcherPreset
 import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.libs.json.Json.toJson
+import server.Configuration
 import server.database.GlobalDatabase
 import server.results.SearchResults
 import server.wrappers.{Filters, ServerResponse}
@@ -15,6 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import server.websocket._
 import server.websocket.search._
 import server.websocket.search.WebSocketSearchMessages._
+
 import scala.collection.JavaConversions._
 
 
@@ -72,7 +76,7 @@ object SearchAPI extends Controller {
 
   def search = LimitedAction(parse.json) { implicit request =>
     request.body.validate[FiltersRequest].map {
-      case filtersRequest =>
+      filtersRequest =>
         val filters = Filters.parse(filtersRequest)
         Ok(toJson(GlobalDatabase.search(filters)))
     }.recoverTotal {
@@ -87,7 +91,7 @@ object SearchAPI extends Controller {
 
     val in = Iteratee.foreach[JsValue] {
       websocketMessage  =>
-        if (!LimitedAction.allow(request.remoteAddress)) {
+        if (!LimitedAction.allow(request)) {
           channel push LimitedAction.LimitErrorMessage
         } else try {
           val searchRequest = Json.fromJson[SearchWebSocketRequest](websocketMessage).get
@@ -105,7 +109,7 @@ object SearchAPI extends Controller {
               val page = (requestData \ "page").asOpt[Int].getOrElse(0)
               channel push toJson(GetPageSuccessMessage(searchResults.getPage(page), page))
             case "sort" =>
-              val columnId = (requestData \ "columnId").asOpt[Int].getOrElse(1)
+              val columnId = (requestData \ "columnId").asOpt[String].getOrElse("gene")
               val sortType = (requestData \ "sortType").asOpt[String].getOrElse("asc")
               val page = (requestData \ "page").asOpt[Int].getOrElse(0)
               searchResults.sort(columnId, sortType)
@@ -144,7 +148,10 @@ object SearchAPI extends Controller {
           }
         } catch {
           case e : Exception =>
-            print(e)
+            val sw = new StringWriter
+            e.printStackTrace(new PrintWriter(sw))
+            println(sw.toString)
+
             channel push toJson(ErrorMessage("Invalid request"))
         }
     }

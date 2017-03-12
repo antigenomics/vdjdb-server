@@ -19,8 +19,8 @@ object Configuration {
   def databasePath : String = conf.getString("databasePath").getOrElse("database/")
   def createDemoAccount : Boolean = conf.getBoolean("createDemoAccount").getOrElse(false)
   def demoDatasetPath : String = conf.getString("demoDatasetPath").getOrElse("demo-dataset/")
-  def maxRequestsPerHour : Int = conf.getInt("maxRequestsPerHour").getOrElse(1000)
-  def requestsClearInterval: Int = conf.getInt("requestsClearInterval").getOrElse(60)
+  def maxRequestsPerHour : Int = conf.getInt("maxRequestsPerHour").getOrElse(10000)
+  def requestsClearInterval: Int = conf.getInt("requestsClearInterval").getOrElse(5)
   def dbBrowseSequenceFilterOptions: List[Integer] = conf.getIntList("dbBrowseSequenceFilterOptions").getOrElse(Arrays.asList(5, 2, 2, 7))
 
 }

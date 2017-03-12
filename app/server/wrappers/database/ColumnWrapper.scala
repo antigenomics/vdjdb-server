@@ -19,9 +19,9 @@ object ColumnWrapper {
     var autocomplete : Boolean= false
     var values : ListBuffer[String] = ListBuffer[String]()
     if (column.getMetadata.containsKey("searchable") && column.getMetadata.get("searchable") == "1") {
-      if (column.getMetadata.containsKey("type") && column.getMetadata.get("type") == "txt") {
+      if (column.getMetadata.containsKey("autocomplete") && column.getMetadata.get("autocomplete") == "1") {
         autocomplete = true
-        column.asInstanceOf[TextColumn].getValues.toList.foreach(value => {
+        column.getValues.toList.foreach(value => {
           values += value
         })
       }

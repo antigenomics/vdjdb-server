@@ -4,7 +4,7 @@ import play.api.Play
 import play.api.libs.concurrent.Akka
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.Json._
-import play.api.mvc.{ActionBuilder, Request, ResponseHeader, SimpleResult}
+import play.api.mvc._
 import server.Configuration
 import utils.CommonUtils
 
@@ -32,16 +32,17 @@ object LimitedAction extends ActionBuilder[Request] {
     }
   })
 
-  def allow(ipAddress: String): Boolean = {
-    ipMap.get(ipAddress) match {
-      case None => ipMap(ipAddress) = 0
-      case Some(v) => ipMap(ipAddress) = v + 1
+  def allow(request: RequestHeader): Boolean = {
+    val ip = request.headers.get("X-Real-IP").getOrElse(request.remoteAddress)
+    ipMap.get(ip) match {
+      case None => ipMap(ip) = 0
+      case Some(v) => ipMap(ip) = v + 1
     }
-    ipMap(ipAddress) < maxRequestsPerHour
+    ipMap(ip) < maxRequestsPerHour
   }
 
   def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[SimpleResult]) = {
-    if (allow(request.remoteAddress))
+    if (allow(request))
       block(request)
     else
       Future(

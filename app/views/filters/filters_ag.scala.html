@@ -1,0 +1,129 @@
+<div class="col-md-6">
+    <div class="panel-group">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <a role="button" data-toggle="collapse" href="#collapse-AG">
+                                Antigen
+                    </a>
+                </h3>
+            </div>
+            <div id="collapse-AG" class="collapse">
+                <filters-ag>
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                        Origin
+
+                                    <span data-toggle="tooltip" data-placement="right"
+                                    title="</p>List the representative parent species and genes of the antigen.</p><p>Click on the text field to see the list of known species/genes, start typing to narrow the list. Multiple species/genes can be selected by separating them with a comma.</p>"
+                                    class="glyphicon glyphicon-question-sign">
+                                    </span>
+                                </h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <p class="p_label">Source species</p>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <div class="select_drop">
+                                            <input class="form-control" type="text"
+                                            placeholder="Comma separated list of antigen species, start typing to see suggestions..."
+                                            ng-model="ag_species.value">
+                                            <div class="select_drop_container">
+                                                <ul>
+                                                    <li ng-repeat="value in ag_species.autocomplete | filterSubstringComma:ag_species.value"
+                                                    ng-click="appendAgSpecies(value)">{{ ::value }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <p class="p_label">Parent gene</p>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <div class="select_drop">
+                                            <input class="form-control" type="text"
+                                            placeholder="Comma separated list of antigen genes, start typing to see suggestions..."
+                                            ng-model="ag_gene.value">
+                                            <div class="select_drop_container">
+                                                <ul>
+                                                    <li ng-repeat="value in ag_gene.autocomplete | filterSubstringComma:ag_gene.value"
+                                                    ng-click="appendAgGene(value)">{{ ::value }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                        Epitope
+                                    <span data-toggle="tooltip" data-placement="right"
+                                    title="</p>Specify the epitope sequences or sequence pattern.</p><p>In case of searching for a set of sequences click on the text field to the right of 'Sequence(s)', start typing to narrow the list. Multiple sequences can be selected by separating them with a comma.</p><p>Sequence and pattern filter supports 20 amino acids, X for an unknown amino acid and amino acid groups specified with '[.]'. For example 'GILG[FG]VFTL' will search for 'GILGgVFTL' and 'GILGfVFTL'. By default the search expects full match, which can be disabled by checking the substring checkbox.</p>"
+                                    class="glyphicon glyphicon-question-sign">
+                                    </span>
+                                </h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <p class="p_label">Sequence(s)</p>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <div class="select_drop">
+                                            <input class="form-control" type="text"
+                                            placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
+                                            ng-model="ag_sequence.value">
+                                            <div class="select_drop_container">
+                                                <ul>
+                                                    <li ng-repeat="value in ag_sequence.autocomplete | filterSubstringComma:ag_sequence.value"
+                                                    ng-click="appendAgSequence(value)">{{ ::value }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <p class="p_label">Sequence or pattern</p>
+                                    </div>
+                                    <div class="col-xs-5">
+                                        <div class="form-group" ng-class="{'has-error has-feedback':!isAntigenSequenceValid()}">
+                                            <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. LLFG[FY][AP]VYV or LLFGXXXYV." ng-model="ag_pattern.value" ng-change="checkAntigenSequencePattern()">
+                                            <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="!isAntigenSequenceValid()"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-1">
+                                        <p class="p_label">Substring</p>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" ng-model="ag_pattern.substring">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </filters-ag>
+            </div>
+        </div>
+    </div>
+</div>

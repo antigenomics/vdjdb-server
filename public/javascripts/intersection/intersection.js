@@ -174,12 +174,8 @@
         var connection = $websocket('ws://' + location.host + '/intersection/connect');
         var loading = false;
 
-        filters.hideSequenceFilters();
-        filters.filtersInit(filtersInit);
-
         connection.onMessage(function(message) {
             var response = JSON.parse(message.data);
-            console.log(response)
             var file = {};
             loading = false;
             switch (response.status) {
@@ -245,7 +241,6 @@
                             var link = response.link;
                             var exportType = response.exportType;
                             elem.href = '/intersection/doc/' + exportType + '/' + link;
-                            console.log(elem.href);
                             document.body.appendChild(elem);
                             elem.click();
                             file.loading = false;
@@ -306,14 +301,21 @@
 
         function intersect(file) {
             checkFile(file, function() {
-                connection.send({
-                    action: 'intersect',
-                    data: {
-                        filters: filters.getFiltersRequest(),
-                        fileName: file.fileName,
-                        parameters: file.parameters
-                    }
-                })
+                if (!filters.isValid()) {
+                    var errors = filters.getErrors();
+                    angular.forEach(errors, function(error) {
+                        notify.error('Search', error);
+                    });
+                } else {
+                    connection.send({
+                        action: 'intersect',
+                        data: {
+                            filters: filters.getFilters(),
+                            fileName: file.fileName,
+                            parameters: file.parameters
+                        }
+                    })
+                }
             })
         }
 
@@ -392,44 +394,8 @@
             }
         }
 
-        function filtersInit(textFilters, sequenceFilters) {
-            var types = filters.getTextFiltersTypes();
-            textFilters.push({
-                id: -3,
-                columnId: 'species',
-                columnTitle: 'Species',
-                value: 'HomoSapiens',
-                filterType: types[1],
-                negative: false,
-                types: [0, 1],
-                activeColumn: false,
-                activeType: false
-            });
-            textFilters.push({
-                id: -2,
-                columnId: 'gene',
-                columnTitle: 'Gene',
-                value: 'TRB',
-                filterType: types[1],
-                negative: false,
-                types: [0, 1],
-                activeColumn: false,
-                activeType: false
-            });
-            textFilters.push({
-                columnId: 'vdjdb.score',
-                columnTitle: 'score',
-                value: '1',
-                filterType: types[2],
-                negative: false,
-                types: [2],
-                activeColumn: false,
-                activeType: false
-            })
-        }
-
         function fileInitSummary(file) {
-            file.summary_chart = {}
+            file.summary_chart = {};
             file.summary_chart.seriesNameTrigger = false;
             file.summary_chart.dataNameTrigger = false;
             file.summary_chart.dataName = 'mhc.a';
@@ -449,7 +415,7 @@
             angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
                 labels.push(name);
                 data[0].push(counters.unique);
-            })
+            });
             file.summary_chart.data = data;
             file.summary_chart.labels = labels;
             file.summary_chart.seriesName = 'Unique';
@@ -462,7 +428,7 @@
             angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
                 labels.push(name);
                 data[0].push(counters.frequency.toPrecision(2));
-            })
+            });
             file.summary_chart.data = data;
             file.summary_chart.labels = labels;
             file.summary_chart.seriesName = 'Frequency';
@@ -475,7 +441,7 @@
             angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
                 labels.push(name);
                 data[0].push(counters.read);
-            })   
+            });
             file.summary_chart.data = data;
             file.summary_chart.labels = labels;
             file.summary_chart.seriesName = 'Reads';

@@ -6,9 +6,16 @@
     module.factory('table', function() {
         var columns = [];
         var columnsLength = 0;
+        var cdr3FixColumnIndex = -1;
 
         function getColumns() {
             return columns;
+        }
+
+        function getVisibleColumns() {
+            return columns.filter(function(column) {
+                return column.metadata.visible === "1";
+            });
         }
 
         function getColumnsLength() {
@@ -20,12 +27,20 @@
                 if (column.metadata.visible === "1") columnsLength += 1;
             });
             columns.splice(0, columns.length);
-            angular.extend(columns, newcolumns)
+            angular.extend(columns, newcolumns);
+            cdr3FixColumnIndex = getCdr3FixIndex();
         }
 
         function columnByName(columnName) {
             for (var i = 0; i < columns.length; i++) {
                 if (columns[i].name === columnName) return columns[i];
+            }
+            return null;
+        }
+
+        function getCdr3FixIndex() {
+            for (var i = 0; i < columns.length; i++) {
+                if (columns[i].name === "cdr3fix") return i;
             }
             return null;
         }
@@ -37,28 +52,31 @@
             var columnName = column.name;
             var dataType = columnMeta.dataType;
             if (columnName === 'cdr3') {
-                var cdr3fix = JSON.parse(entries[entries.length - 2].value);
+                var cdr3fix = JSON.parse(entries[cdr3FixColumnIndex].value);
                 var vend = cdr3fix['vEnd'];
                 var jstart = cdr3fix['jStart'];
                 var vRegion = '', jRegion = '', otherRegion = '';
 
                 if (vend > 0 && jstart <= 0) {
-                    vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
-                    otherRegion = value.substring(vend, value.length);
+                    vRegion = '<text style="color:#4daf4a;font-family:monospace;">' + value.substring(0, vend) + '</text>';
+                    otherRegion = '<text style="font-family:monospace;">' + value.substring(vend, value.length) + '</text>';
                     value = vRegion + otherRegion
                 }
                 if (vend <= 0 && jstart > 0) {
-                    jRegion = '<text style="color: #377eb8">' + value.substring(jstart - 1, value.length) + '</text>';
-                    otherRegion = value.substring(0, jstart - 1);
+                    jRegion = '<text style="color: #377eb8;font-family:monospace;">' + value.substring(jstart - 1, value.length) + '</text>';
+                    otherRegion = '<text style="font-family:monospace;">' + value.substring(0, jstart - 1) + '</text>';
                     value = otherRegion + jRegion;
                 }
 
                 if (vend > 0 && jstart > 0 && jstart >= vend) {
-                    vRegion = '<text style="color: #4daf4a">' + value.substring(0, vend) + '</text>';
-                    otherRegion = value.substring(vend, jstart - 1);
-                    jRegion = '<text style="color: #377eb8">' + value.substring(jstart - 1, value.length) + '</text>';
+                    vRegion = '<text style="color:#4daf4a;font-family:monospace;">' + value.substring(0, vend) + '</text>';
+                    otherRegion = '<text style="font-family:monospace;">' +  value.substring(vend, jstart - 1) + '</text>';
+                    jRegion = '<text style="color:#377eb8;font-family:monospace;">' + value.substring(jstart - 1, value.length) + '</text>';
                     value = vRegion + otherRegion + jRegion;
                 }
+            }
+            if (columnName === 'antigen.epitope') {
+                value = '<text style="font-family:monospace;">' + value + '</text>';
             }
             if (columnName === 'gene') {
                 var prefix = '';
@@ -82,7 +100,7 @@
             if (dataType === 'url') {
                 if (value.indexOf('PMID') >= 0) {
                     var id = value.substring(5, value.length);
-                    value = 'PMID: <a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
+                    value = 'PMID:<a href="http://www.ncbi.nlm.nih.gov/pubmed/?term=' + id + '" target="_blank">' + id + '</a>'
                 } else if (value.indexOf('http') >= 0) {
                     var domain;
                     //find & remove protocol (http, ftp, etc.) and get domain
@@ -170,6 +188,7 @@
 
         return {
             getColumns: getColumns,
+            getVisibleColumns: getVisibleColumns,
             getColumnsLength: getColumnsLength,
             setColumns: setColumns,
             entryValue: entryValue,

@@ -21,12 +21,14 @@ object DocumentConverter {
   def get(exportType: String) : Option[DocumentConverter] = {
     exportType match {
       case "excel" => Some(new ExcelConverter())
+      case "csv" => Some(new CSVConverter())
       case _ => None
     }
   }
   def getExtension(exportType: String) : String = {
     exportType match {
       case "excel" => new ExcelConverter().getExtension
+      case "csv" => new CSVConverter().getExtension
       case _ => ".txt"
     }
   }

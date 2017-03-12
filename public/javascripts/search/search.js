@@ -24,11 +24,11 @@
     }]);
 
     application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'table', 'notify', 'LoggerService', function ($websocket, filters, table, notify, LoggerService) {
-
+        var searchStarted = false;
         var connected = false;
         var connection = $websocket('ws://' + location.host + '/search/connect');
         var defaultSortRule = {
-            columnId: 0,
+            columnId: 'gene',
             sortType: 'asc'
         };
         var data = [];
@@ -91,7 +91,6 @@
                             var link = response.link;
                             var exportType = response.exportType;
                             elem.href = '/search/doc/' + exportType + '/' + link;
-                            console.log(elem.href);
                             document.body.appendChild(elem);
                             elem.click();
                             break;
@@ -128,7 +127,14 @@
         connection.onOpen(function() {
             LoggerService.log('Connected to the database');
             connected = true;
-            loading = false;
+            loading = true;
+            sortRule.columnId = defaultSortRule.columnId;
+            sortRule.sortType = defaultSortRule.sortType;
+            connection.send({
+                action: 'search',
+                data: filters.getFilters()
+            });
+            searchStarted = true;
             pingWebSocket = setInterval(function() {
                 connection.send({
                     action: 'ping',
@@ -136,6 +142,10 @@
                 });
             }, 10000)
         });
+
+        function isSearchStarted() {
+            return searchStarted;
+        }
 
         function isConnected() {
             return connected;
@@ -171,17 +181,32 @@
 
         function searchWS() {
             if (connected && !loading) {
-                $(".row_popover").popover('destroy');
-                loading = true;
-                sortRule.columnId = defaultSortRule.columnId;
-                sortRule.sortType = defaultSortRule.sortType;
-                connection.send({
-                    action: 'search',
-                    data: filters.getFiltersRequest()
-                });
+                if (filters.isValid()) {
+                    $(".row_popover").popover('destroy');
+                    loading = true;
+                    sortRule.columnId = defaultSortRule.columnId;
+                    sortRule.sortType = defaultSortRule.sortType;
+                    connection.send({
+                        action: 'search',
+                        data: filters.getFilters()
+                    });
+                    return true;
+                } else {
+                    var errors = filters.getErrors();
+                    angular.forEach(errors, function(error) {
+                        notify.error('Search', error);
+                    });
+                    return false;
+                }
             } else if (loading) {
                 notify.info('Search', 'Loading...');
+                return false;
             }
+            return false;
+        }
+
+        function resetFilters() {
+            filters.resetFilters();
         }
 
         function changePage(pageV) {
@@ -199,16 +224,16 @@
             }
         }
 
-        function sortDatabase(index, page) {
+        function sortDatabase(columnId, page) {
             if (connected && !loading) {
                 $(".row_popover").popover('destroy');
                 pageLoading = true;
-                if (sortRule.columnId === index) {
+                if (sortRule.columnId === columnId) {
                     sortRule.sortType = sortRule.sortType === 'asc' ? 'desc' : 'asc';
                 } else {
                     sortRule.sortType = 'desc';
                 }
-                sortRule.columnId = index;
+                sortRule.columnId = columnId;
                 connection.send({
                     action: 'sort',
                     data: {
@@ -272,21 +297,22 @@
         }
 
         function isColumnAscSorted(index) {
-            if (sortRule.columnId === index && sortRule.sortType === 'asc') return true;
-            return false;
+            return sortRule.columnId === index && sortRule.sortType === 'asc';
+
         }
 
         function isColumnDescSorted(index) {
-            if (sortRule.columnId === index && sortRule.sortType === 'desc') return true;
-            return false;
+            return sortRule.columnId === index && sortRule.sortType === 'desc';
         }
 
         return {
             searchWS: searchWS,
+            resetFilters: resetFilters,
             sortDatabase: sortDatabase,
             changePageSize: changePageSize,
             getData: getData,
             isDataFound: isDataFound,
+            isSearchStarted: isSearchStarted,
             getTotalItems: getTotalItems,
             getPageSize: getPageSize,
             changePage: changePage,
@@ -306,8 +332,6 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'SearchDatabaseAPI', 'table', 'notify', function($scope, SearchDatabaseAPI, table, notify) {
-                var searchStarted  = false;
-
                 $scope.page = {
                     currentPage: 1
                 };
@@ -325,19 +349,22 @@
                 $scope.isColumnDescSorted = SearchDatabaseAPI.isColumnDescSorted;
 
                 $scope.getColumns = table.getColumns;
+                $scope.getVisibleColumns = table.getVisibleColumns;
                 $scope.entryValue = table.entryValue;
                 $scope.isEntryVisible = table.isEntryVisible;
                 $scope.columnHeader = table.columnHeader;
                 $scope.isColumnVisible = table.isColumnVisible;
 
                 $scope.pageChanged = pageChanged;
-                $scope.searchWS = search;
+                $scope.search = search;
+                $scope.reset = reset;
                 $scope.sortDatabase = sortDatabase;
                 $scope.isSearchStarted = isSearchStarted;
                 $scope.clickRow = clickRow;
 
                 $scope.isShowPagination = isShowPagination;
                 $scope.changePageSize = changePageSize;
+                $scope.selectPageSize = selectPageSize;
                 $scope.isComplex = isComplex;
                 $scope.isComplexParent = isComplexParent;
 
@@ -345,19 +372,28 @@
                 $scope.copyToClip = copyToClip;
                 $scope.copyToClipNotification = copyToClipNotification;
 
+                $scope.reloadRoute = function() {
+                    $route.reload();
+                };
+
                 function isShowPagination() {
                     if (!SearchDatabaseAPI.isDataFound() || SearchDatabaseAPI.isLoading()) return false;
                     return $scope.totalItems() > 0;
                 }
 
                 function isSearchStarted() {
-                    return searchStarted;
+                    return SearchDatabaseAPI.isSearchStarted();
                 }
 
                 function search() {
                     $scope.page.currentPage = 1;
-                    searchStarted = true;
-                    SearchDatabaseAPI.searchWS();
+                    if (SearchDatabaseAPI.searchWS()) {
+                        $('html,body').animate({scrollTop: $(".scroll-down-to").offset().top}, 'slow');
+                    }
+                }
+
+                function reset() {
+                    SearchDatabaseAPI.resetFilters();
                 }
 
                 function pageChanged() {
@@ -371,6 +407,11 @@
                 function changePageSize() {
                     $scope.page.currentPage = 1;
                     SearchDatabaseAPI.changePageSize($scope.userPageSize);
+                }
+
+                function selectPageSize(size) {
+                    $scope.userPageSize = size;
+                    changePageSize();
                 }
 
                 function clickRow(rowIndex, row) {
@@ -431,7 +472,6 @@
                 function copyToClipNotification() {
                     notify.info('Meta information', 'Data has been copied to clipboard');
                 }
-
             }]
         }
     });
@@ -440,7 +480,7 @@
         return function (scope, element, attrs) {
             if (scope.$last) setTimeout(function () {
                 scope.$emit('onRepeatLast', element, attrs);
-            }, 1);
+            }, 100);
         };
     });
 
@@ -471,7 +511,6 @@
             }
         };
     });
-
 }());
 
 

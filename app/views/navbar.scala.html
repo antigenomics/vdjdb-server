@@ -6,13 +6,14 @@
 </script>
 <div class="index_navbar_background"></div>
 <div class="index_navbar">
-    <div class="navbar_cell" onclick="navbarLink('@routes.Application.index()')">
+    <div class="brand_cell"><img src="@routes.Assets.at("images/logo_large.png")" alt="VDJdb"></div>
+    <div class="navbar_cell pull-left" onclick="navbarLink('@routes.Application.index()')">
         <a>Home</a>
     </div>
-    <div class="navbar_cell" onclick="navbarLink('@routes.SearchAPI.index()')">
+    <div class="navbar_cell pull-left" onclick="navbarLink('@routes.SearchAPI.index()')">
         <a>Browse</a>
     </div>
-    <div class="navbar_cell" onclick="navbarLink('@routes.IntersectionAPI.index()')">
+    <div class="navbar_cell pull-left" onclick="navbarLink('@routes.IntersectionAPI.index()')">
         <a>Annotate (Beta)</a>
     </div>
     @if(logoutButton) {

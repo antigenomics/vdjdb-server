@@ -1,0 +1,151 @@
+<div class="col-md-6">
+    <div class="panel-group">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <a role="button" data-toggle="collapse" href="#collapse-META">
+                                Metadata
+                    </a>
+                </h3>
+            </div>
+            <div id="collapse-META" class="collapse">
+                <filters-meta>
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    General
+                                    <span data-toggle="tooltip" data-placement="right"
+                                    title="<p>Publication ID and assay type filtering.</p><p>Specify the list of Pubmed IDs to search for: click on the text field to see the list of known IDs, start typing to narrow the list. Multiple IDs can be selected by separating them with a comma.</p><p>Assay types and sequencing methods can be selected by using corresponding checkboxes, for more information see VDJdb specification.</p>"
+                                    class="glyphicon glyphicon-question-sign">
+                                    </span>
+                                </h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <p class="p_label">Pubmed ID(s)</p>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <div class="select_drop">
+                                            <input class="form-control" type="text" placeholder="Comma separated list of Pubmed IDs, start typing to see suggestions..." ng-model="pm_ids.value">
+                                            <div class="select_drop_container">
+                                                <ul>
+                                                    <li ng-repeat="value in pm_ids.autocomplete | filterSubstringComma:pm_ids.value" ng-click="appendPmId(value)">{{ ::value }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-xs-2">
+                                        <p class="p_label">Assay type</p>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" checked ng-model="meta_tags.methodSort">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Multimer sorting
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" checked ng-model="meta_tags.methodCulture">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Culture-based
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" checked ng-model="meta_tags.methodOther">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Other
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <p class="p_label">Sequencing</p>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" checked ng-model="meta_tags.seqSanger">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Sanger
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" checked ng-model="meta_tags.seqAmplicon">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> High-throughput
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" checked ng-model="meta_tags.seqSingleCell">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Single-cell
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                        Record reliability
+                                    <span data-toggle="tooltip" data-placement="right"
+                                    title="<p>Filter records based on VDJdb confidence score: the higher the better, defined according to assay metadata, more details can be found in VDJdb specification.<p></p>Check the corresponding box to include non-canonical CDR3 sequences, i.e. those that do not start with a conserved Cys and end with a conserved Phe/Trp, or CDR3 sequences for which our dedicated algorithm was not unable to fix missing V/J segments or map them.</p>"
+                                    class="glyphicon glyphicon-question-sign">
+                                    </span>
+                                </h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <p class="p_label">Minimal confidence score</p>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <div class="input-group">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-default" type="button" ng-click="decrementScore()" ng-disabled="min_conf_score.value<=0"><span class="glyphicon glyphicon-minus"></span></button>
+                                            </span>
+                                            <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;" value="0" ng-model="min_conf_score.value">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-default" type="button" ng-click="incrementScore()" ng-disabled="min_conf_score.value>=3"><span class="glyphicon glyphicon-plus"></span></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <p class="p_label">Spurious CDR3</p>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" ng-model="meta_tags.nonCanonical">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Include non-canonical
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="" ng-model="meta_tags.unmapped">
+                                                <span class="cr"><i
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Incl. unmapped V/J
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </filters-meta>
+            </div>
+        </div>
+    </div>
+</div>

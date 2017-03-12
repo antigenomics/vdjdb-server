@@ -26,7 +26,13 @@
         <div class="container-fluid">
             <div class="row">
                 @views.html.intersection.files()
-                @views.html.filters.filters()
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    @views.html.filters.filters()
+                </div>
+            </div>
+            <div class="row">
                 @views.html.intersection.results()
             </div>
         </div>

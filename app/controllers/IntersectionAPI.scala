@@ -98,7 +98,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
     val in = Iteratee.foreach[JsValue] {
       websocketMessage =>
-        if (!LimitedAction.allow(request.remoteAddress)) {
+        if (!LimitedAction.allow(request)) {
           channel push LimitedAction.LimitErrorMessage
         } else try {
           val websocketRequest = Json.fromJson[IntersectWebSocketRequest](websocketMessage).get

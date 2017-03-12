@@ -4,6 +4,7 @@
 
 # Home page
 GET     /                               controllers.Application.index
+GET     /summary                        controllers.Application.summary
 GET     /about                          controllers.Application.about
 
 # Search api

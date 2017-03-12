@@ -15,7 +15,7 @@
                 <div class="box-body">
                     <div class="col-md-2">
                         <a class="select_trigger" ng-click="switchSearchParamsActive(file)">{{ file.parameters.presetName }}</a>
-                        <div class="select_drop_container">
+                        <div class="select_drop_container select_drop_container_active">
                             <ul ng-show="isSearchParamsActive(file)">
                                 <li ng-click="searchParamsExact(file)"><a>Exact</a></li>
                                 <li ng-click="searchParamsHamming(file)"><a>Hamming</a></li>
@@ -24,7 +24,7 @@
                     </div>
                     <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
                         <a class="select_trigger" ng-click="switchMaxMismatchesParamsActive(file)">Max mismatches: {{ file.parameters.maxMismatches }}</a>
-                        <div class="select_drop_container">
+                        <div class="select_drop_container select_drop_container_active">
                             <ul ng-show="isMaxMismatchesActive(file)">
                                 <li ng-click="maxMismatches(file, 1)"><a>1</a></li>
                                 <li ng-click="maxMismatches(file, 2)"><a>2</a></li>
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
                         <a class="select_trigger" ng-click="switchScoringNameParamsActive(file)">Scoring: {{ file.parameters.scoringName }}</a>
-                        <div class="select_drop_container">
+                        <div class="select_drop_container select_drop_container_active">
                             <ul ng-show="isScoringNameActive(file)">
                                 <li ng-click="setScoringName(file, 'Dummy')"><a>Dummy</a></li>
                                 <li ng-click="setScoringName(file, 'v1')"><a>v1</a></li>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="box-body">
                     <div class="col-md-2">
-                        <button class="btn btn-sm btn-flat bg-purple" ng-click="intersect(file)">Annotate</button>
+                        <button class="btn btn-primary" ng-click="intersect(file)">Annotate</button>
                     </div>
                 </div>
             </div>
@@ -177,7 +177,7 @@
                     </div>
                     <div class="col-md-2">
                         <a class="select_trigger" ng-click="switchSummarySeriesNameTrigger(file)">{{ file.summary_chart.seriesName }}</a>
-                        <div class="select_drop_container">
+                        <div class="select_drop_container select_drop_container_active">
                             <ul ng-show="isSummarySeriesNameTriggerActive(file)">
                                 <li ng-click="fileSummaryFrequency(file)"><a>Frequency</a></li>
                                 <li ng-click="fileSummaryUniques(file)"><a>Unique</a></li>
@@ -186,7 +186,7 @@
                         </div>
                         <br>
                         <a class="select_trigger" ng-click="switchSummaryDataNameTrigger(file)">{{ file.summary_chart.dataName }}</a>
-                        <div class="select_drop_container">
+                        <div class="select_drop_container select_drop_container_active">
                             <ul ng-show="isSummaryDataNameTriggerActive(file)">
                                 <li ng-repeat="(datasetName, set) in file.summary" ng-click="fileSummaryData(file, datasetName)"><a>{{ datasetName }}</a></li>
                             </ul>

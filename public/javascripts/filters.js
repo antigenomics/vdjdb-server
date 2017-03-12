@@ -1,586 +1,745 @@
 (function() {
     "use strict";
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip({html: true});
+    });
+
     var application = angular.module('filters', ['ngWebSocket', 'table', 'notifications']);
 
-    application.factory('filters', ['$websocket', 'table', 'notify', function ($websocket, table, notify) {
+    application.factory('filters', ['$websocket', 'table', 'notify',
+        'filters_tcr', 'filters_mhc', 'filters_ag', 'filters_meta',
+        function ($websocket, table, notify, filters_tcr, filters_mhc, filters_ag, filters_meta) {
 
-        var textFilters = [];
-        var sequenceFilters = [];
-        var textFilterID = 0;
-        var sequenceFilterID = 0;
+            var columnsLoading = true;
+            var error = false;
 
-        var textFiltersHide = false
-        var sequenceFiltersHide = false
+            var connection = $websocket('ws://' + location.host + '/filters/connect');
+            var pingWebSocket = null;
 
-        var columnsLoading = true;
-        var presetsLoading = true;
-        var error = false;
+            var columns = [];
 
-        var textFiltersColumns = [];
-        var sequenceFiltersColumns = [];
-        var sequencePresets = [];
-        var customPreset = {
-            name: 'custom'
-        };
-
-        var connection = $websocket('ws://' + location.host + '/filters/connect');
-        var pingWebSocket = null;
-
-        var hints = {
-            "Gene": "<p>TCR chain</p><p><em>TRA</em> or <em>TRB</em></p>",
-            "CDR3": "<p>Amino acid sequence</p><p>Example: <em>CASSLAPGATNEKLFF</em> (Full match), <em>CASSLAPGAT</em> or <em>LAPGAT</em> (Substring match)</p>",
-            "V": "<p>TCR Variable segment</p><p>Example: <em>TRBV7-2*02</em> (Full match), <em>TRBV7-2</em> or <em>TRBV7-2*02</em> (Substring match).</p><p>Start typing to see full list</p>",
-            "J": "<p>TCR Joining segment</p><p>Example: <em>TRBJ1-6*01</em> (Full match), <em>TRBJ1-6</em> or <em>TRBJ1</em> (Substring match).</p><p>Start typing to see full list</p>",
-            "Species": "<p>Host species of TCR sequence</p><p>Example: <em>HomoSapiens</em>, <em>MusMusculus</em> or <em>MacacaMulatta</em>.</p><p>Start typing to see full list</p>",
-            "MHC.A": "<p>Identifier of first MHC chain</p><p>Example: <em>HLA-A*02:01:48</em> (Full match), <em>HLA-A*02:01</em> or <em>HLA-A*02</em> (Substring match).</p><p>Start typing to see full list</p>",
-            "MHC.B": "<p>Identifier of second MHC chain</p><p>Example: <em>HLA-DRB5*01:01:01</em> (Full match), <em>HLA-DRB5*01</em> (Substring match); B2M for MHC class I.</p><p>Start typing to see full list</p>",
-            "MHC.class": "<p>MHCI or MHCII</p>",
-            "Antigen.Epitope": "<p>Amino acid sequence</p><p>Example: <em>NLVPMVATV</em>.</p><p>Start typing to see full list</p>",
-            "Antigen.Gene": "<p>Parent gene of an epitope</p><p>Example: <em>EBNA1</em>.</p><p>Start typing to see full list</p>",
-            "Antigen.Species": "<p>Parent species of an epitope</p><p>Example: <em>CMV</em>.</p><p>Start typing to see full list</p>",
-            "Reference": "<p>Pubmed ID, URL or submitter details if unpublished.</p>",
-            "score": "<p>VDJdb confidence score for record identification method</p><p>Example: <em>1</em> will search for records with score greater or equal to 1.</p><p>Score range: 0-3 (low confidence - extremely high confidence), using 1 is recommended</p>",
-            "Frequency": "<p>Share of TCR sequence across all sequences identified for a given epitope in a given assay.</p><p>Example: <em>0.1</em> will search for records represented by 10% or more cells.</p>",
-            "Method": "<p>Search for specific assay details using keywords.</p><p>Example: <em>single-cell</em> will show assays using single-cell sequencing, <em>sort</em> will show all assays using multimer sorting, <em>tetramer</em> will show all assays using tetramers.</p><p>Multiple values can be supplied separated by comma</p>",
-            "Meta": "<p>Various meta-information: cell subset, status, donor, etc</p><p>Examples:</p><p><em>cell: CD8+, tissue: PBMC</em></p><p><em>structure</em></p><p><em>structure: 1ao7</em></p>"
-        }
-
-        var textFiltersTypes = Object.freeze([
-            { name: 'substring', title: 'Substring match', allowNegative: true, description: 'substring' },
-            { name: 'exact', title: 'Full match', allowNegative: true, description: 'exact' },
-            { name: 'level', title: 'Greater or equals', allowNegative: true, description: 'level' },
-            { name: 'frequency', title: 'Greater or equals', allowNegative: false, description: 'frequency' },
-            { name: 'identification', title: 'Tags and keywords', allowNegative: false, description: 'identification' },
-            { name: 'json', title: 'Tags and keywords', allowNegative: false, description: 'json' }  
-        ]);
-
-        connection.onOpen(function() {
-            connection.send({
-                action: 'columns',
-                data: {}
-            });
-            connection.send({
-                action: 'presets',
-                data: {}
-            });
-            pingWebSocket = setInterval(function() {
+            connection.onOpen(function() {
                 connection.send({
-                    action: 'ping',
+                    action: 'columns',
                     data: {}
                 });
-            }, 10000)
-        });
-
-        connection.onMessage(function(message) {
-            var response = JSON.parse(message.data);
-            var filter = {};
-            switch (response.status) {
-                case 'success':
-                    switch (response.action) {
-                        case 'columns':
-                            initialize(response.columns);
-                            table.setColumns(response.columns);
-                            columnsLoading = false;
-                            break;
-                        case 'presets':
-                            presets(response.presets);
-                            presetsLoading = false;
-                            break;
-                        case 'compute_recall':
-                            filter = findSequenceFilterById(response.id);
-                            filter.loading = false;
-                            filter.recall = response.value;
-                            filter.preset = customPreset;
-                            break;
-                        case 'compute_precision':
-                            filter = findSequenceFilterById(response.id);
-                            filter.loading = false;
-                            filter.precision = response.value;
-                            filter.preset = customPreset;
-                            break;
-                        default:
-                            notify.notice('Search', 'Invalid response');
-                            break;
-                    }
-                    break;
-                case 'warn':
-                    angular.forEach(response.warnings, function(warning) {
-                        notify.notice('Search', warning);
+                pingWebSocket = setInterval(function() {
+                    connection.send({
+                        action: 'ping',
+                        data: {}
                     });
-                    break;
-                case 'error':
-                    notify.error('Search', response.message);
-                    break;
-            }
-        });
+                }, 10000)
+            });
 
-        connection.onError(function() {
-            error = true;
-            clearInterval(pingWebSocket);
-        });
-
-        connection.onClose(function() {
-            error = true;
-            clearInterval(pingWebSocket);
-        });
-
-        function initialize(columns) {
-            angular.forEach(columns, function(column) {
-                var meta = column.metadata;
-                if (meta.searchable === '1') {
-                    if (meta.columnType === 'txt') {
-                        textFiltersColumns.push({
-                            name: column.name,
-                            title: meta.title,
-                            types: (function() {
-                                if (meta.title === 'Gene') {
-                                    return [1];
-                                }
-                                if (meta.dataType === 'uint')
-                                    return [2];
-                                return [0, 1]
-                            }()),
-                            allowNegative: (function() {
-                                return meta.dataType !== 'uint';
-                            }()),
-                            autocomplete: column.autocomplete,
-                            values: column.values,
-                            defaultFilterType: (function() {
-                                if (meta.dataType === 'uint')
-                                    return textFiltersTypes[2];
-                                return textFiltersTypes[1];
-                            }())
-                        })
-                    } else if (meta.columnType === 'seq') {
-                        textFiltersColumns.push({
-                            name: column.name,
-                            title: meta.title,
-                            types: [0, 1],
-                            allowNegative: true,
-                            autocomplete: false,
-                            values: [],
-                            defaultFilterType: textFiltersTypes[1]
+            connection.onMessage(function(message) {
+                var response = JSON.parse(message.data);
+                switch (response.status) {
+                    case 'success':
+                        switch (response.action) {
+                            case 'columns':
+                                initialize(response.columns);
+                                table.setColumns(response.columns);
+                                columnsLoading = false;
+                                break;
+                            default:
+                                notify.notice('Search', 'Invalid response');
+                                break;
+                        }
+                        break;
+                    case 'warn':
+                        angular.forEach(response.warnings, function(warning) {
+                            notify.notice('Search', warning);
                         });
-                        sequenceFiltersColumns.push({
-                            name: column.name,
-                            title: meta.title,
-                            types: [0, 1],
-                            allowNegative: true,
-                            autocomplete: false,
-                            values: []
-                        })
-                    }
+                        break;
+                    case 'error':
+                        notify.error('Search', response.message);
+                        break;
                 }
             });
-            textFiltersColumns.push({
-                name: 'meta',
-                title: 'Meta',
-                types: [5],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[5]
+
+            connection.onError(function() {
+                error = true;
+                clearInterval(pingWebSocket);
             });
-            textFiltersColumns.push({
-                name: 'method',
-                title: 'Frequency',
-                types: [3],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[3]
+
+            connection.onClose(function() {
+                error = true;
+                clearInterval(pingWebSocket);
             });
-            textFiltersColumns.push({
-                name: 'method',
-                title: 'Method',
-                types: [4],
-                allowNegative: false,
-                autocomplete: false,
-                values: [],
-                defaultFilterType: textFiltersTypes[4]
-            })
-            columnsLoading = false;
-        }
 
-        function presets(newPresets) {
-            sequencePresets.splice(0, sequencePresets.length);
-            angular.extend(sequencePresets, newPresets);
-            presetsLoading = false
-        }
+            function getFilters() {
+                var filters = {
+                    textFilters: [],
+                    sequenceFilters: []
+                };
 
-        function getTextFiltersColumns() {
-            return textFiltersColumns;
-        }
+                filters_tcr.updateFilters(filters);
+                filters_mhc.updateFilters(filters);
+                filters_ag.updateFilters(filters);
+                filters_meta.updateFilters(filters);
 
-        function getTextFiltersTypes() {
-            return textFiltersTypes;
-        }
+                return filters;
+            }
 
-        function getTextFilters() {
-            return textFilters;
-        }
+            function initialize(new_columns) {
+                var tmp = [];
 
-        function addTextFilter() {
-            if (!error && !columnsLoading) {
-                textFilters.push({
-                    id: textFilterID++,
-                    columnId: '',
-                    columnTitle: 'Please select column name:',
-                    value: '',
-                    filterType: textFiltersTypes[1],
-                    negative: false,
-                    types: [0, 1, 2],
-                    activeColumn: false,
-                    activeType: false,
-                    inputFocused: false,
-                    column: {}
+                angular.forEach(new_columns, function(column) {
+                    tmp.push({
+                        name: column.name,
+                        values: column.values
+                    })
                 });
-                showTextFiltersPopover();
+
+                columnsLoading = false;
+
+                angular.extend(columns, tmp);
             }
-        }
 
-        function deleteTextFilter(filter) {
-            var index = textFilters.indexOf(filter);
-            if (index >= 0) textFilters.splice(index, 1);
-            showTextFiltersPopover();
-            return index;
-        }
-
-        function findTextFilterById(id) {
-            for (var i = 0; i < textFilters.length; i++) {
-                if (textFilters[i].id === id) return textFilters[i];
+            function resetFilters() {
+                filters_tcr.resetFilters();
+                filters_mhc.resetFilters();
+                filters_ag.resetFilters();
+                filters_meta.resetFilters();
             }
-            return {};
-        }
 
-        function getSequenceFiltersColumns() {
-            return sequenceFiltersColumns;
-        }
-
-        function getSequenceFilters() {
-            return sequenceFilters;
-        }
-
-        function addSequenceFilter() {
-            sequenceFilters.push({
-                id: sequenceFilterID++,
-                columnTitle: 'Please select column name: ',
-                columnId: '',
-                query: '',
-                //preset: sequencePresets[0],
-                //presetName: sequencePresets[0].name,
-                //mismatches: sequencePresets[0].mismatches,
-                mismatches: 2,
-                //insertions: sequencePresets[0].insertions,
-                insertions: 1,
-                //deletions: sequencePresets[0].deletions,
-                deletions: 1,
-                //mutations: sequencePresets[0].mutations,
-                mutations: 2,
-                //precision: -1.0,
-                //recall: -1.0,
-                activeColumn: false,
-                //activePreset: false,
-                loading: false
-            });
-            showSequenceFiltersPopover();
-        }
-
-        function deleteSequenceFilter(filter) {
-            var index = sequenceFilters.indexOf(filter);
-            if (index >= 0) sequenceFilters.splice(index, 1);
-            showSequenceFiltersPopover();
-            return index;
-        }
-
-        function findSequenceFilterById(id) {
-            for (var i = 0; i < sequenceFilters.length; i++) {
-                if (sequenceFilters[i].id === id) return sequenceFilters[i];
+            function isValid() {
+                return filters_ag.isAntigenSequenceValid() && filters_tcr.isSequencePatternValid() && filters_tcr.isHammingPatternValid();
             }
-            return {};
-        }
 
-        function isFiltersLoaded() {
-            return !columnsLoading && !presetsLoading;
-        }
-
-        function isFiltersError() {
-            return error;
-        }
-
-        function getDefaultFilterTypes() {
-            return textFiltersTypes;
-        }
-
-        function getFiltersRequest() {
-            var textFiltersRequest = [];
-
-            angular.forEach(textFilters, function(filter) {
-                textFiltersRequest.push({
-                    columnId: filter.columnId,
-                    value: filter.value,
-                    filterType: filter.filterType.name,
-                    negative: filter.negative
-                })
-            });
+            function getErrors() {
+                var errors = [];
+                if (!filters_ag.isAntigenSequenceValid()) {
+                    errors.push('Invalid antigen sequence pattern')
+                }
+                if (!filters_tcr.isSequencePatternValid()) {
+                    errors.push('Invalid cdr3 sequence pattern')
+                }
+                if (!filters_tcr.isHammingPatternValid()) {
+                    errors.push('Invalid hamming query')
+                }
+                return errors;
+            }
 
             return {
-                textFilters: textFiltersRequest,
-                sequenceFilters: sequenceFilters
+                getFilters: getFilters,
+                resetFilters: resetFilters,
+                columns: columns,
+                isValid: isValid,
+                getErrors: getErrors
             }
+
+        }]);
+
+    // Filter types
+
+    function addExactFilter(filters, column, value) {
+        filters.textFilters.push({
+            columnId: column,
+            filterType: 'exact',
+            negative: true,
+            value: value
+        })
+    }
+
+    function addCsTextFilter(filters, column, value) {
+        filters.textFilters.push({
+            columnId: column,
+            filterType: 'substring_set',
+            negative: false,
+            value: value
+        })
+    }
+
+    function addCsTextFilterExact(filters, column, value) {
+        filters.textFilters.push({
+            columnId: column,
+            filterType: 'exact_set',
+            negative: false,
+            value: value
+        })
+    }
+
+    function addSequencePatternFilter(filters, column, substring, value) {
+        filters.textFilters.push({
+            columnId: column,
+            filterType: 'pattern',
+            negative: false,
+            value: groomSequencePattern(substring, value)
+        })
+    }
+
+    function groomSequencePattern(substring, value) {
+        if (substring == false) value = '^' + value + '$'
+        return value.replace(/X/g, ".")
+    }
+
+    function addHammingFilter(filters, column, s, i, d, value) {
+        filters.sequenceFilters.push({
+            columnId: column,
+            mutations: s,
+            insertions: i,
+            deletions: d,
+            mismatches: s + i + d,
+            query: value
+        })
+    }
+
+    function addScoreFilter(filters, value) {
+        filters.textFilters.push({
+            columnId: 'vdjdb.score',
+            filterType: 'level',
+            negative: false,
+            value: value.toString()
+        })
+    }
+
+    // End filter types
+
+
+//////////////// TCR
+
+    application.factory('filters_tcr', [function() {
+        var general_tcr = {
+            human: true,
+            monkey: true,
+            mouse: true,
+            tra: true,
+            trb: true
+        };
+
+        var v_segment = {
+            autocomplete: [ ],
+            value: ''
+        };
+
+        var j_segment = {
+            autocomplete: [ ],
+            value: ''
+        };
+
+        var cdr3_pattern = {
+            value: '',
+            valid: true,
+            substring: false
+        };
+
+        var cdr3_hamming = {
+            value: '',
+            valid: true,
+            s: 0,
+            i: 0,
+            d: 0
+        };
+
+        function resetFilters() {
+            general_tcr.human = true;
+            general_tcr.monkey = true;
+            general_tcr.mouse = true;
+            general_tcr.tra = true;
+            general_tcr.trb = true;
+            v_segment.value = '';
+            j_segment.value = '';
+            cdr3_pattern.value = '';
+            cdr3_pattern.substring = false;
+            cdr3_hamming.value = '';
+            cdr3_hamming.s = 0;
+            cdr3_hamming.i = 0;
+            cdr3_hamming.d = 0;
         }
 
-        function getPresets() {
-            return sequencePresets;
-        }
+        function checkSequencePattern() {
+            cdr3_pattern.value =  cdr3_pattern.value.toUpperCase();
 
-        function filtersInit(callback) {
-            callback(textFilters, sequenceFilters)
-            setTimeout(function() {
-                showTextFiltersPopover();
-                showSequenceFiltersPopover();
-            }, 300);
-        }
+            var leftBracketStart = false;
+            var error = false;
 
-        function getRecallByPrecision(filter) {
-            filter.loading = true;
-            connection.send({
-                action: 'compute_recall',
-                data: {
-                    value: filter.precision,
-                    id: filter.id
+            if (cdr3_pattern.value.length > 100) {
+                cdr3_pattern.valid = false;
+                return;
+            }
+
+            var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+
+            for (var i = 0; i < cdr3_pattern.value.length; i++) {
+                var char = cdr3_pattern.value[i];
+                if (char === '[') {
+                    if (leftBracketStart === true) {
+                        error = true;
+                        break
+                    }
+                    leftBracketStart = true
+                } else if (char === ']') {
+                    if (leftBracketStart === false) {
+                        error = true;
+                        break;
+                    } else if (cdr3_pattern.value[i - 1] === '[') {
+                        error = true;
+                        break;
+                    }
+                    leftBracketStart = false;
+                } else {
+                    if (char != 'X' && allowed_chars.indexOf(char) === -1 || char == ' ') {
+                        error = true;
+                        break;
+                    }
                 }
-            })
+            }
+
+            cdr3_pattern.valid =  !(leftBracketStart || error);
         }
 
-        function getPrecisionByRecall(filter) {
-            filter.loading = true;
-            connection.send({
-                action: 'compute_precision',
-                data: {
-                    value: filter.recall,
-                    id: filter.id
+        function checkHamming() {
+            cdr3_hamming.value =  cdr3_hamming.value.toUpperCase();
+
+            if (cdr3_hamming.value.length > 50) {
+                cdr3_hamming.valid = false;
+                return;
+            }
+
+            var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+
+            for (var i = 0; i < cdr3_hamming.value.length; i++) {
+                var char = cdr3_hamming.value[i];
+                if (allowed_chars.indexOf(char) === -1 || char === ' ') {
+                    cdr3_hamming.valid = false;
+                    return;
                 }
-            })
+            }
+            cdr3_hamming.valid = true;
         }
 
-        function isTextFiltersHidden() {
-            return textFiltersHide;
+        function isSequencePatternValid() {
+            return cdr3_pattern.valid;
         }
 
-        function isSequenceFiltersHidden() {
-            return sequenceFiltersHide;
+        function isHammingPatternValid() {
+            return cdr3_hamming.valid;
         }
 
-        function hideTextFilters() {
-            textFiltersHide = true;
-        }
+        function updateFilters(filters) {
+            if (general_tcr.human == false) addExactFilter(filters, 'species', 'HomoSapiens');
+            if (general_tcr.monkey == false) addExactFilter(filters, 'species', 'MacacaMulatta');
+            if (general_tcr.mouse == false) addExactFilter(filters, 'species', 'MusMusculus');
+            if (general_tcr.tra == false) addExactFilter(filters, 'gene', 'TRA');
+            if (general_tcr.trb == false) addExactFilter(filters, 'gene', 'TRB');
 
-        function hideSequenceFilters() {
-            sequenceFiltersHide = true;
-        }
+            if (v_segment.value.length > 0) addCsTextFilter(filters, 'v.segm', v_segment.value);
+            if (j_segment.value.length > 0) addCsTextFilter(filters, 'j.segm', j_segment.value);
 
-        function showTextFiltersPopover() {
-            //TODO: Overhead, no need to destroy each time    
-            setTimeout(function() {
-                angular.forEach(textFilters, function(filter) {
-                    var column = table.columnByName(filter.columnId);
-                    $("#filter_hint_" + filter.id).popover('destroy');
-                    $("#filter_hint_" + filter.id).popover({
-                        placement: 'top',
-                        container: 'body',
-                        html: 'true',
-                        trigger: 'hover',
-                        animation: false,
-                        content: '<div>' + (column == null ? 'Please select column name' :  hints[filter.columnTitle]) + '</div>'// +
-                                 //'<hr>'+
-                                 //'<div>' + filter.filterType.title + ': ' + filter.filterType.description + '</div>'
-                    });
-                });
-            }, 100);
-        }
-
-        function showSequenceFiltersPopover() {
-            //TODO: Overhead, no need to destroy each time    
-            setTimeout(function() {
-                angular.forEach(sequenceFilters, function(filter) {
-                    var column = table.columnByName(filter.columnId);
-                    $("#filter_hint_seq_" + filter.id).popover('destroy');
-                    $("#filter_hint_seq_" + filter.id).popover({
-                        placement: 'top',
-                        container: 'body',
-                        html: 'true',
-                        trigger: 'hover',
-                        animation: false,
-                        content: '<div>' + (column == null ? 'Please select column name' : hints[filter.columnTitle]) + '</div>'// +
-                                 //'<hr>'+
-                                 //'<div>' + filter.filterType.title + ': ' + filter.filterType.description + '</div>'
-                    });
-                });
-            }, 100);   
+            if (cdr3_pattern.value.length > 0) addSequencePatternFilter(filters, "cdr3", cdr3_pattern.substring, cdr3_pattern.value);
+            if (cdr3_hamming.value.length > 0) addHammingFilter(filters, "cdr3", cdr3_hamming.s, cdr3_hamming.i, cdr3_hamming.d, cdr3_hamming.value);
         }
 
         return {
-            initialize: initialize,
-            presets: presets,
-            getTextFiltersColumns: getTextFiltersColumns,
-            getTextFiltersTypes: getTextFiltersTypes,
-            getTextFilters: getTextFilters,
-            addTextFilter: addTextFilter,
-            deleteTextFilter: deleteTextFilter,
-            findTextFilterById: findTextFilterById,
-            getSequenceFiltersColumns: getSequenceFiltersColumns,
-            getSequenceFilters: getSequenceFilters,
-            addSequenceFilter: addSequenceFilter,
-            deleteSequenceFilter: deleteSequenceFilter,
-            findSequenceFilterById: findSequenceFilterById,
-            isFiltersLoaded: isFiltersLoaded,
-            isFiltersError: isFiltersError,
-            getDefaultFilterTypes: getDefaultFilterTypes,
-            getFiltersRequest: getFiltersRequest,
-            getPresets: getPresets,
-            filtersInit: filtersInit,
-            getRecallByPrecision: getRecallByPrecision,
-            getPrecisionByRecall: getPrecisionByRecall,
-            hideTextFilters: hideTextFilters,
-            hideSequenceFilters: hideSequenceFilters,
-            isTextFiltersHidden: isTextFiltersHidden,
-            isSequenceFiltersHidden: isSequenceFiltersHidden,
-            showTextFiltersPopover: showTextFiltersPopover,
-            showSequenceFiltersPopover: showSequenceFiltersPopover
-
+            general_tcr: general_tcr,
+            v_segment: v_segment,
+            j_segment: j_segment,
+            cdr3_pattern: cdr3_pattern,
+            cdr3_hamming: cdr3_hamming,
+            updateFilters: updateFilters,
+            resetFilters: resetFilters,
+            checkSequencePattern: checkSequencePattern,
+            checkHamming: checkHamming,
+            isSequencePatternValid: isSequencePatternValid,
+            isHammingPatternValid: isHammingPatternValid
         }
     }]);
 
-    application.filter('filterBySubstring', function() {
+    application.directive('filtersTcr', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', 'filters', 'filters_tcr', function($scope, filters, filters_tcr) {
+                $scope.textColumns = filters.columns;
+
+                $scope.general_tcr = filters_tcr.general_tcr;
+
+                $scope.v_segment = filters_tcr.v_segment;
+                $scope.j_segment = filters_tcr.j_segment;
+                $scope.cdr3_pattern = filters_tcr.cdr3_pattern;
+                $scope.cdr3_hamming = filters_tcr.cdr3_hamming;
+
+                $scope.appendVSegment = appendVSegment;
+                $scope.appendJSegment = appendJSegment;
+
+                $scope.checkSequencePattern = filters_tcr.checkSequencePattern;
+                $scope.isSequencePatternValid = filters_tcr.isSequencePatternValid;
+                $scope.checkHamming = filters_tcr.checkHamming;
+                $scope.isHammingPatternValid = filters_tcr.isHammingPatternValid;
+
+
+                var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.v_segment.autocomplete, $scope.j_segment.autocomplete, filters.columns);
+                        textColumnsWatcher();
+                    }
+                });
+
+                function findAutocompleteValues(vAutocomplete, jAutocomplete, columns) {
+                    angular.forEach(columns, function(column) {
+                        if (column.name == 'v.segm') angular.extend(vAutocomplete, column.values.sort());
+                        if (column.name == 'j.segm') angular.extend(jAutocomplete, column.values.sort());
+                    })
+                }
+
+                function appendVSegment(value) {
+                    var v = $scope.v_segment.value.split(',');
+                    v[v.length - 1] = value;
+                    $scope.v_segment.value = v.join(",");
+                }
+
+                function appendJSegment(value) {
+                    var j = $scope.j_segment.value.split(',');
+                    j[j.length - 1] = value;
+                    $scope.j_segment.value = j.join(',');
+                }
+            }]
+        }
+    });
+
+    application.filter('filterSubstringComma', function() {
         return function(data, value) {
+            //trim
+            var commaValue = value.replace(/\s/g, "");
+            if (value.indexOf(',') !== -1) {
+                var values = commaValue.split(',');
+                commaValue = values[values.length - 1];
+            }
+
             if (data instanceof Array) {
                 return data.filter(function(item) {
-                    return item.indexOf(value) !== -1;
+                    return item.indexOf(commaValue) !== -1;
                 })
             } else {
                 return []
             }
         }
+    });
 
-    })
+//////////////// ANTIGEN
 
+    application.factory('filters_ag', [function() {
+        var ag_species = {
+            autocomplete: [ ],
+            value: ''
+        };
 
-    application.directive('filters', function () {
+        var ag_gene = {
+            autocomplete: [ ],
+            value: ''
+        };
+
+        var ag_sequence = {
+            autocomplete: [ ],
+            value: ''
+        };
+
+        var ag_pattern = {
+            value: '',
+            valid: true,
+            substring: false
+        };
+
+        function resetFilters() {
+            ag_species.value = '';
+            ag_gene.value = '';
+            ag_sequence.value = '';
+            ag_pattern.value = '';
+        }
+
+        function checkAntigenSequencePattern() {
+            ag_pattern.value = ag_pattern.value.toUpperCase();
+
+            var leftBracketStart = false;
+            var error = false;
+
+            if (ag_pattern.value.length > 100) return true;
+
+            var allowed_chars = 'ARNDCQEGHILKMFPSTWYV';
+
+            for (var i = 0; i < ag_pattern.value.length; i++) {
+                var char = ag_pattern.value[i];
+                if (char === '[') {
+                    if (leftBracketStart === true) {
+                        error = true;
+                        break
+                    }
+                    leftBracketStart = true
+                } else if (char === ']') {
+                    if (leftBracketStart === false) {
+                        error = true;
+                        break;
+                    } else if (ag_pattern.value[i - 1] === '[') {
+                        error = true;
+                        break;
+                    } 
+                    leftBracketStart = false;
+                } else {
+                    if (char != 'X' && allowed_chars.indexOf(char) === -1 || char === ' ') {
+                        error = true;
+                        break;
+                    }
+                }
+            }
+
+            ag_pattern.valid = !(leftBracketStart || error);
+        }
+
+        function isAntigenSequenceValid() {
+            return ag_pattern.valid;
+        }
+
+        function updateFilters(filters) {
+            if (ag_species.value.length > 0) addCsTextFilterExact(filters, 'antigen.species', ag_species.value);
+            if (ag_gene.value.length > 0) addCsTextFilterExact(filters, 'antigen.gene', ag_gene.value);
+
+            if (ag_sequence.value.length > 0) addCsTextFilterExact(filters, 'antigen.epitope', ag_sequence.value);
+            if (ag_pattern.value.length > 0) addSequencePatternFilter(filters, "antigen.epitope", ag_pattern.substring, ag_pattern.value);
+        }
+
+        return {
+            ag_species: ag_species,
+            ag_gene: ag_gene,
+            ag_sequence: ag_sequence,
+            ag_pattern: ag_pattern,
+            updateFilters: updateFilters,
+            resetFilters: resetFilters,
+            isAntigenSequenceValid: isAntigenSequenceValid,
+            checkAntigenSequencePattern: checkAntigenSequencePattern
+        }
+    }]);
+
+    application.directive('filtersAg', function() {
         return {
             restrict: 'E',
-            controller: ['$scope', 'filters', function ($scope, filters) {
-                // $scope.sliderOptions = {
-                //     min: 0,
-                //     max: 1,
-                //     step: 1e-2,
-                //     value: 0
-                // };
+            controller: ['$scope', 'filters', 'filters_ag', function($scope, filters, filters_ag) {
+                $scope.ag_species = filters_ag.ag_species;
+                $scope.ag_gene = filters_ag.ag_gene;
+                $scope.ag_sequence = filters_ag.ag_sequence;
+                $scope.ag_pattern = filters_ag.ag_pattern;
 
-                $scope.textFilters = filters.getTextFilters();
-                $scope.textFiltersColumns = filters.getTextFiltersColumns();
-                $scope.textFiltersTypes = filters.getTextFiltersTypes();
-                $scope.addTextFilter = filters.addTextFilter;
-                $scope.deleteTextFilter = filters.deleteTextFilter;
+                $scope.appendAgSpecies = appendAgSpecies;
+                $scope.appendAgGene = appendAgGene;
+                $scope.appendAgSequence = appendAgSequence;
 
-                $scope.sequenceFilters = filters.getSequenceFilters();
-                $scope.sequenceFiltersColumns = filters.getSequenceFiltersColumns();
-                $scope.addSequenceFilter = filters.addSequenceFilter;
-                $scope.deleteSequenceFilter = filters.deleteSequenceFilter;
+                $scope.checkAntigenSequencePattern = filters_ag.checkAntigenSequencePattern;
+                $scope.isAntigenSequenceValid = filters_ag.isAntigenSequenceValid;
 
-                $scope.isTextFiltersHidden = filters.isTextFiltersHidden;
-                $scope.isSequenceFiltersHidden = filters.isSequenceFiltersHidden;
-
-                //$scope.presets = filters.getPresets();
-
-                $scope.isFiltersLoaded = filters.isFiltersLoaded;
-                $scope.isFiltersError = filters.isFiltersError;
-
-                $scope.isTextFiltersExist = function () {
-                    return $scope.textFilters.length > 0;
-                };
-
-
-                $scope.isSequenceFiltersExist = function() {
-                    return $scope.sequenceFilters.length > 0;
-                };
-
-                $scope.switchColumnVisible = function(filter) {
-                    filter.activeColumn = !filter.activeColumn;
-                };
-
-                $scope.isColumnActive = function(filter) {
-                    return filter.activeColumn;
-                };
-
-                $scope.clickTextColumn = function(filter, column) {
-                    filter.value = '';
-                    filter.columnId = column.name;
-                    filter.columnTitle = column.title;
-                    filter.types = column.types;
-                    filter.filterType = column.defaultFilterType;
-                    filter.negative = false;
-                    filter.activeColumn = false;
-                    filter.column = column;
-                    filter.inputFocused = false;
-                    filters.showTextFiltersPopover();
-                };
-
-                $scope.clickSequenceColumn = function(filter, column) {
-                    filter.value = '';
-                    filter.columnId = column.name;
-                    filter.columnTitle = column.title;
-                    filter.activeColumn = false;
-                    filters.showSequenceFiltersPopover();
-                };
-
-                $scope.switchTypeVisible = function(filter) {
-                    if (filter.types.length !== 1) {
-                        filter.activeType = !filter.activeType;
+                var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.ag_species.autocomplete, $scope.ag_gene.autocomplete, $scope.ag_sequence.autocomplete, filters.columns);
+                        textColumnsWatcher();
                     }
-                };
+                });
 
-                $scope.isTypeActive = function(filter) {
-                    return filter.activeType;
-                };
+                function findAutocompleteValues(agSpeciesAutocomplete, agGeneAutocomplete, agSequenceAutocomplete, columns) {
+                    angular.forEach(columns, function(column) {
+                        if (column.name == 'antigen.species') angular.extend(agSpeciesAutocomplete, column.values.sort());
+                        if (column.name == 'antigen.gene') angular.extend(agGeneAutocomplete, column.values.sort());
+                        if (column.name == 'antigen.epitope') angular.extend(agSequenceAutocomplete, column.values.sort());
+                    })
+                }
 
-                $scope.clickType = function(filter, typeIndex) {
-                    filter.filterType = $scope.textFiltersTypes[typeIndex];
-                    filter.activeType = false;
-                };
+                function appendAgSpecies(value) {
+                    var x = $scope.ag_species.value.split(',');
+                    x[x.length - 1] = value;
+                    $scope.ag_species.value = x.join(",");
+                }
 
-                //Preset feature in development
-                // $scope.switchPresetVisible = function(filter) {
-                //     filter.activePreset = !filter.activePreset;
-                // };
+                function appendAgGene(value) {
+                    var x = $scope.ag_gene.value.split(',');
+                    x[x.length - 1] = value;
+                    $scope.ag_gene.value = x.join(",");
+                }
 
-                // $scope.isPresetActive = function(filter) {
-                //     return filter.activePreset;
-                // };
-
-                // $scope.clickPreset = function(filter, preset) {
-                //     filter.preset = preset;
-                //     filter.precision = 0.0;
-                //     filter.recall = 0.0;
-                //     filter.mismatches = preset.mismatches;
-                //     filter.insertions = preset.insertions;
-                //     filter.deletions = preset.deletions;
-                //     filter.mutations = preset.mutations;
-                //     filter.threshold = preset.threshold;
-                //     filter.presetName = preset.name;
-                //     filter.activePreset = false;
-                // };
-
-                // $scope.precisionStopSlide = function precisionStopSlide(filter) {
-                //     filters.getRecallByPrecision(filter)
-                // };
-
-                // $scope.recallStopSlide = function recallStopSlide(filter) {
-                //     filters.getPrecisionByRecall(filter)
-                // };
-
+                function appendAgSequence(value) {
+                    var x = $scope.ag_sequence.value.split(',');
+                    x[x.length - 1] = value;
+                    $scope.ag_sequence.value = x.join(",");
+                }
             }]
         }
     });
 
+//////////////// MHC
+
+    application.factory('filters_mhc', [function() {
+        var mhc_class = {
+            mhci: true,
+            mhcii: true
+        };
+
+        var mhc_a = {
+            autocomplete: [ ],
+            value: ''
+        };
+
+        var mhc_b = {
+            autocomplete: [ ],
+            value: ''
+        };
+
+        function resetFilters() {
+            mhc_class.mhci = true;
+            mhc_class.mhcii = true;
+            mhc_a.value = '';
+            mhc_b.value = '';
+        }
+
+        function updateFilters(filters) {
+            if (mhc_class.mhci == false) addExactFilter(filters, 'mhc.class', 'MHCI');
+            if (mhc_class.mhcii == false) addExactFilter(filters, 'mhc.class', 'MHCII');
+
+            if (mhc_a.value.length > 0) addCsTextFilter(filters, 'mhc.a', mhc_a.value);
+            if (mhc_b.value.length > 0) addCsTextFilter(filters, 'mhc.b', mhc_b.value);
+        }
+
+        return {
+            mhc_class: mhc_class,
+            mhc_a: mhc_a,
+            mhc_b: mhc_b,
+            updateFilters: updateFilters,
+            resetFilters: resetFilters
+        }
+    }]);
+
+    application.directive('filtersMhc', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', 'filters', 'filters_mhc', function($scope, filters, filters_mhc) {
+                $scope.mhc_class = filters_mhc.mhc_class;
+                $scope.mhc_a = filters_mhc.mhc_a;
+                $scope.mhc_b = filters_mhc.mhc_b;
+
+                $scope.appendMhcA = appendMhcA;
+                $scope.appendMhcB = appendMhcB;
+
+                var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.mhc_a.autocomplete, $scope.mhc_b.autocomplete, filters.columns);
+                        textColumnsWatcher();
+                    }
+                });
+
+                function findAutocompleteValues(mhcAAutocomplete, mhcBAutocomplete, columns) {
+                    angular.forEach(columns, function(column) {
+                        if (column.name == 'mhc.a') angular.extend(mhcAAutocomplete, column.values.sort());
+                        if (column.name == 'mhc.b') angular.extend(mhcBAutocomplete, column.values.sort());
+                    })
+                }
+
+                function appendMhcA(value) {
+                    var x = $scope.mhc_a.value.split(',');
+                    x[x.length - 1] = value;
+                    $scope.mhc_a.value = x.join(",");
+                }
+
+                function appendMhcB(value) {
+                    var x = $scope.mhc_b.value.split(',');
+                    x[x.length - 1] = value;
+                    $scope.mhc_b.value = x.join(",");
+                }
+            }]
+        }
+    });
+
+//////////////// META
+
+    application.factory('filters_meta', [function() {
+        var pm_ids = {
+            autocomplete: [],
+            value: ''
+        };
+
+        var meta_tags = {
+            methodSort: true,
+            methodCulture: true,
+            methodOther: true,
+            seqSanger: true,
+            seqAmplicon: true,
+            seqSingleCell: true,
+            nonCanonical: false,
+            unmapped: false
+        };
+
+        var min_conf_score = {
+            value: 0
+        };
+
+        function resetFilters() {
+            pm_ids.value = '';
+            meta_tags.methodSort = true;
+            meta_tags.methodCulture = true;
+            meta_tags.methodOther = true;
+            meta_tags.seqSanger = true;
+            meta_tags.seqAmplicon = true;
+            meta_tags.seqSingleCell = true;
+            meta_tags.nonCanonical = false;
+            meta_tags.unmapped = false;
+        }
+
+        function updateFilters(filters) {
+            if (pm_ids.value.length > 0) addCsTextFilterExact(filters, 'reference.id', pm_ids.value);
+
+            if (meta_tags.methodSort == false) addExactFilter(filters, 'web.method', 'sort');
+            if (meta_tags.methodCulture == false) addExactFilter(filters, 'web.method', 'culture');
+            if (meta_tags.methodOther == false) addExactFilter(filters, 'web.method', 'other');
+
+            if (meta_tags.seqSanger == false) addExactFilter(filters, 'web.method.seq', 'sanger');
+            if (meta_tags.seqAmplicon == false) addExactFilter(filters, 'web.method.seq', 'amplicon');
+            if (meta_tags.seqSingleCell == false) addExactFilter(filters, 'web.method.seq', 'singlecell');
+
+            if (meta_tags.nonCanonical == false) addExactFilter(filters, 'web.cdr3fix.nc', 'yes');
+            if (meta_tags.unmapped == false) addExactFilter(filters, 'web.cdr3fix.unmp', 'yes');
+
+            if (min_conf_score.value > 0) addScoreFilter(filters, min_conf_score.value);
+        }
+
+        return {
+            pm_ids: pm_ids,
+            meta_tags: meta_tags,
+            min_conf_score: min_conf_score,
+            updateFilters: updateFilters,
+            resetFilters: resetFilters
+        }
+    }]);
+
+    application.directive('filtersMeta', function() {
+        return {
+            restrict: 'E',
+            controller: ['$scope', 'filters', 'filters_meta', function($scope, filters, filters_meta) {
+                $scope.pm_ids = filters_meta.pm_ids;
+                $scope.meta_tags = filters_meta.meta_tags;
+                $scope.min_conf_score = filters_meta.min_conf_score;
+
+                $scope.appendPmId = appendPmId;
+
+                var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
+                    if (filters.columns.length != 0) {
+                        findAutocompleteValues($scope.pm_ids.autocomplete, filters.columns);
+                        textColumnsWatcher();
+                    }
+                });
+
+                function findAutocompleteValues(pmIdsAutocomplete, columns) {
+                    angular.forEach(columns, function(column) {
+                        if (column.name == 'reference.id') angular.extend(pmIdsAutocomplete, column.values.sort());
+                    })
+                }
+
+                function appendPmId(value) {
+                    var x = $scope.pm_ids.value.split(',');
+                    x[x.length - 1] = value;
+                    $scope.pm_ids.value = x.join(",");
+                }
+
+                $scope.incrementScore = function() {
+                    $scope.min_conf_score.value++;
+                };
+                $scope.decrementScore = function() {
+                    $scope.min_conf_score.value--;
+                };
+            }]
+        }
+    })
 }());
