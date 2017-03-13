@@ -100,21 +100,18 @@
                                     <div class="col-xs-3">
                                         <p class="p_label">Sequence or pattern</p>
                                     </div>
-                                    <div class="col-xs-5">
+                                    <div class="col-xs-7">
                                         <div class="form-group" ng-class="{'has-error has-feedback':!isAntigenSequenceValid()}">
                                             <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. LLFG[FY][AP]VYV or LLFGXXXYV." ng-model="ag_pattern.value" ng-change="checkAntigenSequencePattern()">
                                             <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="!isAntigenSequenceValid()"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-xs-1">
-                                        <p class="p_label">Substring</p>
                                     </div>
                                     <div class="col-xs-2">
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox" value="" ng-model="ag_pattern.substring">
                                                 <span class="cr"><i
-                                                class="cr-icon glyphicon glyphicon-ok"></i></span>
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Substring
                                             </label>
                                         </div>
                                     </div>

@@ -444,13 +444,18 @@
                         $('.row_popover').popover({
                             container: 'body',
                             html: true,
-                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to copy to clipboard</h3></div>'
+                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click  <i style="color:black" class="fa fa-info-circle comments-control"></i>  to copy to clipboard</h3></div>'
+                        });
+                        $('.row_popover_generic').popover({
+                            container: 'body',
+                            html: true,
+                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div>'
                         });
                     } else if (elem === 'column') {
                         $('.column_popover').popover({
                             container: 'body',
                             html: true,
-                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click to sort</h3></div>'
+                            template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><h3 class="popover-footer">Click column header to sort</h3></div>'
                         });
                     }
                 });

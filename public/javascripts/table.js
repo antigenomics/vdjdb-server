@@ -79,13 +79,21 @@
                 value = '<text style="font-family:monospace;">' + value + '</text>';
             }
             if (columnName === 'gene') {
-                var prefix = '';
+                var prefix = '', comment = '';
                 if (entries[0].value != 0) {
-                    prefix = '<i class="fa cursor_pointer" ng-class="{\'fa-plus\':!isComplexParent(row) && !isComplex(row), \'fa-minus\':isComplexParent(row)}" aria-hidden="true" ' +
+                    prefix = '<i class="fa cursor_pointer row_popover_generic" data-trigger="hover" data-toggle="popover"' +
+                        'data-placement="right" data-content="Click to fetch paired TCR chain"' +
+                        'ng-class="{\'fa-plus\':!isComplexParent(row) && !isComplex(row), \'fa-minus\':isComplexParent(row)}" aria-hidden="true" ' +
                         'ng-click="::clickRow(rowIndex, row)"></i>';
                 } else {
-                    prefix = '<i class="fa fa-plus cursor_pointer" style="color: #D3D3D3;" ng-click="::clickRow(rowIndex, row)"></i>'
+                    prefix = '<i class="fa fa-plus cursor_pointer row_popover_generic" data-trigger="hover" data-toggle="popover"'+
+                    'data-placement="right" data-content="No paired TCR chain was found"' +
+                    'style="color: #D3D3D3;" ng-click="::clickRow(rowIndex, row)"></i>'
+                    //comment = 'No paired TCR chain was found'
                 }
+                //prefix = '<div class="row_popover_generic" style="width: 100%; height: 100%;" tab-index="0" ' +
+                //         'data-trigger="hover" data-toggle="popover" data-placement="right" ' +
+                //         'data-content="' + comment + '">'  + '</div>' + prefix ;
                 if (typeof showComplex != "undefined" && showComplex === false) prefix = '';
                 switch (value) {
                     case 'TRA':

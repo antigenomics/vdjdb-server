@@ -110,16 +110,10 @@
                                     <div class="col-xs-3">
                                         <p class="p_label">Minimal confidence score</p>
                                     </div>
-                                    <div class="col-xs-3">
-                                        <div class="input-group">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="decrementScore()" ng-disabled="min_conf_score.value<=0"><span class="glyphicon glyphicon-minus"></span></button>
-                                            </span>
-                                            <input type="text" onkeydown="return false;" class="form-control" style="text-align:center;" value="0" ng-model="min_conf_score.value">
-                                            <span class="input-group-btn">
-                                                <button class="btn btn-default" type="button" ng-click="incrementScore()" ng-disabled="min_conf_score.value>=3"><span class="glyphicon glyphicon-plus"></span></button>
-                                            </span>
-                                        </div>
+                                    <div class="col-xs-2">
+                                        <input class="form-control" value="0" type="number" min="0" max="3" ng-model="min_conf_score.value">
+                                    </div>
+                                    <div class="col-xs-1">
                                     </div>
                                     <div class="col-xs-2">
                                         <p class="p_label">Spurious CDR3</p>
