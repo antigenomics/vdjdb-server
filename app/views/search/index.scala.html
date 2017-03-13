@@ -39,34 +39,9 @@
                             </div>
                             <br>
                             <div class="row">
-                                <div class="col-md-9">
-                                    <button type="button" class="btn btn-primary" ng-click="search()">Refresh table</button>
-                                    <button type="button" class="btn btn-danger" ng-click="reset()">Reset filters</button>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group select_drop">
-                                        <div class="input-group">
-                                            <span class="input-group-addon">Page size</span>
-                                            <input class="form-control" type="text" ng-model="userPageSize" readonly>
-                                        </div>
-                                        <div class="select_drop_container">
-                                            <ul>
-                                                <li ng-click="selectPageSize(25)">25</li>
-                                                <li ng-click="selectPageSize(50)">50</li>
-                                                <li ng-click="selectPageSize(100)">100</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-1">
-                                    <div class="btn-group pull-right">
-                                        <button type="button" class="pull-right btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            Export table <span class="caret"></span></button>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
-                                            <li ng-click="exportDocument('csv')"><a href="#">As CSV</a></li>
-                                        </ul>
-                                    </div>
+                                <div class="col-xs-12">
+                                    <button type="button" class="btn btn-primary pull-left" ng-click="search()">Refresh table</button>
+                                    <button type="button" class="btn btn-danger pull-right" ng-click="reset()">Reset filters</button>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +57,7 @@
                         <div class="panel panel-primary">
                             <div class="panel-heading text-center">
                                 <h3 class="panel-title">
-                                    Database
+                                    Database table
                                 </h3>
                             </div>
                             <div class="panel-body" ng-if="isLoading()">
@@ -106,8 +81,30 @@
                                                 <h4>No connection to database. Please refresh the page.</h4>
                                             </div>
                                             <div ng-if="isSearchStarted()">
-                                                <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                                </pagination>
+                                                <div class = "row">
+                                                    <div class="col-xs-6">
+                                                        <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                                            </pagination>
+                                                    </div>
+                                                    <div class="col-xs-6">
+                                                        <div class="btn-group pagination pull-right">
+                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Page size <span class="caret"></span></button>
+                                                            <ul class="dropdown-menu" role="menu">
+                                                                <li ng-click="selectPageSize(25)">25</li>
+                                                                <li ng-click="selectPageSize(50)">50</li>
+                                                                <li ng-click="selectPageSize(100)">100</li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="btn-group pagination pull-right">
+                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Export table <span class="caret"></span></button>
+                                                                <ul class="dropdown-menu" role="menu">
+                                                                    <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
+                                                                    <li ng-click="exportDocument('csv')"><a href="#">As CSV</a></li>
+                                                                </ul>
+                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div id="table_scroll_wrapper">
                                                     <table class="table table-hover table-bordered compact">
                                                         <thead>
@@ -129,8 +126,30 @@
                                                         </tfoot>
                                                     </table>
                                                 </div>
-                                                <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                                </pagination>
+                                                <div class = "row">
+                                                    <div class="col-xs-6">
+                                                        <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                                            </pagination>
+                                                    </div>
+                                                    <div class="col-xs-6">
+                                                        <div class="btn-group pagination pull-right">
+                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Page size <span class="caret"></span></button>
+                                                            <ul class="dropdown-menu" role="menu">
+                                                                <li ng-click="selectPageSize(25)">25</li>
+                                                                <li ng-click="selectPageSize(50)">50</li>
+                                                                <li ng-click="selectPageSize(100)">100</li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="btn-group pagination pull-right">
+                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Export table <span class="caret"></span></button>
+                                                                <ul class="dropdown-menu" role="menu">
+                                                                    <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
+                                                                    <li ng-click="exportDocument('csv')"><a href="#">As CSV</a></li>
+                                                                </ul>
+                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div class="text-center" ng-if="!isDataFound()">
                                                     <h4>No data found</h4>
                                                 </div>

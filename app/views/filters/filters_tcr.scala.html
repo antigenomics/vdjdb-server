@@ -16,7 +16,7 @@
                                 <h4 class="panel-title">
                                         General
                                     <span data-toggle="tooltip" data-placement="right"
-                                    title="Search for specified parent species of a TCR and receptor chain (alpha or beta)"
+                                    title="Search for specified parent species of a TCR and receptor chain (alpha or beta). You can also specify to show only records that have both TCR alpha and beta chain sequences (paired records)."
                                     class="glyphicon glyphicon-question-sign">
                                         </span>
                                 </h4>
@@ -64,7 +64,14 @@
                                             <label>
                                                 <input type="checkbox" ng-model="general_tcr.trb">
                                                 <span class="cr"><i
-                                                class="cr-icon glyphicon glyphicon-ok"></i></span> TRB
+                                                        class="cr-icon glyphicon glyphicon-ok"></i></span> TRB
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" ng-model="general_tcr.paired_only">
+                                                <span class="cr"><i
+                                                        class="cr-icon glyphicon glyphicon-ok"></i></span> Only paired records
                                             </label>
                                         </div>
                                     </div>
@@ -132,21 +139,18 @@
                                     <div class="col-xs-3">
                                         <p class="p_label">Sequence or pattern</p>
                                     </div>
-                                    <div class="col-xs-6">
+                                    <div class="col-xs-7">
                                     <div class="form-group" ng-class="{'has-error has-feedback':!isSequencePatternValid()}">
                                         <input class="form-control" type="text" placeholder="Amino acid pattern, e.g. CSAR[DE]GTGNGYTF or CSARDXTGNGYTF." ng-model="cdr3_pattern.value" ng-change="checkSequencePattern()">
                                         <span class="glyphicon glyphicon-remove form-control-feedback" ng-if="!isSequencePatternValid()"></span>
                                     </div>
-                                    </div>
-                                    <div class="col-xs-1">
-                                        <p class="p_label">Substring</p>
                                     </div>
                                     <div class="col-xs-2">
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox" value="" ng-model="cdr3_pattern.substring">
                                                 <span class="cr"><i
-                                                class="cr-icon glyphicon glyphicon-ok"></i></span>
+                                                class="cr-icon glyphicon glyphicon-ok"></i></span> Substring
                                             </label>
                                         </div>
                                     </div>

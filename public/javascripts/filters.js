@@ -202,10 +202,11 @@
     application.factory('filters_tcr', [function() {
         var general_tcr = {
             human: true,
-            monkey: true,
-            mouse: true,
-            tra: true,
-            trb: true
+            monkey: false,
+            mouse: false,
+            tra: false,
+            trb: true,
+            paired_only: false
         };
 
         var v_segment = {
@@ -238,6 +239,7 @@
             general_tcr.mouse = true;
             general_tcr.tra = true;
             general_tcr.trb = true;
+            general_tcr.paired_only = false;
             v_segment.value = '';
             j_segment.value = '';
             cdr3_pattern.value = '';
@@ -323,6 +325,7 @@
             if (general_tcr.mouse == false) addExactFilter(filters, 'species', 'MusMusculus');
             if (general_tcr.tra == false) addExactFilter(filters, 'gene', 'TRA');
             if (general_tcr.trb == false) addExactFilter(filters, 'gene', 'TRB');
+            if (general_tcr.paired_only == true) addExactFilter(filters, 'complex.id', '0');
 
             if (v_segment.value.length > 0) addCsTextFilter(filters, 'v.segm', v_segment.value);
             if (j_segment.value.length > 0) addCsTextFilter(filters, 'j.segm', j_segment.value);
