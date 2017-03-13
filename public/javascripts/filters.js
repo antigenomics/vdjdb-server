@@ -679,6 +679,7 @@
             meta_tags.seqSingleCell = true;
             meta_tags.nonCanonical = false;
             meta_tags.unmapped = false;
+            min_conf_score.value = 0;
         }
 
         function updateFilters(filters) {
