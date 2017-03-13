@@ -235,9 +235,9 @@
 
         function resetFilters() {
             general_tcr.human = true;
-            general_tcr.monkey = true;
-            general_tcr.mouse = true;
-            general_tcr.tra = true;
+            general_tcr.monkey = false;
+            general_tcr.mouse = false;
+            general_tcr.tra = false;
             general_tcr.trb = true;
             general_tcr.paired_only = false;
             v_segment.value = '';
