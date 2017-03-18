@@ -319,7 +319,8 @@ body {
 
 #table_wrapper {
     position: relative;
-    padding-top: 20px;
+    padding-top: 0px;
+    padding-bottom: 30px;
     width: 100%;
 }
 
