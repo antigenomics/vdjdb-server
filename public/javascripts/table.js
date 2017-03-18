@@ -139,31 +139,17 @@
                     //#d7191c - red
 
                     if (columnName == 'cdr3fix') {
-                        var FixNeeded = (comment['fixNeeded'] === true);
-                        var ChangeSegment = false
-                        var ChangeSequence = false
-                        var Failed = false
-
-                        angular.forEach(comment, function(field) {
-                            Failed = String(field).indexOf('Failed') !== -1 || Failed;
-                            ChangeSegment = String(field).indexOf('ChangeSegment') !== -1 || ChangeSegment;
-                            ChangeSequence = String(field).indexOf('ChangeSequence') !== -1 || ChangeSequence;
-                        })
-
-                        //console.log(Failed)
-
-                        if (Failed) {
+                        if (comment['good'] === false) {
                             color_i = '#d7191c';
-                        } else if (ChangeSequence) {
-                            color_i = '#fdae61';
-                        } else if (ChangeSegment) {
-                            color_i = '#dde927';
-                        } else if (FixNeeded) {
-                            color_i = '#a6d96a';
+                        } else if (comment['fixNeeded'] === true) {
+                            if (comment['cdr3'] === comment['cdr3_old']) {
+                                color_i = '#dde927';
+                            } else {
+                                color_i = '#fdae61';
+                            }
                         } else {
                             color_i = '#1a9641';
                         }
-
                     }
 
                     value = '<div class="row_popover" style="width: 100%; height: 100%;" tab-index="0" ' +
