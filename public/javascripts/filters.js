@@ -202,8 +202,8 @@
     application.factory('filters_tcr', [function() {
         var general_tcr = {
             human: true,
-            monkey: false,
-            mouse: false,
+            monkey: true,
+            mouse: true,
             tra: false,
             trb: true,
             paired_only: false
@@ -235,8 +235,8 @@
 
         function resetFilters() {
             general_tcr.human = true;
-            general_tcr.monkey = false;
-            general_tcr.mouse = false;
+            general_tcr.monkey = true;
+            general_tcr.mouse = true;
             general_tcr.tra = false;
             general_tcr.trb = true;
             general_tcr.paired_only = false;
