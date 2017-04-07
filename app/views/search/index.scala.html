@@ -36,14 +36,17 @@
                                         <li>Use the buttons below to refresh the table or reset the filters.</li>
                                         <li>Filtered table can be exported as an XLS or a plain-text CSV file.</li>
                                     </ul>
-                                    <p>A comprehensive description of VDJdb record fields/columns can be found <a href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md'>here</a>.</p>
+                                    <p>A comprehensive description of VDJdb record fields/columns can be found <a href='https://github.com/antigenomics/vdjdb-db/blob/master/README.md'>
+                                        here</a>.</p>
                                 </div>
                             </div>
                             <br>
                             <div class="row">
                                 <div class="col-xs-12">
-                                    <button type="button" class="btn btn-primary pull-left" ng-click="search()">Refresh table</button>
-                                    <button type="button" class="btn btn-danger pull-right" ng-click="reset()">Reset filters</button>
+                                    <button type="button" class="btn btn-primary pull-left" ng-click="search()">
+                                        Refresh table</button>
+                                    <button type="button" class="btn btn-danger pull-right" ng-click="reset()">
+                                        Reset filters</button>
                                 </div>
                             </div>
                         </div>
@@ -62,6 +65,14 @@
                                     Results
                                 </h3>
                             </div>
+                            <div class="panel-body" ng-if="isConnectionBroken()">
+                                <div class="text-center">
+                                    <h3>No connection to database.</h3>
+                                    <br>
+                                    <button class="btn btn-primary" ng-click="reconnect()">Reconnect</button>
+                                </div>
+                            </div>
+                            <hr ng-if="isConnectionBroken()">
                             <div class="panel-body" ng-if="isLoading()">
                                 <div class="row">
                                     <div class="col-md-12">
@@ -79,18 +90,16 @@
                                             <div class="block_background" ng-if="isPageLoading()"></div>
                                             <div class="block_processing" ng-if="isPageLoading()">
                                                 <h3>Loading...</h3></div>
-                                            <div class="text-center" ng-if="isConnectionBroken()">
-                                                <h4>No connection to database. Please refresh the page.</h4>
-                                            </div>
                                             <div ng-if="isSearchStarted()">
                                                 <div class = "row">
                                                     <div class="col-xs-6">
                                                         <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                                            </pagination>
+                                                        </pagination>
                                                     </div>
                                                     <div class="col-xs-6">
                                                         <div class="btn-group pagination pull-right">
-                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Page size <span class="caret"></span></button>
+                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                                Page size <span class="caret"></span></button>
                                                             <ul class="dropdown-menu" role="menu">
                                                                 <li ng-click="selectPageSize(25)"><a href="#">25</a></li>
                                                                 <li ng-click="selectPageSize(50)"><a href="#">50</a></li>
@@ -98,64 +107,69 @@
                                                             </ul>
                                                         </div>
                                                         <div class="btn-group pagination pull-right">
-                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Export table <span class="caret"></span></button>
-                                                                <ul class="dropdown-menu" role="menu">
-                                                                    <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
-                                                                    <li ng-click="exportDocument('csv')"><a href="#">As tab-delimited TXT</a></li>
-                                                                </ul>
-                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div id="table_scroll_wrapper">
-                                                    <table class="table table-hover table-bordered compact">
-                                                        <thead>
-                                                            <tr>
-                                                                <th class="column_header" ng-repeat="(index, column) in getVisibleColumns()" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(column.name)" ng-class="{'column_asc_sorted':isColumnAscSorted(column.name), 'column_desc_sorted':isColumnDescSorted(column.name)}">
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr ng-repeat="(rowIndex, row) in getData()" on-last-repeat="row" ng-class="{'complex_parent':row.complexFound, 'complex_child':row.complex}">
-                                                                <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, row.entries)"></td>
-                                                            </tr>
-                                                        </tbody>
-                                                        <tfoot>
-                                                            <tr>
-                                                                <th class="column_header" ng-repeat="(index, column) in getVisibleColumns()" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(column.name)" ng-class="{'column_asc_sorted':isColumnAscSorted(column.name), 'column_desc_sorted':isColumnDescSorted(column.name)}">
-                                                                </th>
-                                                            </tr>
-                                                        </tfoot>
-                                                    </table>
-                                                </div>
-                                                <div class = "row">
-                                                    <div class="col-xs-6">
-                                                        <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
-                                                            </pagination>
-                                                    </div>
-                                                    <div class="col-xs-6">
-                                                        <div class="btn-group pagination pull-right">
-                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Page size <span class="caret"></span></button>
+                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                                Export table <span class="caret"></span></button>
                                                             <ul class="dropdown-menu" role="menu">
-                                                                <li ng-click="selectPageSize(25)"><a href="#">25</a></li>
-                                                                <li ng-click="selectPageSize(50)"><a href="#">50</a></li>
-                                                                <li ng-click="selectPageSize(100)"><a href="#">100</a></li>
+                                                                <li ng-click="exportDocument('excel')"><a href="#">
+                                                                    As XLS</a></li>
+                                                                <li ng-click="exportDocument('csv')"><a href="#">
+                                                                    As tab-delimited TXT</a></li>
                                                             </ul>
                                                         </div>
-                                                        <div class="btn-group pagination pull-right">
-                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Export table <span class="caret"></span></button>
-                                                                <ul class="dropdown-menu" role="menu">
-                                                                    <li ng-click="exportDocument('excel')"><a href="#">As XLS</a></li>
-                                                                    <li ng-click="exportDocument('csv')"><a href="#">As tab-delimited TXT</a></li>
-                                                                </ul>
-                                                             </div>
-                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="text-center" ng-if="!isDataFound()">
-                                                    <h4>No data found</h4>
                                                 </div>
                                             </div>
+                                            <div id="table_scroll_wrapper">
+                                                <table class="table table-hover table-bordered compact">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="column_header" ng-repeat="(index, column) in getVisibleColumns()" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(column.name)" ng-class="{'column_asc_sorted':isColumnAscSorted(column.name), 'column_desc_sorted':isColumnDescSorted(column.name)}">
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr ng-repeat="(rowIndex, row) in getData()" on-last-repeat="row" ng-class="{'complex_parent':row.complexFound, 'complex_child':row.complex}">
+                                                            <td ng-repeat="entry in ::row.entries" ng-if="isEntryVisible(entry)" compile="entryValue(entry, row.entries)"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th class="column_header" ng-repeat="(index, column) in getVisibleColumns()" compile="columnHeader(column)" on-last-repeat="column" ng-click="sortDatabase(column.name)" ng-class="{'column_asc_sorted':isColumnAscSorted(column.name), 'column_desc_sorted':isColumnDescSorted(column.name)}">
+                                                            </th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            <div class = "row">
+                                                <div class="col-xs-6">
+                                                    <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
+                                                    </pagination>
+                                                </div>
+                                                <div class="col-xs-6">
+                                                    <div class="btn-group pagination pull-right">
+                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            Page size <span class="caret"></span></button>
+                                                        <ul class="dropdown-menu" role="menu">
+                                                            <li ng-click="selectPageSize(25)"><a href="#">25</a></li>
+                                                            <li ng-click="selectPageSize(50)"><a href="#">50</a></li>
+                                                            <li ng-click="selectPageSize(100)"><a href="#">100</a></li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-group pagination pull-right">
+                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            Export table <span class="caret"></span></button>
+                                                        <ul class="dropdown-menu" role="menu">
+                                                            <li ng-click="exportDocument('excel')"><a href="#">
+                                                                As XLS</a></li>
+                                                            <li ng-click="exportDocument('csv')"><a href="#">
+                                                                As tab-delimited TXT</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-center" ng-if="!isDataFound()">
+                                            <h4>No data found</h4>
                                         </div>
                                     </div>
                                 </div>

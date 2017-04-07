@@ -26,7 +26,7 @@
     application.factory('SearchDatabaseAPI', ['$websocket', 'filters', 'table', 'notify', 'LoggerService', function ($websocket, filters, table, notify, LoggerService) {
         var searchStarted = false;
         var connected = false;
-        var connection = $websocket('ws://' + location.host + '/search/connect');
+        var connection = null;
         var defaultSortRule = {
             columnId: 'gene',
             sortType: 'asc'
@@ -43,7 +43,21 @@
         };
         var pingWebSocket = null;
 
-        connection.onMessage(function(message) {
+        function createWebSocketConnection() {
+            pageLoading = true;
+            connection = $websocket('ws://' + location.host + '/search/connect');
+            connectionError = false;
+            sortRule.columnId = defaultSortRule.columnId;
+            sortRule.sortType = defaultSortRule.sortType;
+            connection.onMessage(connectionOnMessage);
+            connection.onError(connectionOnError);
+            connection.onClose(connectionOnClose);
+            connection.onOpen(connectionOnOpen);
+        }
+
+        createWebSocketConnection();
+
+        function connectionOnMessage(message) {
             var response = JSON.parse(message.data);
             loading = false;
             pageLoading = false;
@@ -108,23 +122,23 @@
                     notify.error('Search', response.message);
                     break;
             }
-        });
+        }
 
-        connection.onError(function() {
+        function connectionOnError() {
             notify.error('Database', 'Connection error');
             connected = false;
             connectionError = true;
             clearInterval(pingWebSocket);
-        });
+        }
 
-        connection.onClose(function() {
+        function connectionOnClose() {
             notify.error('Database', 'Connection closed');
             connected = false;
             connectionError = true;
             clearInterval(pingWebSocket);
-        });
+        }
 
-        connection.onOpen(function() {
+        function connectionOnOpen() {
             LoggerService.log('Connected to the database');
             connected = true;
             loading = true;
@@ -141,7 +155,7 @@
                     data: {}
                 });
             }, 10000)
-        });
+        }
 
         function isSearchStarted() {
             return searchStarted;
@@ -324,7 +338,8 @@
             isPageLoading: isPageLoading,
             isColumnAscSorted: isColumnAscSorted,
             isColumnDescSorted: isColumnDescSorted,
-            deleteRow: deleteRow
+            deleteRow: deleteRow,
+            createWebSocketConnection: createWebSocketConnection
         }
     }]);
 
@@ -347,6 +362,11 @@
                 $scope.exportDocument = SearchDatabaseAPI.exportDocument;
                 $scope.isColumnAscSorted = SearchDatabaseAPI.isColumnAscSorted;
                 $scope.isColumnDescSorted = SearchDatabaseAPI.isColumnDescSorted;
+                $scope.reconnect = function() {
+                    $scope.page.currentPage = 1;
+                    $scope.userPageSize = 100;
+                    SearchDatabaseAPI.createWebSocketConnection();
+                };
 
                 $scope.getColumns = table.getColumns;
                 $scope.getVisibleColumns = table.getVisibleColumns;
@@ -423,10 +443,10 @@
                     }
                     var complexId = row.entries[0].value;
                     var gene = row.entries[1].value;
-                    if (complexId != 0) {
+                    if (complexId !== '0') {
                         SearchDatabaseAPI.findComplexes(complexId, gene, rowIndex);
                     } else {
-                        notify.notice('Search', 'Complex not found');
+                        notify.notice('Search', 'No paired TCR chain was found');
                     }
                 }
 
