@@ -62,12 +62,8 @@ object Filters {
             case "" =>
               warnings += (filter.columnId + " ignored: no value specified")
             case _ =>
-              if (GlobalDatabase.isParametersValid(filter.mutations, filter.insertions, filter.deletions, filter.mismatches)) {
-                val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches), DummyAlignmentScoring.INSTANCE)
-                sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query.toUpperCase(), preset))
-              } else {
-                warnings += ("Bad sequence filter - " + filter + " - incorrect parameters")
-              }
+              val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches), DummyAlignmentScoring.INSTANCE)
+              sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query.toUpperCase(), preset))
           }
         case _  =>
           warnings += ("Bad sequence filter - " + filter + " - wrong column")

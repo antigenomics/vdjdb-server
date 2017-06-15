@@ -78,9 +78,7 @@ object IntersectionAPI extends Controller with securesocial.core.SecureSocial {
 
   case class IntersectRequest(fileName: String, filters: FiltersRequest, parameters: IntersectParametersRequest)
 
-  case class IntersectParametersRequest(presetName: String, scoringName: String,
-                                        matchV: Boolean, matchJ: Boolean,
-                                        maxMismatches: Int, maxInsertions: Int, maxDeletions: Int, maxMutations: Int)
+  case class IntersectParametersRequest(hammingDistance: Int, matchV: Boolean, matchJ: Boolean)
 
   implicit val intersectWebSocketRequestReads = Json.reads[IntersectWebSocketRequest]
   implicit val intersectParametersRequestRead = Json.reads[IntersectParametersRequest]

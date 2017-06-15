@@ -14,31 +14,30 @@
                 </div>
                 <div class="box-body">
                     <div class="col-md-2">
-                        <a class="select_trigger" ng-click="switchSearchParamsActive(file)">{{ file.parameters.presetName }}</a>
+                        <a class="select_trigger" ng-click="switchHammingDistanceActive(file)">Hamming distance: {{ file.parameters.hammingDistance }}</a>
                         <div class="select_drop_container select_drop_container_active">
-                            <ul ng-show="isSearchParamsActive(file)">
-                                <li ng-click="searchParamsExact(file)"><a>Exact</a></li>
-                                <li ng-click="searchParamsHamming(file)"><a>Hamming</a></li>
+                            <ul ng-show="isHammingDistanceActive(file)">
+                                <li ng-click="hammingDistance(file, 0)"><a>0</a></li>
+                                <li ng-click="hammingDistance(file, 1)"><a>1</a></li>
+                                <li ng-click="hammingDistance(file, 2)"><a>2</a></li>
+                                <li ng-click="hammingDistance(file, 3)"><a>3</a></li>
                             </ul>
                         </div>
                     </div>
-                    <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
-                        <a class="select_trigger" ng-click="switchMaxMismatchesParamsActive(file)">Max mismatches: {{ file.parameters.maxMismatches }}</a>
-                        <div class="select_drop_container select_drop_container_active">
-                            <ul ng-show="isMaxMismatchesActive(file)">
-                                <li ng-click="maxMismatches(file, 1)"><a>1</a></li>
-                                <li ng-click="maxMismatches(file, 2)"><a>2</a></li>
-                                <li ng-click="maxMismatches(file, 3)"><a>3</a></li>
-                            </ul>
+                    <div class="col-md-2">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="file.parameters.matchV" class="ng-pristine ng-untouched ng-valid ng-not-empty">
+                                <span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span> Match V
+                            </label>
                         </div>
                     </div>
-                    <div class="col-md-2" ng-if="file.parameters.presetName === 'Hamming'">
-                        <a class="select_trigger" ng-click="switchScoringNameParamsActive(file)">Scoring: {{ file.parameters.scoringName }}</a>
-                        <div class="select_drop_container select_drop_container_active">
-                            <ul ng-show="isScoringNameActive(file)">
-                                <li ng-click="setScoringName(file, 'Dummy')"><a>Dummy</a></li>
-                                <li ng-click="setScoringName(file, 'v1')"><a>v1</a></li>
-                            </ul>
+                    <div class="col-md-2">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="file.parameters.matchJ" class="ng-pristine ng-untouched ng-valid ng-not-empty">
+                                <span class="cr"><i class="cr-icon glyphicon glyphicon-ok"></i></span> Match J
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -166,31 +165,40 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="box" ng-if="isFile(file) && isIntersected(file)">
+        <div class="col-md-12" ng-if="isFile(file) && isIntersected(file)" style="padding-bottom: 30px">
+            <button class="btn btn-primary" ng-click="createNewSummaryChart(file)">Add summary chart</button>
+        </div>
+        <div class="col-md-6" ng-repeat="summaryChart in file.summaryCharts" style="min-height: 300px">
+            <div class="box" ng-if="isFile(file) && isIntersected(file)" style="min-height: 300px">
                 <div class="box-header with-border">
                     <h3 class="box-title">Search summary</h3>
                 </div>
                 <div class="box-body">
-                    <div class="col-md-10">
-                        <canvas id="bar" class="chart chart-bar" chart-data="file.summary_chart.data" chart-labels="file.summary_chart.labels" chart-series="file.summary_chart.series" height="100px" width="100%"></canvas>
+                    <div class="col-md-4">
+                        <a class="select_trigger" ng-click="switchColumnNameSummaryChart(summaryChart)">{{ summaryChart.columnName }}</a>
+                        <div class="select_drop_container select_drop_container_active">
+                            <ul ng-show="isColumnNameSummaryChartActive(summaryChart)">
+                                <li ng-repeat="columnName in summaryChart.availableColumnNames" ng-click="updateSummaryChartColumnName(file, summaryChart, columnName)">{{ columnName }}</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <a class="select_trigger" ng-click="switchSummarySeriesNameTrigger(file)">{{ file.summary_chart.seriesName }}</a>
+                    <div class="col-md-8">
+                        <a class="select_trigger" ng-click="switchFunctionSummaryChart(summaryChart)">{{ summaryChart.funcTitle }}</a>
                         <div class="select_drop_container select_drop_container_active">
-                            <ul ng-show="isSummarySeriesNameTriggerActive(file)">
-                                <li ng-click="fileSummaryFrequency(file)"><a>Frequency</a></li>
-                                <li ng-click="fileSummaryUniques(file)"><a>Unique</a></li>
-                                <li ng-click="fileSummaryReads(file)"><a>Reads</a></li>
+                            <ul ng-show="isFunctionSummaryChartActive(summaryChart)">
+                                <li ng-click="updateSummaryChartFunction(file, summaryChart, 'f1', 'Normalized incidence count')">Normalized incidence count</li>
+                                <li ng-click="updateSummaryChartFunction(file, summaryChart, 'f2', 'Normalized incidence wighted by frequency')">Normalized incidence wighted by frequency</li>
                             </ul>
                         </div>
-                        <br>
-                        <a class="select_trigger" ng-click="switchSummaryDataNameTrigger(file)">{{ file.summary_chart.dataName }}</a>
-                        <div class="select_drop_container select_drop_container_active">
-                            <ul ng-show="isSummaryDataNameTriggerActive(file)">
-                                <li ng-repeat="(datasetName, set) in file.summary" ng-click="fileSummaryData(file, datasetName)"><a>{{ datasetName }}</a></li>
-                            </ul>
-                        </div>
+                    </div>
+
+                    <div class="col-md-12" style="padding-top: 30px; height: {{ summaryChart.height }}">
+                        <canvas id="summaryChart_{{ file.index }}_{{ summaryChart.index }}" class="chart chart-horizontal-bar"
+                            chart-data="summaryChart.data"
+                            chart-labels="summaryChart.labels"
+                            chart-options="summaryChart.options"
+                            height="summaryChart.height"
+                            width="100%"></canvas>
                     </div>
                 </div>
             </div>

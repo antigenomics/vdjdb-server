@@ -82,18 +82,15 @@ object GlobalDatabase extends SynchronizedAccess {
       var summary: ClonotypeSearchSummary = null
       val searchResults = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters).asInstanceOf[util.ArrayList[SearchResult]]
       if (searchResults.size() != 0) {
-        var preset: SequenceSearcherPreset = new SequenceSearcherPreset()
+        val scoring: AlignmentScoring = DummyAlignmentScoring.INSTANCE
+        var hammingDistance = parameters.hammingDistance
 
-        if (parameters.presetName == "Hamming") {
-          var scoring: AlignmentScoring = DummyAlignmentScoring.INSTANCE;
-          if (parameters.scoringName == "v1") {
-            scoring = AlignmentScoringProvider.loadScoring("v1")
-            val maxMismatches = parameters.maxMismatches
-            preset = new SequenceSearcherPreset(new TreeSearchParameters(maxMismatches, 0, 0, maxMismatches), scoring)
-          }
-        }
+        if (hammingDistance < 0) hammingDistance = 0
+        if (hammingDistance > 4) hammingDistance = 4
 
-        val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(false, false, preset)
+        val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(hammingDistance, 0, 0, hammingDistance), scoring)
+
+        val instance = new VdjdbInstance(Database.create(searchResults)).asClonotypeDatabase(parameters.matchV, parameters.matchJ, preset)
         var id = 0
         val intersectedResults = instance.search(sample)
         intersectedResults.keySet().toList.foreach(clonotype => {
@@ -103,34 +100,9 @@ object GlobalDatabase extends SynchronizedAccess {
 
         summary = new ClonotypeSearchSummary(intersectedResults, sample, ClonotypeSearchSummary.FIELDS_STARBURST, instance)
       }
-      IntersectDatabaseResult(buffer.toList, SummaryStatisticWrapper.wrap(summary))
+
+      IntersectDatabaseResult(buffer.toList, SummaryStatisticWrapper.wrap(summary, sample.getDiversity))
     }
-
-  def isParametersValid(parameters: IntersectParametersRequest): Boolean = {
-
-    //TODO
-    val maxMutations = 5
-    val maxInsertions = 2
-    val maxDeletions = 2
-    val maxMismatches = 7
-
-    (parameters.maxDeletions <= maxDeletions && parameters.maxDeletions >= 0) &&
-      (parameters.maxInsertions <= maxInsertions && parameters.maxInsertions >= 0) &&
-        (parameters.maxMismatches <= maxMismatches && parameters.maxMismatches >= 0) &&
-         (parameters.maxMutations <= maxMutations && parameters.maxMutations >= 0)
-  }
-
-  def isParametersValid(mutations: Int, insertions: Int, deletions: Int, mismatches: Int): Boolean = {
-    val maxMutations = 5
-    val maxInsertions = 2
-    val maxDeletions = 2
-    val maxMismatches = 7
-
-    (deletions <= maxDeletions && deletions >= 0) &&
-      (insertions <= maxInsertions && insertions >= 0) &&
-      (mismatches <= maxMismatches && mismatches >= 0) &&
-      (mutations <= maxMutations && mutations >= 0)
-  }
 
   def getColumns: List[ColumnWrapper] =
     synchronizeRead { implicit lock =>

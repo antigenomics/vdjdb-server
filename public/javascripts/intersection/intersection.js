@@ -5,9 +5,12 @@
 
     application.factory('sidebar', ['user', function(userInfo) {
 
+        var fileIndex = 0;
+
         userInfo.initialize(function(files) {
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
+                file.index = fileIndex++;
                 file.rows = [];
                 file.intersected = false;
                 file.loading = false;
@@ -18,21 +21,15 @@
                     column: 'count',
                     type: 'desc'
                 };
-                file.searchParamsActive = false;
-                file.maxMismatchesActive = false;
-                file.scoringNameActive = false;
+                file.hammingDistanceActive = false;
                 file.parameters = {
-                    presetName: 'Exact',
-                    scoringName: 'Dummy',
+                    hammingDistance: 0,
                     matchV: true, 
-                    matchJ: true,
-                    maxMismatches: 0, 
-                    maxInsertions: 0, 
-                    maxDeletions: 0, 
-                    maxMutations: 0
+                    matchJ: true
                 };
-                file.summary = {};
-                file.summary_chart = {};
+                file.summaryData = {};
+                file.summaryChartsCount = 0;
+                file.summaryCharts = [];
             }
         });
 
@@ -81,48 +78,17 @@
             return selectedFileUID === file.uid;
         }
 
-        function switchSearchParamsActive(file) {
-            file.searchParamsActive = !file.searchParamsActive;
+        function isHammingDistanceActive(file) {
+            return file.hammingDistanceActive;
         }
 
-        function isSearchParamsActive(file) {
-            return file.searchParamsActive;
+        function switchHammingDistanceActive(file) {
+            file.hammingDistanceActive = !file.hammingDistanceActive;
         }
 
-        function searchParamsExact(file) {
-            file.parameters.presetName = 'Exact';
-            file.searchParamsActive = false;
-        }
-
-        function searchParamsHamming(file) {
-            file.parameters.presetName = 'Hamming';
-            file.searchParamsActive = false;
-        }
-
-        function isMaxMismatchesActive(file) {
-            return file.maxMismatchesActive;
-        }
-
-        function switchMaxMismatchesParamsActive(file) {
-            file.maxMismatchesActive = !file.maxMismatchesActive;
-        }
-
-        function maxMismatches(file, max) {
-            file.maxMismatchesActive = false;
-            file.parameters.maxMismatches = max;
-        } 
-
-        function switchScoringNameParamsActive(file) {
-            file.scoringNameActive = !file.scoringNameActive;
-        }
-
-        function isScoringNameActive(file) {
-            return file.scoringNameActive;
-        }
-
-        function setScoringName(file, name) {
-            file.parameters.scoringName = name;
-            file.scoringNameActive = false;
+        function hammingDistance(file, max) {
+            file.hammingDistanceActive = false;
+            file.parameters.hammingDistance = max;
         }
 
         return {
@@ -135,16 +101,9 @@
             getFileByFileName: getFileByFilename,
             isFileSelected: isFileSelected,
             isFile: isFile,
-            switchSearchParamsActive: switchSearchParamsActive,
-            isSearchParamsActive: isSearchParamsActive,
-            searchParamsExact: searchParamsExact,
-            searchParamsHamming: searchParamsHamming,
-            isMaxMismatchesActive: isMaxMismatchesActive,
-            switchMaxMismatchesParamsActive: switchMaxMismatchesParamsActive,
-            maxMismatches: maxMismatches,
-            switchScoringNameParamsActive: switchScoringNameParamsActive,
-            isScoringNameActive: isScoringNameActive,
-            setScoringName: setScoringName
+            isHammingDistanceActive: isHammingDistanceActive,
+            switchHammingDistanceActive: switchHammingDistanceActive,
+            hammingDistance: hammingDistance
         }
     }]);
 
@@ -191,8 +150,10 @@
                                 file.page = 1;
                                 angular.extend(file.rows, response.rows);
                                 file.loading = false;
-                                file.summary = response.summary.data;
-                                fileInitSummary(file)
+                                file.summaryData = response.summary.data;
+                                angular.forEach(file.summaryCharts, function(summaryChart) {
+                                    updateSummaryChartData(file, summaryChart);
+                                });
                             } else {
                                 notify.notice('Intersection', 'You have no file named ' + response.fileName)
                             }
@@ -394,64 +355,132 @@
             }
         }
 
-        function fileInitSummary(file) {
-            file.summary_chart = {};
-            file.summary_chart.seriesNameTrigger = false;
-            file.summary_chart.dataNameTrigger = false;
-            file.summary_chart.dataName = 'mhc.a';
-            file.summary_chart.series = ['Series'];
-            fileSummaryFrequency(file)
-        }
+        function createNewSummaryChart(file) {
+            var summaryChart = {
+                index: file.summaryChartsCount++,
+                columnNameActive: false,
+                columnName: 'antigen.epitope',
+                availableColumnNames: [],
+                functionActive: false,
+                funcTitle: 'Normalized incidence count',
+                func: 'f1',
+                extendedData: [],
+                data: [],
+                labels: [],
+                height: 0,
+                options: {
+                    maintainAspectRatio: false,
+                    barThickness: 20,
+                    scales: {
+                        xAxes: [{
+                            type: 'logarithmic',
+                            display: true,
+                            position: 'bottom',
+                            ticks: {
+                                min: 1e-12,
+                                max: 1.0
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        displayColors: false,
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var datasetIndex = tooltipItem.datasetIndex;
+                                var index = tooltipItem.index;
+                                var value = data.datasets[datasetIndex].data[index];
 
-        function fileSummaryReinit(file) {
-            if (file.summary_chart.seriesName === 'Frequency') fileSummaryFrequency(file);
-            if (file.summary_chart.seriesName === 'Unique') fileSummaryUniques(file);
-            if (file.summary_chart.seriesName === 'Reads') fileSummaryReads(file);
-        }
+                                var tooltip = [];
+                                tooltip.push(' Log10:  ' + Math.log10(Number(value)).toString());
+                                tooltip.push(' Found:  ' + summaryChart.extendedData[index].found);
+                                tooltip.push(' Diversity:  ' + summaryChart.extendedData[index].diversity);
+                                tooltip.push(' Frequency:  ' + summaryChart.extendedData[index].frequency);
+                                tooltip.push(' Total DB:  ' + summaryChart.extendedData[index].totalDB);
 
-        function fileSummaryUniques(file) {
-            var data = [[]];
-            var labels = [];
-            angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
-                labels.push(name);
-                data[0].push(counters.unique);
+                                return tooltip;
+                            }
+                        }
+                    }
+                }
+            };
+            angular.forEach(file.summaryData, function(data, columnName) {
+               summaryChart.availableColumnNames.push(columnName);
             });
-            file.summary_chart.data = data;
-            file.summary_chart.labels = labels;
-            file.summary_chart.seriesName = 'Unique';
-            file.summary_chart.seriesNameTrigger = false;
+
+            updateSummaryChartData(file, summaryChart);
+            file.summaryCharts.push(summaryChart);
         }
 
-        function fileSummaryFrequency(file) {
-            var data = [[]];
-            var labels = [];
-            angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
-                labels.push(name);
-                data[0].push(counters.frequency.toPrecision(2));
+        function switchColumnNameSummaryChart(summaryChart) {
+            summaryChart.columnNameActive = !summaryChart.columnNameActive;
+        }
+
+        function isColumnNameSummaryChartActive(summaryChart) {
+            return summaryChart.columnNameActive;
+        }
+
+        function updateSummaryChartColumnName(file, summaryChart, columnName) {
+            if (columnName === summaryChart.columnName) return;
+            summaryChart.columnName = columnName;
+            summaryChart.columnNameActive = false;
+            updateSummaryChartData(file, summaryChart);
+        }
+
+        function switchFunctionSummaryChart(summaryChart) {
+            summaryChart.functionActive = !summaryChart.functionActive;
+        }
+
+        function isFunctionSummaryChartActive(summaryChart) {
+            return summaryChart.functionActive;
+        }
+
+        function updateSummaryChartFunction(file, summaryChart, func, funcTitle) {
+            if (summaryChart.func === func) return;
+            summaryChart.func = func;
+            summaryChart.funcTitle = funcTitle;
+            summaryChart.functionActive = false;
+            updateSummaryChartData(file, summaryChart);
+        }
+
+        function updateSummaryChartData(file, summaryChart) {
+            var orderedData = [];
+
+            angular.forEach(file.summaryData[summaryChart.columnName], function(data, entryName) {
+                if (data.found !== 0) {
+                    var item = {
+                        label:entryName,
+                        found: data.found,
+                        diversity: data.diversity,
+                        totalDB: data.totalDB,
+                        frequency: data.frequency
+                    };
+                    if (summaryChart.func === 'f1') {
+                        item.value = data.found / (data.diversity * data.totalDB)
+                    } else if (summaryChart.func === 'f2') {
+                        item.value = data.found / (data.diversity * data.totalDB) * data.frequency;
+                    }
+                    orderedData.push(item);
+                }
             });
-            file.summary_chart.data = data;
-            file.summary_chart.labels = labels;
-            file.summary_chart.seriesName = 'Frequency';
-            file.summary_chart.seriesNameTrigger = false;
-        }
 
-        function fileSummaryReads(file) {
-            var data = [[]];
-            var labels = [];
-            angular.forEach(file.summary[file.summary_chart.dataName], function(counters, name) {
-                labels.push(name);
-                data[0].push(counters.read);
+            orderedData.sort(function(item1, item2) {
+               if (item1.value > item2.value) return -1;
+               if (item1.value < item2.value) return 1;
+               return 0;
             });
-            file.summary_chart.data = data;
-            file.summary_chart.labels = labels;
-            file.summary_chart.seriesName = 'Reads';
-            file.summary_chart.seriesNameTrigger = false;
-        }
 
-        function fileSummaryData(file, name) {
-            file.summary_chart.dataName = name;
-            file.summary_chart.dataNameTrigger = false;
-            fileSummaryReinit(file);
+            summaryChart.labels.length = 0;
+            summaryChart.data.length = 0;
+            summaryChart.extendedData.length = 0;
+
+            summaryChart.height = (orderedData.length * 20 + 100).toString() + 'px';
+            console.log(summaryChart.height);
+
+            angular.forEach(orderedData, function(item) {
+                summaryChart.labels.push(item.label);
+                summaryChart.data.push(item.value);
+                summaryChart.extendedData.push(item);
+            });
         }
 
         return {
@@ -460,10 +489,14 @@
             sort: sort,
             helperList: helperList,
             exportDocument: exportDocument,
-            fileSummaryUniques: fileSummaryUniques,
-            fileSummaryFrequency: fileSummaryFrequency,
-            fileSummaryReads: fileSummaryReads,
-            fileSummaryData: fileSummaryData
+            createNewSummaryChart: createNewSummaryChart,
+            switchColumnNameSummaryChart: switchColumnNameSummaryChart,
+            isColumnNameSummaryChartActive: isColumnNameSummaryChartActive,
+            updateSummaryChartColumnName: updateSummaryChartColumnName,
+            switchFunctionSummaryChart: switchFunctionSummaryChart,
+            isFunctionSummaryChartActive: isFunctionSummaryChartActive,
+            updateSummaryChartFunction: updateSummaryChartFunction
+
         }
     }]);
 
@@ -475,16 +508,9 @@
                 $scope.isFile = sidebar.isFile;
                 $scope.isFileSelected = sidebar.isFileSelected;
 
-                $scope.switchSearchParamsActive = sidebar.switchSearchParamsActive;
-                $scope.isSearchParamsActive = sidebar.isSearchParamsActive;
-                $scope.searchParamsExact = sidebar.searchParamsExact;
-                $scope.searchParamsHamming = sidebar.searchParamsHamming;
-                $scope.isMaxMismatchesActive = sidebar.isMaxMismatchesActive;
-                $scope.switchMaxMismatchesParamsActive = sidebar.switchMaxMismatchesParamsActive;
-                $scope.maxMismatches = sidebar.maxMismatches;
-                $scope.switchScoringNameParamsActive = sidebar.switchScoringNameParamsActive;
-                $scope.isScoringNameActive = sidebar.isScoringNameActive;
-                $scope.setScoringName = sidebar.setScoringName;
+                $scope.switchHammingDistanceActive = sidebar.switchHammingDistanceActive;
+                $scope.isHammingDistanceActive = sidebar.isHammingDistanceActive;
+                $scope.hammingDistance = sidebar.hammingDistance;
 
                 $scope.intersect = intersection.intersect;
                 $scope.changePage = intersection.changePage;
@@ -509,31 +535,15 @@
                 $scope.copyToClip = copyToClip;
                 $scope.copyToClipNotification = copyToClipNotification;
 
-                $scope.fileSummaryUniques = intersection.fileSummaryUniques;
-                $scope.fileSummaryFrequency = intersection.fileSummaryFrequency;
-                $scope.fileSummaryReads = intersection.fileSummaryReads;
-                $scope.fileSummaryData = intersection.fileSummaryData;
+                $scope.createNewSummaryChart = intersection.createNewSummaryChart;
 
-                $scope.switchSummarySeriesNameTrigger = switchSummarySeriesNameTrigger;
-                $scope.isSummarySeriesNameTriggerActive = isSummarySeriesNameTriggerActive;
-                $scope.switchSummaryDataNameTrigger = switchSummaryDataNameTrigger;
-                $scope.isSummaryDataNameTriggerActive = isSummaryDataNameTriggerActive;
+                $scope.switchColumnNameSummaryChart = intersection.switchColumnNameSummaryChart;
+                $scope.isColumnNameSummaryChartActive = intersection.isColumnNameSummaryChartActive;
+                $scope.updateSummaryChartColumnName = intersection.updateSummaryChartColumnName;
 
-                function switchSummarySeriesNameTrigger(file) {
-                    file.summary_chart.seriesNameTrigger = !file.summary_chart.seriesNameTrigger;
-                }
-
-                function isSummarySeriesNameTriggerActive(file) {
-                    return file.summary_chart.seriesNameTrigger;
-                }
-
-                function switchSummaryDataNameTrigger(file) {
-                    file.summary_chart.dataNameTrigger = !file.summary_chart.dataNameTrigger;
-                }
-
-                function isSummaryDataNameTriggerActive(file) {
-                    return file.summary_chart.dataNameTrigger;
-                }
+                $scope.switchFunctionSummaryChart = intersection.switchFunctionSummaryChart;
+                $scope.isFunctionSummaryChartActive = intersection.isFunctionSummaryChartActive;
+                $scope.updateSummaryChartFunction = intersection.updateSummaryChartFunction;
 
                 function isResultsLoading(file) {
                     return file.loading;

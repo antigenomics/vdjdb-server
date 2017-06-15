@@ -319,14 +319,14 @@ body {
 
 #table_wrapper {
     position: relative;
-    padding-top: 0px;
-    padding-bottom: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
     width: 100%;
 }
 
 #table_wrapper table {
     width: 100%;
-    margin-left: 0%;
+    margin-left: 0;
 }
 
 #table_wrapper.table_loading {
