@@ -28,7 +28,7 @@
                     matchJ: true
                 };
                 file.summaryData = {};
-                file.summaryChartsCount = 0;
+                file.summaryChartsIndex = 0;
                 file.summaryCharts = [];
             }
         });
@@ -356,8 +356,12 @@
         }
 
         function createNewSummaryChart(file) {
+            if (file.summaryCharts.length > 5) {
+                notify.notice('Intersection', 'Too many summary charts..');
+                return;
+            }
             var summaryChart = {
-                index: file.summaryChartsCount++,
+                index: file.summaryChartsIndex++,
                 columnNameActive: false,
                 columnName: 'antigen.epitope',
                 availableColumnNames: [],
@@ -409,6 +413,11 @@
 
             updateSummaryChartData(file, summaryChart);
             file.summaryCharts.push(summaryChart);
+        }
+
+        function deleteSummaryChart(file, summaryChart) {
+            var index = file.summaryCharts.indexOf(summaryChart);
+            if (index >= 0) file.summaryCharts.splice(index, 1);
         }
 
         function switchColumnNameSummaryChart(summaryChart) {
@@ -490,6 +499,7 @@
             helperList: helperList,
             exportDocument: exportDocument,
             createNewSummaryChart: createNewSummaryChart,
+            deleteSummaryChart: deleteSummaryChart,
             switchColumnNameSummaryChart: switchColumnNameSummaryChart,
             isColumnNameSummaryChartActive: isColumnNameSummaryChartActive,
             updateSummaryChartColumnName: updateSummaryChartColumnName,
@@ -536,6 +546,7 @@
                 $scope.copyToClipNotification = copyToClipNotification;
 
                 $scope.createNewSummaryChart = intersection.createNewSummaryChart;
+                $scope.deleteSummaryChart = intersection.deleteSummaryChart;
 
                 $scope.switchColumnNameSummaryChart = intersection.switchColumnNameSummaryChart;
                 $scope.isColumnNameSummaryChartActive = intersection.isColumnNameSummaryChartActive;
