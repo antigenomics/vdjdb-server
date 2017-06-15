@@ -41,6 +41,11 @@ object GlobalDatabase extends SynchronizedAccess {
     }
   }
 
+  def getNumberOfRecords : Int =
+    synchronizeRead { implicit lock =>
+      db().getDbInstance.getRows.size()
+    }
+
   def search(filters: Filters) : List[RowWrapper] =
     synchronizeRead { implicit lock =>
       val results = db().getDbInstance.search(filters.textFilters, filters.sequenceFilters)

@@ -164,6 +164,8 @@
         }
 
         function isEntryVisible(entry) {
+            var column = columnByName(entry.columnName);
+            if (column === null) return false;
             return columnByName(entry.columnName).metadata.visible !== "0"
         }
 

@@ -97,6 +97,8 @@ object SearchAPI extends Controller {
           val searchRequest = Json.fromJson[SearchWebSocketRequest](websocketMessage).get
           val requestData = searchRequest.data
           searchRequest.action match {
+            case "init" =>
+              channel push toJson(ConnectionInitMessage(GlobalDatabase.getNumberOfRecords))
             case "search"  =>
               val filtersRequest = Json.fromJson[FiltersRequest](requestData).get
               val filters = Filters.parse(filtersRequest)

@@ -34,6 +34,7 @@
         var data = [];
         var pageSize = 100;
         var totalItems = -1;
+        var numberOfRecordsInDB = -1;
         var loading = false;
         var pageLoading = false;
         var connectionError = false;
@@ -64,6 +65,9 @@
             switch (response.status) {
                 case 'success':
                     switch (response.action) {
+                        case 'init':
+                            numberOfRecordsInDB = response.numberOfRecordsInDB;
+                            break;
                         case 'search':
                             totalItems = response.totalItems;
                             data.splice(0, data.length);
@@ -145,6 +149,10 @@
             sortRule.columnId = defaultSortRule.columnId;
             sortRule.sortType = defaultSortRule.sortType;
             connection.send({
+               action: 'init',
+               data: {}
+            });
+            connection.send({
                 action: 'search',
                 data: filters.getFilters()
             });
@@ -187,6 +195,10 @@
 
         function getTotalItems() {
             return totalItems;
+        }
+
+        function getNumberOfRecordsInDB() {
+            return numberOfRecordsInDB;
         }
 
         function getPageSize() {
@@ -328,6 +340,7 @@
             isDataFound: isDataFound,
             isSearchStarted: isSearchStarted,
             getTotalItems: getTotalItems,
+            getNumberOfRecordsInDB: getNumberOfRecordsInDB,
             getPageSize: getPageSize,
             changePage: changePage,
             findComplexes: findComplexes,
@@ -352,6 +365,7 @@
                 };
                 $scope.userPageSize = 100;
                 $scope.totalItems = SearchDatabaseAPI.getTotalItems;
+                $scope.getNumberOfRecordsInDB = SearchDatabaseAPI.getNumberOfRecordsInDB;
                 $scope.pageSize = SearchDatabaseAPI.getPageSize;
                 $scope.getData = SearchDatabaseAPI.getData;
                 $scope.isDataFound = SearchDatabaseAPI.isDataFound;

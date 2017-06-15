@@ -96,7 +96,10 @@
                                                         <pagination total-items="totalItems()" items-per-page="pageSize()" ng-model="page.currentPage" max-size="10" class="pagination-md" boundary-links="true" rotate="true" ng-click="pageChanged()" ng-show="isShowPagination()">
                                                         </pagination>
                                                     </div>
-                                                    <div class="col-xs-6">
+                                                    <div class="col-xs-4">
+                                                        <p style="margin-top: 30px" class="pull-right">Found records: {{ totalItems() }}. Number of records in DB: {{ getNumberOfRecordsInDB() }}</p>
+                                                    </div>
+                                                    <div class="col-xs-2">
                                                         <div class="btn-group pagination pull-right">
                                                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                                 Page size <span class="caret"></span></button>
