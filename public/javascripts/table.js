@@ -80,7 +80,7 @@
             }
             if (columnName === 'gene') {
                 var prefix = '', comment = '';
-                if (entries[0].value != 0) {
+                if (entries[0].value !== 0) {
                     prefix = '<i class="fa cursor_pointer row_popover_generic" data-trigger="hover" data-toggle="popover"' +
                         'data-placement="right" data-content="Click to fetch paired TCR chain"' +
                         'ng-class="{\'fa-plus\':!isComplexParent(row) && !isComplex(row), \'fa-minus\':isComplexParent(row)}" aria-hidden="true" ' +
@@ -94,7 +94,7 @@
                 //prefix = '<div class="row_popover_generic" style="width: 100%; height: 100%;" tab-index="0" ' +
                 //         'data-trigger="hover" data-toggle="popover" data-placement="right" ' +
                 //         'data-content="' + comment + '">'  + '</div>' + prefix ;
-                if (typeof showComplex != "undefined" && showComplex === false) prefix = '';
+                if (typeof showComplex !== "undefined" && showComplex === false) prefix = '';
                 switch (value) {
                     case 'TRA':
                         value = prefix + '<text class="tra_text_color">' + value + '</text>';
@@ -119,7 +119,7 @@
                     }
                     //find & remove port number
                     domain = domain.split(':')[0];
-                    value = '<a href="' + value  + '">' + domain + '</a>'
+                    value = '<a href="' + value  + '" target="_blank">' + domain + '</a>'
                 }
             } else if (dataType.indexOf('json') >= 0) {
                 try {
@@ -138,7 +138,7 @@
                     //#fdae61 - orange
                     //#d7191c - red
 
-                    if (columnName == 'cdr3fix') {
+                    if (columnName === 'cdr3fix') {
                         if (comment['good'] === false) {
                             color_i = '#d7191c';
                         } else if (comment['fixNeeded'] === true) {
