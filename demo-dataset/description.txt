@@ -1,0 +1,15 @@
+file_name	description	subset	type	replica
+Donor7.CD4.M.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #7 (CMV-)	CD4	memory-all	1
+Donor7.CD4.N.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #7 (CMV-)	CD4	naïve	1
+Donor7.CD8.CM.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #7 (CMV-)	CD8	memory-central	1
+Donor7.CD8.EM.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #7 (CMV-)	CD8	memory-effector	1
+Donor7.CD8.M.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #7 (CMV-)	CD8	memory-all	1
+Donor7.CD8.N.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #7 (CMV-)	CD8	naïve	1
+Donor7.CD8.TEM.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #7 (CMV-)	CD8	memory-terminal-effector	1
+Donor9.CD4.M.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #9 (CMV+)	CD4	memory-all	1
+Donor9.CD4.N.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #9 (CMV+)	CD4	naïve	1
+Donor9.CD8.CM.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #9 (CMV+)	CD8	memory-central	1
+Donor9.CD8.EM.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #9 (CMV+)	CD8	memory-effector	1
+Donor9.CD8.M.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #9 (CMV+)	CD8	memory-all	1
+Donor9.CD8.N.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #9 (CMV+)	CD8	naïve	1
+Donor9.CD8.TEM.1.txt.gz	Data from Qi et al. PNAS 2014. Donor #9 (CMV+)	CD8	memory-terminal-effector	1
