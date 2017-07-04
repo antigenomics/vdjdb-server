@@ -3,9 +3,29 @@
 
     var application = angular.module('intersectionPage', ['user', 'notifications', 'filters', 'ngWebSocket', 'ui.bootstrap', 'ngClipboard', 'table', 'chart.js']);
 
-    application.factory('sidebar', ['user', function(userInfo) {
+    application.factory('sidebar', ['user', 'filters', function(userInfo, filters) {
 
         var fileIndex = 0;
+
+        filters.setOptions({
+            filters_tcr: [
+                {name: 'species_option', value: true},
+                {name: 'chain_option', value: true},
+                {name: 'collapse', value: false},
+                {name: 'germline', value: false},
+                {name: 'cdr3',     value: false}
+            ],
+            filters_ag: [
+                {name: 'block', value: false}
+            ],
+            filters_mhc: [
+                {name: 'collapse', value: false},
+                {name: 'haplotype', value: false}
+            ],
+            filters_meta: [
+                {name: 'collapse', value: false}
+            ]
+        });
 
         userInfo.initialize(function(files) {
             for (var i = 0; i < files.length; i++) {

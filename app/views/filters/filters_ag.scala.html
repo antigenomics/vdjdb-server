@@ -1,17 +1,16 @@
-<div class="col-md-6">
+<filters-ag>
+<div class="col-md-12" ng-if="ag_options.block">
     <div class="panel-group">
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <a role="button" data-toggle="collapse" href="#collapse-AG">
-                                Antigen
-                    </a>
+                    <a role="button" data-toggle="collapse" href="#collapse-AG" ng-if="ag_options.collapse">Antigen</a>
+                    <a role="button" ng-if="!ag_options.collapse">Antigen</a>
                 </h3>
             </div>
-            <div id="collapse-AG" class="collapse">
-                <filters-ag>
+            <div id="collapse-AG" ng-class="{'collapse':ag_options.collapse}">
                     <div class="panel-body">
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" ng-if="ag_options.origin">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                         Origin
@@ -65,7 +64,7 @@
                             </div>
                         </div>
 
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" ng-if="ag_options.epitope">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                         Epitope
@@ -119,8 +118,8 @@
                             </div>
                         </div>
                     </div>
-                </filters-ag>
             </div>
         </div>
     </div>
 </div>
+</filters-ag>

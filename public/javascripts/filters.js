@@ -67,6 +67,21 @@
                 clearInterval(pingWebSocket);
             });
 
+            function setOptions(options) {
+                angular.forEach(options.filters_tcr, function(option) {
+                    filters_tcr.setOptions(option.name, option.value);
+                });
+                angular.forEach(options.filters_ag, function(option) {
+                    filters_ag.setOptions(option.name, option.value);
+                });
+                angular.forEach(options.filters_mhc, function(option) {
+                    filters_mhc.setOptions(option.name, option.value);
+                });
+                angular.forEach(options.filters_meta, function(option) {
+                    filters_meta.setOptions(option.name, option.value);
+                });
+            }
+
             function getFilters() {
                 var filters = {
                     textFilters: [],
@@ -122,6 +137,7 @@
             }
 
             return {
+                setOptions: setOptions,
                 getFilters: getFilters,
                 resetFilters: resetFilters,
                 columns: columns,
@@ -200,6 +216,16 @@
 //////////////// TCR
 
     application.factory('filters_tcr', [function() {
+        var options = {
+            species_option: false,
+            chain_option: false,
+            collapse: true,
+            block: true,
+            general_tcr: true,
+            germline: true,
+            cdr3: true
+        };
+
         var general_tcr = {
             human: true,
             monkey: true,
@@ -233,10 +259,20 @@
             d: 0
         };
 
+        function setOptions(name, value) {
+            options[name] = value;
+            if (name === 'species_option') checkOption('species', 'human');
+            if (name === 'chain_option') checkOption('chain', 'trb');
+        }
+
         function resetFilters() {
             general_tcr.human = true;
             general_tcr.monkey = true;
             general_tcr.mouse = true;
+            if (visibility.chain_option) {
+                general_tcr.monkey = false;
+                general_tcr.mouse = false;
+            }
             general_tcr.tra = false;
             general_tcr.trb = true;
             general_tcr.paired_only = false;
@@ -320,12 +356,12 @@
         }
 
         function updateFilters(filters) {
-            if (general_tcr.human == false) addExactFilter(filters, 'species', 'HomoSapiens');
-            if (general_tcr.monkey == false) addExactFilter(filters, 'species', 'MacacaMulatta');
-            if (general_tcr.mouse == false) addExactFilter(filters, 'species', 'MusMusculus');
-            if (general_tcr.tra == false) addExactFilter(filters, 'gene', 'TRA');
-            if (general_tcr.trb == false) addExactFilter(filters, 'gene', 'TRB');
-            if (general_tcr.paired_only == true) addExactFilter(filters, 'complex.id', '0');
+            if (general_tcr.human === false) addExactFilter(filters, 'species', 'HomoSapiens');
+            if (general_tcr.monkey === false) addExactFilter(filters, 'species', 'MacacaMulatta');
+            if (general_tcr.mouse === false) addExactFilter(filters, 'species', 'MusMusculus');
+            if (general_tcr.tra === false) addExactFilter(filters, 'gene', 'TRA');
+            if (general_tcr.trb === false) addExactFilter(filters, 'gene', 'TRB');
+            if (general_tcr.paired_only === true) addExactFilter(filters, 'complex.id', '0');
 
             if (v_segment.value.length > 0) addCsTextFilter(filters, 'v.segm', v_segment.value);
             if (j_segment.value.length > 0) addCsTextFilter(filters, 'j.segm', j_segment.value);
@@ -334,18 +370,36 @@
             if (cdr3_hamming.value.length > 0) addHammingFilter(filters, "cdr3", cdr3_hamming.s, cdr3_hamming.i, cdr3_hamming.d, cdr3_hamming.value);
         }
 
+        function checkOption(option, value) {
+            if (options.species_option) {
+                if (option === 'species') {
+                    general_tcr.mouse = false;
+                    general_tcr.human = false;
+                    general_tcr.monkey = false;
+                    general_tcr[value] = true;
+                } else if (option === 'chain') {
+                    general_tcr.tra = false;
+                    general_tcr.trb = false;
+                    general_tcr[value] = true;
+                }
+            }
+        }
+
         return {
             general_tcr: general_tcr,
             v_segment: v_segment,
             j_segment: j_segment,
             cdr3_pattern: cdr3_pattern,
             cdr3_hamming: cdr3_hamming,
+            options: options,
+            setOptions: setOptions,
             updateFilters: updateFilters,
             resetFilters: resetFilters,
             checkSequencePattern: checkSequencePattern,
             checkHamming: checkHamming,
             isSequencePatternValid: isSequencePatternValid,
-            isHammingPatternValid: isHammingPatternValid
+            isHammingPatternValid: isHammingPatternValid,
+            checkOption: checkOption
         }
     }]);
 
@@ -355,8 +409,8 @@
             controller: ['$scope', 'filters', 'filters_tcr', function($scope, filters, filters_tcr) {
                 $scope.textColumns = filters.columns;
 
+                $scope.tcr_options = filters_tcr.options;
                 $scope.general_tcr = filters_tcr.general_tcr;
-
                 $scope.v_segment = filters_tcr.v_segment;
                 $scope.j_segment = filters_tcr.j_segment;
                 $scope.cdr3_pattern = filters_tcr.cdr3_pattern;
@@ -369,10 +423,11 @@
                 $scope.isSequencePatternValid = filters_tcr.isSequencePatternValid;
                 $scope.checkHamming = filters_tcr.checkHamming;
                 $scope.isHammingPatternValid = filters_tcr.isHammingPatternValid;
+                $scope.checkOption = filters_tcr.checkOption;
 
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
-                    if (filters.columns.length != 0) {
+                    if (filters.columns.length !== 0) {
                         findAutocompleteValues($scope.v_segment.autocomplete, $scope.j_segment.autocomplete, filters.columns);
                         textColumnsWatcher();
                     }
@@ -380,8 +435,8 @@
 
                 function findAutocompleteValues(vAutocomplete, jAutocomplete, columns) {
                     angular.forEach(columns, function(column) {
-                        if (column.name == 'v.segm') angular.extend(vAutocomplete, column.values.sort());
-                        if (column.name == 'j.segm') angular.extend(jAutocomplete, column.values.sort());
+                        if (column.name === 'v.segm') angular.extend(vAutocomplete, column.values.sort());
+                        if (column.name === 'j.segm') angular.extend(jAutocomplete, column.values.sort());
                     })
                 }
 
@@ -422,6 +477,13 @@
 //////////////// ANTIGEN
 
     application.factory('filters_ag', [function() {
+        var options = {
+            collapse: true,
+            block: true,
+            origin: true,
+            epitope: true
+        };
+
         var ag_species = {
             autocomplete: [ ],
             value: ''
@@ -442,6 +504,10 @@
             valid: true,
             substring: false
         };
+
+        function setOptions(name, value) {
+            options[name] = value;
+        }
 
         function resetFilters() {
             ag_species.value = '';
@@ -475,7 +541,7 @@
                     } else if (ag_pattern.value[i - 1] === '[') {
                         error = true;
                         break;
-                    } 
+                    }
                     leftBracketStart = false;
                 } else {
                     if (char != 'X' && allowed_chars.indexOf(char) === -1 || char === ' ') {
@@ -501,10 +567,12 @@
         }
 
         return {
+            options: options,
             ag_species: ag_species,
             ag_gene: ag_gene,
             ag_sequence: ag_sequence,
             ag_pattern: ag_pattern,
+            setOptions: setOptions,
             updateFilters: updateFilters,
             resetFilters: resetFilters,
             isAntigenSequenceValid: isAntigenSequenceValid,
@@ -516,6 +584,7 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'filters', 'filters_ag', function($scope, filters, filters_ag) {
+                $scope.ag_options = filters_ag.options;
                 $scope.ag_species = filters_ag.ag_species;
                 $scope.ag_gene = filters_ag.ag_gene;
                 $scope.ag_sequence = filters_ag.ag_sequence;
@@ -567,6 +636,13 @@
 //////////////// MHC
 
     application.factory('filters_mhc', [function() {
+        var options = {
+            collapse: true,
+            block: true,
+            general: true,
+            haplotype: true
+        };
+
         var mhc_class = {
             mhci: true,
             mhcii: true
@@ -581,6 +657,10 @@
             autocomplete: [ ],
             value: ''
         };
+
+        function setOptions(name, value) {
+            options[name] = value;
+        }
 
         function resetFilters() {
             mhc_class.mhci = true;
@@ -598,9 +678,11 @@
         }
 
         return {
+            options: options,
             mhc_class: mhc_class,
             mhc_a: mhc_a,
             mhc_b: mhc_b,
+            setOptions: setOptions,
             updateFilters: updateFilters,
             resetFilters: resetFilters
         }
@@ -610,6 +692,7 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'filters', 'filters_mhc', function($scope, filters, filters_mhc) {
+                $scope.mhc_options = filters_mhc.options;
                 $scope.mhc_class = filters_mhc.mhc_class;
                 $scope.mhc_a = filters_mhc.mhc_a;
                 $scope.mhc_b = filters_mhc.mhc_b;
@@ -649,6 +732,13 @@
 //////////////// META
 
     application.factory('filters_meta', [function() {
+        var options = {
+            collapse: true,
+            block: true,
+            general: true,
+            reliability: true
+        };
+
         var pm_ids = {
             autocomplete: [],
             value: ''
@@ -668,6 +758,10 @@
         var min_conf_score = {
             value: 0
         };
+
+        function setOptions(name, value) {
+            options[name] = value;
+        }
 
         function resetFilters() {
             pm_ids.value = '';
@@ -700,9 +794,11 @@
         }
 
         return {
+            options: options,
             pm_ids: pm_ids,
             meta_tags: meta_tags,
             min_conf_score: min_conf_score,
+            setOptions: setOptions,
             updateFilters: updateFilters,
             resetFilters: resetFilters
         }
@@ -712,6 +808,7 @@
         return {
             restrict: 'E',
             controller: ['$scope', 'filters', 'filters_meta', function($scope, filters, filters_meta) {
+                $scope.meta_options = filters_meta.options;
                 $scope.pm_ids = filters_meta.pm_ids;
                 $scope.meta_tags = filters_meta.meta_tags;
                 $scope.min_conf_score = filters_meta.min_conf_score;

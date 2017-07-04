@@ -1,17 +1,16 @@
-<div class="col-md-6">
+<filters-mhc>
+<div class="col-md-12" ng-if="mhc_options.block">
     <div class="panel-group">
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <a role="button" data-toggle="collapse" href="#collapse-MHC">
-                                MHC
-                    </a>
+                    <a role="button" data-toggle="collapse" href="#collapse-MHC" ng-if="mhc_options.collapse">MHC</a>
+                    <a role="button" ng-if="!mhc_options.collapse">MHC</a>
                 </h3>
             </div>
-            <div id="collapse-MHC" class="collapse">
-                <filters-mhc>
+            <div id="collapse-MHC" ng-class="{'collapse':mhc_options.collapse}">
                     <div class="panel-body">
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" ng-if="mhc_options.general">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                         General
@@ -45,7 +44,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" ng-if="mhc_options.haplotype">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                         Haplotype
@@ -92,8 +91,8 @@
                             </div>
                         </div>
                     </div>
-                </filters-mhc>
             </div>
         </div>
     </div>
 </div>
+</filters-mhc>

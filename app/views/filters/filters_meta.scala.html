@@ -1,17 +1,16 @@
-<div class="col-md-6">
+<filters-meta>
+<div class="col-md-12" ng-if="meta_options.block">
     <div class="panel-group">
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <a role="button" data-toggle="collapse" href="#collapse-META">
-                                Metadata
-                    </a>
+                    <a role="button" data-toggle="collapse" href="#collapse-META" ng-if="meta_options.collapse">Metadata</a>
+                    <a role="button" ng-if="!meta_options.collapse">Metadata</a>
                 </h3>
             </div>
-            <div id="collapse-META" class="collapse">
-                <filters-meta>
+            <div id="collapse-META" ng-class="{'collapse':meta_options.collapse}">
                     <div class="panel-body">
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" ng-if="meta_options.general">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                     General
@@ -95,7 +94,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" ng-if="meta_options.reliability">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                         Record reliability
@@ -138,8 +137,8 @@
                             </div>
                         </div>
                     </div>
-                </filters-meta>
             </div>
         </div>
     </div>
 </div>
+</filters-meta>
