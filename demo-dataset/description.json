@@ -4,97 +4,111 @@
    "description": "Data from Qi et al. PNAS 2014. Donor #7 (CMV-)",
    "subset": "CD4",
    "type": "memory-all",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor7.CD4.N.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #7 (CMV-)",
    "subset": "CD4",
    "type": "naïve",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor7.CD8.CM.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #7 (CMV-)",
    "subset": "CD8",
    "type": "memory-central",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor7.CD8.EM.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #7 (CMV-)",
    "subset": "CD8",
    "type": "memory-effector",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor7.CD8.M.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #7 (CMV-)",
    "subset": "CD8",
    "type": "memory-all",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor7.CD8.N.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #7 (CMV-)",
    "subset": "CD8",
    "type": "naïve",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor7.CD8.TEM.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #7 (CMV-)",
    "subset": "CD8",
    "type": "memory-terminal-effector",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor9.CD4.M.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #9 (CMV+)",
    "subset": "CD4",
    "type": "memory-all",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor9.CD4.N.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #9 (CMV+)",
    "subset": "CD4",
    "type": "naïve",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor9.CD8.CM.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #9 (CMV+)",
    "subset": "CD8",
    "type": "memory-central",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor9.CD8.EM.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #9 (CMV+)",
    "subset": "CD8",
    "type": "memory-effector",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor9.CD8.M.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #9 (CMV+)",
    "subset": "CD8",
    "type": "memory-all",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor9.CD8.N.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #9 (CMV+)",
    "subset": "CD8",
    "type": "naïve",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  },
  {
    "file_name": "Donor9.CD8.TEM.1.txt.gz",
    "description": "Data from Qi et al. PNAS 2014. Donor #9 (CMV+)",
    "subset": "CD8",
    "type": "memory-terminal-effector",
-   "replica": 1
+   "replica": 1,
+   "software": "vdjtools"
  }
 ]
