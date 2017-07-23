@@ -496,7 +496,13 @@
 
         var ag_sequence = {
             autocomplete: [ ],
-            value: ''
+            value: '',
+            have_suggestions: false,
+            show_suggestions: false,
+            available_suggestions: [],
+            suggestions: {
+                'ELAGIGILTV': { name: "EAAGIGILTV", mm: 1, ins: 0, del: 0, len: 10 }
+            }
         };
 
         var ag_pattern = {
@@ -554,6 +560,51 @@
             ag_pattern.valid = !(leftBracketStart || error);
         }
 
+        function countMismatches(str1, str2, length, maxMismatches) {
+            var mm = 0;
+            for (var i = 0; i < length; ++i) {
+                if (str1[i] !== str2[i]) mm += 1;
+                if (mm > maxMismatches) break;
+            }
+            return mm;
+        }
+
+        function checkAntigenSequenceSuggestions() {
+            ag_sequence.available_suggestions.splice(0, ag_sequence.available_suggestions.length)
+            var values = ag_sequence.value.split(",");
+            var have_suggestions = false;
+            var added = [];
+            angular.forEach(values, function(value) {
+                added.push(value);
+            });
+            angular.forEach(values, function(value) {
+                for (var i = 0; i < ag_sequence.autocomplete.length; ++i) {
+                    var autocomplete_value = ag_sequence.autocomplete[i];
+                    if (autocomplete_value.length === value.length && (autocomplete_value !== value)) {
+                        var mm = countMismatches(autocomplete_value, value, value.length, 2);
+                        if (mm <= 2) {
+                            if (added.indexOf(autocomplete_value) === -1) {
+                                ag_sequence.available_suggestions.push({
+                                    name: autocomplete_value,
+                                    mm: mm,
+                                    ins: 0,
+                                    del: 0,
+                                    len: value.length
+                                })
+                                have_suggestions = true;
+                                added.push(autocomplete_value);
+                            }
+                        }
+                    }
+                }
+                //if (ag_sequence.suggestions.hasOwnProperty(value)) {
+                //    have_suggestions = true;
+                //    ag_sequence.available_suggestions.push(ag_sequence.suggestions[value]);
+                //}
+            });
+            ag_sequence.have_suggestions = have_suggestions;
+        }
+
         function isAntigenSequenceValid() {
             return ag_pattern.valid;
         }
@@ -576,7 +627,8 @@
             updateFilters: updateFilters,
             resetFilters: resetFilters,
             isAntigenSequenceValid: isAntigenSequenceValid,
-            checkAntigenSequencePattern: checkAntigenSequencePattern
+            checkAntigenSequencePattern: checkAntigenSequencePattern,
+            checkAntigenSequenceSuggestions: checkAntigenSequenceSuggestions,
         }
     }]);
 
@@ -593,7 +645,9 @@
                 $scope.appendAgSpecies = appendAgSpecies;
                 $scope.appendAgGene = appendAgGene;
                 $scope.appendAgSequence = appendAgSequence;
+                $scope.appendAgSuggestion = appendAgSuggestion;
 
+                $scope.checkAntigenSequenceSuggestions = filters_ag.checkAntigenSequenceSuggestions;
                 $scope.checkAntigenSequencePattern = filters_ag.checkAntigenSequencePattern;
                 $scope.isAntigenSequenceValid = filters_ag.isAntigenSequenceValid;
 
@@ -612,6 +666,10 @@
                     })
                 }
 
+                function appendAgSuggestion(name) {
+                    appendAgSequence(name, true);
+                }
+
                 function appendAgSpecies(value) {
                     var x = $scope.ag_species.value.split(',');
                     x[x.length - 1] = value;
@@ -624,10 +682,24 @@
                     $scope.ag_gene.value = x.join(",");
                 }
 
-                function appendAgSequence(value) {
+                function appendAgSequence(value, add_new = false) {
                     var x = $scope.ag_sequence.value.split(',');
-                    x[x.length - 1] = value;
-                    $scope.ag_sequence.value = x.join(",");
+                    var same_found = false;
+                    for (var i = 0; i < x.length; i++) {
+                        if (x[i] === value) {
+                            same_found = true;
+                            break;
+                        }
+                    }
+                    if (!same_found) {
+                        if (add_new) {
+                            x.push(value)
+                        } else {
+                            x[x.length - 1] = value;
+                        }
+                        $scope.ag_sequence.value = x.join(",");
+                        filters_ag.checkAntigenSequenceSuggestions();
+                    }
                 }
             }]
         }

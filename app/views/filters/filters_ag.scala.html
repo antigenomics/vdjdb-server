@@ -83,7 +83,8 @@
                                         <div class="select_drop">
                                             <input class="form-control" type="text"
                                             placeholder="Comma separated list of epitope sequences, start typing to see suggestions..."
-                                            ng-model="ag_sequence.value">
+                                            ng-model="ag_sequence.value"
+                                            ng-change="checkAntigenSequenceSuggestions()">
                                             <div class="select_drop_container">
                                                 <ul>
                                                     <li ng-repeat="value in ag_sequence.autocomplete | filterSubstringComma:ag_sequence.value"
@@ -92,6 +93,24 @@
                                                 </ul>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <a class="cursor_pointer" 
+                                        ng-show="ag_sequence.have_suggestions && !ag_sequence.show_suggestions"
+                                        ng-click="ag_sequence.show_suggestions = !ag_sequence.show_suggestions">Show suggestions</a>
+                                        <a class="cursor_pointer" 
+                                        ng-show="ag_sequence.have_suggestions && ag_sequence.show_suggestions"
+                                        ng-click="ag_sequence.show_suggestions = !ag_sequence.show_suggestions">Hide suggestions</a>
+                                        <ul class="select_drop_container_ul" ng-if="ag_sequence.show_suggestions && ag_sequence.have_suggestions">
+                                            <li class="cursor_pointer" ng-repeat="suggestion in ag_sequence.available_suggestions" 
+                                            ng-click=appendAgSuggestion(suggestion.name)>
+                                            <b>{{ ::suggestion.name }}</b> <br> Mismatches: {{ ::suggestion.mm }}
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
                                 <br>
