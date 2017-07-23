@@ -23,6 +23,10 @@
                     action: 'columns',
                     data: {}
                 });
+                connection.send({
+                    action: 'suggestions.epitope',
+                    data: {}
+                });
                 pingWebSocket = setInterval(function() {
                     connection.send({
                         action: 'ping',
@@ -41,6 +45,9 @@
                                 table.setColumns(response.columns);
                                 columnsLoading = false;
                                 break;
+                            case 'suggestions.epitope':
+                                filters_ag.updateEpitopeSuggestions(response.suggestions);
+                                break;    
                             default:
                                 notify.notice('Search', 'Invalid response');
                                 break;
@@ -500,9 +507,7 @@
             have_suggestions: false,
             show_suggestions: false,
             available_suggestions: [],
-            suggestions: {
-                'ELAGIGILTV': { name: "EAAGIGILTV", mm: 1, ins: 0, del: 0, len: 10 }
-            }
+            suggestions: {}
         };
 
         var ag_pattern = {
@@ -560,13 +565,8 @@
             ag_pattern.valid = !(leftBracketStart || error);
         }
 
-        function countMismatches(str1, str2, length, maxMismatches) {
-            var mm = 0;
-            for (var i = 0; i < length; ++i) {
-                if (str1[i] !== str2[i]) mm += 1;
-                if (mm > maxMismatches) break;
-            }
-            return mm;
+        function updateEpitopeSuggestions(newSuggestions) {
+            angular.extend(ag_sequence.suggestions, newSuggestions);
         }
 
         function checkAntigenSequenceSuggestions() {
@@ -578,29 +578,15 @@
                 added.push(value);
             });
             angular.forEach(values, function(value) {
-                for (var i = 0; i < ag_sequence.autocomplete.length; ++i) {
-                    var autocomplete_value = ag_sequence.autocomplete[i];
-                    if (autocomplete_value.length === value.length && (autocomplete_value !== value)) {
-                        var mm = countMismatches(autocomplete_value, value, value.length, 2);
-                        if (mm <= 2) {
-                            if (added.indexOf(autocomplete_value) === -1) {
-                                ag_sequence.available_suggestions.push({
-                                    name: autocomplete_value,
-                                    mm: mm,
-                                    ins: 0,
-                                    del: 0,
-                                    len: value.length
-                                })
-                                have_suggestions = true;
-                                added.push(autocomplete_value);
-                            }
+                if (ag_sequence.suggestions.hasOwnProperty(value)) {
+                    var suggestionsForValue = ag_sequence.suggestions[value];
+                    angular.forEach(suggestionsForValue, function(suggestion) {
+                        if (added.indexOf(suggestion.sequence) === -1) {
+                            ag_sequence.available_suggestions.push(suggestion);
+                            have_suggestions = true;
                         }
-                    }
+                    })
                 }
-                //if (ag_sequence.suggestions.hasOwnProperty(value)) {
-                //    have_suggestions = true;
-                //    ag_sequence.available_suggestions.push(ag_sequence.suggestions[value]);
-                //}
             });
             ag_sequence.have_suggestions = have_suggestions;
         }
@@ -629,6 +615,7 @@
             isAntigenSequenceValid: isAntigenSequenceValid,
             checkAntigenSequencePattern: checkAntigenSequencePattern,
             checkAntigenSequenceSuggestions: checkAntigenSequenceSuggestions,
+            updateEpitopeSuggestions: updateEpitopeSuggestions
         }
     }]);
 

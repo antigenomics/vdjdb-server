@@ -107,8 +107,8 @@
                                         ng-click="ag_sequence.show_suggestions = !ag_sequence.show_suggestions">Hide suggestions</a>
                                         <ul class="select_drop_container_ul" ng-if="ag_sequence.show_suggestions && ag_sequence.have_suggestions">
                                             <li class="cursor_pointer" ng-repeat="suggestion in ag_sequence.available_suggestions" 
-                                            ng-click=appendAgSuggestion(suggestion.name)>
-                                            <b>{{ ::suggestion.name }}</b> <br> Mismatches: {{ ::suggestion.mm }}
+                                            ng-click=appendAgSuggestion(suggestion.sequence)>
+                                            <b>{{ ::suggestion.sequence }}</b> <br> Substitutions: {{ ::suggestion.substitutions }}, Indels {{ ::suggestion.indels }}, Length: {{ ::suggestion.length }}, Count: {{  ::suggestion.count }}
                                             </li>
                                         </ul>
                                     </div>

@@ -34,6 +34,8 @@ object FiltersAPI extends Controller {
             channel push toJson(ColumnsSuccessMessage(GlobalDatabase.getColumns))
           case "presets" =>
             channel push toJson(PresetsSuccessMessage(GlobalDatabase.getPresets))
+          case "suggestions.epitope" =>
+            channel push toJson(EpitopeSuggestionsSuccessMessage(GlobalDatabase.getCachedEpitopeSuggestions))  
           // case "compute_precision" =>
           //   val id = (data \ "id").asOpt[Int].getOrElse(-1)
           //   val value = (data \ "value").asOpt[Float].getOrElse(-1.0f)

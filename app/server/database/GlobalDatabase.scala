@@ -14,10 +14,12 @@ import com.antigenomics.vdjdb.text.{ExactTextFilter, TextFilter}
 import com.antigenomics.vdjtools.sample.Sample
 import controllers.IntersectionAPI.IntersectParametersRequest
 import server.wrappers.database.{ColumnWrapper, IntersectWrapper, PresetWrapper, RowWrapper}
+import server.wrappers.suggestions.EpitopeSuggestionWrapper
 import server.Configuration
 import server.wrappers.Filters
 import server.wrappers.summary.SummaryStatisticWrapper
 import com.antigenomics.vdjdb.scoring.DummyAlignmentScoring
+import com.antigenomics.vdjdb.web.EpitopeSuggestionGenerator
 import com.milaboratory.core.tree.TreeSearchParameters
 
 import scala.collection.JavaConversions._
@@ -31,11 +33,13 @@ import play.api.libs.json.Json
   */
 object GlobalDatabase extends SynchronizedAccess {
   private var db : Synchronized[VdjdbInstance] = null
+  private var epitopeSuggestions: Map[String, List[EpitopeSuggestionWrapper]] = null
 
   def initDatabase(): Unit = {
     if (Configuration.useLocalDatabase) {
       db = Synchronized(new VdjdbInstance(new FileInputStream(Configuration.databasePath + "vdjdb.meta.txt"),
         new FileInputStream(Configuration.databasePath + "vdjdb.txt")))
+      epitopeSuggestions = generateEpitopeSuggestions
     } else {
       update()
     }
@@ -124,10 +128,18 @@ object GlobalDatabase extends SynchronizedAccess {
     buffer.toList
   }
 
+  def generateEpitopeSuggestions: Map[String, List[EpitopeSuggestionWrapper]] = 
+    synchronizeRead { implicit lock =>
+      EpitopeSuggestionGenerator.generateSuggestions(db()).mapValues(_.toList.map(e => new EpitopeSuggestionWrapper(e))).toMap
+  }
+
+  def getCachedEpitopeSuggestions: Map[String, List[EpitopeSuggestionWrapper]] = epitopeSuggestions
+
   def update() =
     synchronizeReadWrite { implicit lock =>
       if (checkDatabase(true)) {
         db = Synchronized(new VdjdbInstance())
+        epitopeSuggestions = generateEpitopeSuggestions
       }
     }
 }
