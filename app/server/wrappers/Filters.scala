@@ -62,7 +62,7 @@ object Filters {
             case "" =>
               warnings += (filter.columnId + " ignored: no value specified")
             case _ =>
-              val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(filter.mutations, filter.insertions, filter.deletions, filter.mismatches), DummyAlignmentScoring.INSTANCE)
+              val preset: SequenceSearcherPreset = new SequenceSearcherPreset(new TreeSearchParameters(filter.substitutions, filter.insertions, filter.deletions, filter.total), DummyAlignmentScoring.INSTANCE)
               sequenceFilters.add(new SequenceFilter(filter.columnId, filter.query.toUpperCase(), preset))
           }
         case _  =>

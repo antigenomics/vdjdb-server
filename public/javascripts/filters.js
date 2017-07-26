@@ -47,7 +47,7 @@
                                 break;
                             case 'suggestions.epitope':
                                 filters_ag.updateEpitopeSuggestions(response.suggestions);
-                                break;    
+                                break;
                             default:
                                 notify.notice('Search', 'Invalid response');
                                 break;
@@ -200,10 +200,10 @@
     function addHammingFilter(filters, column, s, i, d, value) {
         filters.sequenceFilters.push({
             columnId: column,
-            mutations: s,
+            substitutions: s,
             insertions: i,
             deletions: d,
-            mismatches: s + i + d,
+            total: s + i + d,
             query: value
         })
     }
