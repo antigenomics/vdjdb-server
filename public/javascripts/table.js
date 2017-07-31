@@ -61,17 +61,19 @@
                     vRegion = '<text style="color:#4daf4a;font-family:monospace;">' + value.substring(0, vend) + '</text>';
                     otherRegion = '<text style="font-family:monospace;">' + value.substring(vend, value.length) + '</text>';
                     value = vRegion + otherRegion
-                }
-                if (vend <= 0 && jstart > 0) {
+                } else if (vend <= 0 && jstart > 0) {
                     jRegion = '<text style="color: #377eb8;font-family:monospace;">' + value.substring(jstart - 1, value.length) + '</text>';
                     otherRegion = '<text style="font-family:monospace;">' + value.substring(0, jstart - 1) + '</text>';
                     value = otherRegion + jRegion;
-                }
-
-                if (vend > 0 && jstart > 0 && jstart >= vend) {
+                } else if (vend > 0 && jstart > 0 && jstart > vend) {
                     vRegion = '<text style="color:#4daf4a;font-family:monospace;">' + value.substring(0, vend) + '</text>';
                     otherRegion = '<text style="font-family:monospace;">' +  value.substring(vend, jstart - 1) + '</text>';
                     jRegion = '<text style="color:#377eb8;font-family:monospace;">' + value.substring(jstart - 1, value.length) + '</text>';
+                    value = vRegion + otherRegion + jRegion;
+                } else if (vend > 0 && jstart > 0 && jstart <= vend) {
+                    vRegion = '<text style="color:#4daf4a;font-family:monospace;">' + value.substring(0, jstart - 1) + '</text>';
+                    otherRegion = '<text style="color:#ff5050;font-family:monospace;">' +  value.substring(jstart - 1, vend) + '</text>';
+                    jRegion = '<text style="color:#377eb8;font-family:monospace;">' + value.substring(vend, value.length) + '</text>';
                     value = vRegion + otherRegion + jRegion;
                 }
             }
