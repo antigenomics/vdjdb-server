@@ -578,16 +578,15 @@ div.tooltip-inner {
   height: 2px;
 }
 .cdr3_slider.rzslider .rz-selection {
-  background: #4daf4a;
+  background: #01665e;
 }
 
 .cdr3_slider.rzslider .rz-pointer {
     top: -7px;
-    z-index: 3;
     width: 16px;
     height: 16px;
     cursor: pointer;
-    background-color: #4daf4a;
+    background-color: #01665e;
     border-radius: 8px;
 }
 
