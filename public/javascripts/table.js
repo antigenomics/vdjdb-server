@@ -82,7 +82,7 @@
             }
             if (columnName === 'gene') {
                 var prefix = '', comment = '';
-                if (entries[0].value !== 0) {
+                if (entries[0].value !== "0") {
                     prefix = '<i class="fa cursor_pointer row_popover_generic" data-trigger="hover" data-toggle="popover"' +
                         'data-placement="right" data-content="Click to fetch paired TCR chain"' +
                         'ng-class="{\'fa-plus\':!isComplexParent(row) && !isComplex(row), \'fa-minus\':isComplexParent(row)}" aria-hidden="true" ' +

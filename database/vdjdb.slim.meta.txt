@@ -1,3 +1,4 @@
+name	type
 gene	txt
 cdr3	seq
 species	txt
