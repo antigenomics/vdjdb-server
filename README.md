@@ -2,6 +2,8 @@ VDJdb uses [VDJtools API](https://github.com/mikessh/vdjtools) and [VDJdb API](h
 
 ## Installation
 
+This section is intended for advanced users. We recommend using the standalone VDJdb application with command line interface that can be found [here](https://github.com/antigenomics/vdjdb-standalone).
+
 The most straightforward way to install VDJdb as a local server is to download the [latest release package](https://github.com/antigenomics/vdjdb/releases/latest).
 
 After downloading unzip the package wherever you want, but please avoid long paths and spaces (Windows version is especially sensitive to it).
