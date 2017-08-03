@@ -4,7 +4,7 @@
         $('[data-toggle="tooltip"]').tooltip({html: true});
     });
 
-    var application = angular.module('filters', ['ngWebSocket', 'table', 'notifications']);
+    var application = angular.module('filters', ['ngWebSocket', 'table', 'notifications', 'rzModule']);
 
     application.factory('filters', ['$websocket', 'table', 'notify',
         'filters_tcr', 'filters_mhc', 'filters_ag', 'filters_meta',
@@ -192,6 +192,15 @@
         })
     }
 
+    function addMinMaxFilter(filters, column, min, max) {
+        filters.textFilters.push({
+            columnId: column,
+            filterType: 'minmax',
+            negative: false,
+            value: min + ":" + max
+        })
+    }
+
     function groomSequencePattern(substring, value) {
         if (substring == false) value = '^' + value + '$'
         return value.replace(/X/g, ".")
@@ -266,6 +275,17 @@
             d: 0
         };
 
+        //dmin - default min
+        //dmax - default max
+        var cdr3_length = {
+            dmin: 5,
+            dmax: 30,
+            min: 0,
+            max: 0
+        }
+        cdr3_length.min = cdr3_length.dmin;
+        cdr3_length.max = cdr3_length.dmax;
+
         function setOptions(name, value) {
             options[name] = value;
             if (name === 'species_option') checkOption('species', 'human');
@@ -291,6 +311,8 @@
             cdr3_hamming.s = 0;
             cdr3_hamming.i = 0;
             cdr3_hamming.d = 0;
+            cdr3_length.min = cdr3_length.dmin;
+            cdr3_length.max = cdr3_length.dmax;
         }
 
         function checkSequencePattern() {
@@ -375,6 +397,8 @@
 
             if (cdr3_pattern.value.length > 0) addSequencePatternFilter(filters, "cdr3", cdr3_pattern.substring, cdr3_pattern.value);
             if (cdr3_hamming.value.length > 0) addHammingFilter(filters, "cdr3", cdr3_hamming.s, cdr3_hamming.i, cdr3_hamming.d, cdr3_hamming.value);
+
+            if (cdr3_length.min !== cdr3_length.dmin || cdr3_length.max !== cdr3_length.dmax) addMinMaxFilter(filters, "cdr3", cdr3_length.min, cdr3_length.max);
         }
 
         function checkOption(option, value) {
@@ -398,6 +422,7 @@
             j_segment: j_segment,
             cdr3_pattern: cdr3_pattern,
             cdr3_hamming: cdr3_hamming,
+            cdr3_length: cdr3_length,
             options: options,
             setOptions: setOptions,
             updateFilters: updateFilters,
@@ -432,6 +457,19 @@
                 $scope.isHammingPatternValid = filters_tcr.isHammingPatternValid;
                 $scope.checkOption = filters_tcr.checkOption;
 
+                $scope.cdr3_length_slider = {
+                    min: filters_tcr.cdr3_length.dmin,
+                    max: filters_tcr.cdr3_length.dmax,
+                    options: {
+                        floor: filters_tcr.cdr3_length.dmin,
+                        ceil: filters_tcr.cdr3_length.dmax,
+                        minRange: 0,
+                        onChange: function(sliderId, modelValue, highValue, pointerType) {
+                            filters_tcr.cdr3_length.min = modelValue;
+                            filters_tcr.cdr3_length.max = highValue;
+                        }
+                    }
+                };
 
                 var textColumnsWatcher = $scope.$watchCollection('textColumns', function() {
                     if (filters.columns.length !== 0) {

@@ -135,6 +135,17 @@
                             </div>
                             <div class="panel-body">
                                 <div class="row">
+                                    <div class="col-xs-3" style="margin-top: 15px">
+                                        <p class="p_label">CDR3 Length</p>
+                                    </div>
+                                    <div class="col-xs-7" style="margin-top: 15px">
+                                        <rzslider class="cdr3_slider" rz-slider-model="cdr3_length_slider.min" rz-slider-high="cdr3_length_slider.max" 
+                                                  rz-slider-options="cdr3_length_slider.options">
+                                                  </rzslider>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
                                     <div class="col-xs-3">
                                         <p class="p_label">Sequence or pattern</p>
                                     </div>
@@ -157,7 +168,7 @@
                                 <br>
                                 <div class="row">
                                     <div class="col-xs-3" style="margin-top: 15px">
-                                        <p class="p_label">By hamming distance</p>
+                                        <p class="p_label">By Levenstein distance</p>
                                     </div>
                                     <div class="col-xs-6" style="margin-top: 15px">
                                         <div class="form-group" ng-class="{'has-error has-feedback':!isHammingPatternValid()}">
