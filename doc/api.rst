@@ -88,8 +88,8 @@ Sequence filters can only be applied to columns with ``"columnType": "seq"`` and
 .. note::
     Filters mirror the filtering functions implemented in VDJdb-standalone.
     Thus, parameter description can be found in the documentation of ``*Filter.groovy`` classes implemented for
-    `sequence <https://github.com/antigenomics/vdjdb-standalone/tree/master/src/main/groovy/com/antigenomics/vdjdb/text>`__ and
-    `text <https://github.com/antigenomics/vdjdb-standalone/blob/master/src/main/groovy/com/antigenomics/vdjdb/sequence>`__ columns respectively.
+    `sequence <https://github.com/antigenomics/vdjdb-standalone/tree/master/src/main/groovy/com/antigenomics/vdjdb/sequence>`__ and
+    `text <https://github.com/antigenomics/vdjdb-standalone/blob/master/src/main/groovy/com/antigenomics/vdjdb/text>`__ columns respectively.
 
 The structure of JSON response is the following:
 
@@ -183,5 +183,8 @@ will produce
         	"value": "no"
     	}]
 	}]
+
+	.. note::
+	    Column description can be found `here <https://github.com/antigenomics/vdjdb-db#database-specification>`__.
 
 .. warning:: The columns ``method``, ``meta``, ``cdr3fix``, ``web.method``, ``web.method.seq`` are likely to be removed in the future.
