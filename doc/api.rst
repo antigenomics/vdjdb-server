@@ -1,14 +1,17 @@
 .. _api:
 
-VDJdb server API
-----------------
+VDJdb server REST API **[BETA]**
+--------------------------------
 
-Columns
-^^^^^^^
+Accessing metadata
+^^^^^^^^^^^^^^^^^^
 
-Information on database columns (such as their IDs, names and other metadata) can be obtaining by performing a GET request to ``https://vdjdb.cdr3.net/search/columns``.
+Information on database columns (such as their IDs, names and other metadata) can
+be obtaining by performing a GET request to ``https://vdjdb.cdr3.net/search/columns``.
 
-.. code:: bash 
+For example,
+
+.. code:: bash
 
 	curl -X GET https://vdjdb.cdr3.net/search/columns
 
@@ -19,7 +22,7 @@ will return a JSON object with the following structure.
 	[
 		...
 		{
-			"name":"gene", 
+			"name":"gene",
 			"metadata" : {
 				"columnType": "txt",
 				"visible" : "1",
@@ -35,8 +38,8 @@ will return a JSON object with the following structure.
 	]
 
 
-Search
-^^^^^^
+Searching the database
+^^^^^^^^^^^^^^^^^^^^^^
 
 You can query the database by sending a POST request with a specific JSON content to ``https://vdjdb.cdr3.net/search``.
 
@@ -52,17 +55,17 @@ The structure of JSON query is the following:
             ...
         ]
     }
-    
+
 
 Where the **textFilters** structure is
 
 .. code:: json
 
     {
-        "columnId": "(string)",     //Column name
-        "value": "(string)",        //Search value
-        "filterType": "(string)",   //Filter type: exact, exaxt_set, pattern, substring_set, level
-        "negative": (boolean)       //Negative filter
+        "columnId": "(string)",     // Column name (any available column)
+        "value": "(string)",        // Search value
+        "filterType": "(string)",   // Filter type: exact, exact_set, pattern, substring_set, level
+        "negative": (boolean)       // Return only results that do not match the filter
     }
 
 
@@ -71,25 +74,31 @@ and the **sequenceFilters** structure is
 .. code:: json
 
     {
-        "columnId": "(string)",     //Column name (alpha.cdr3, antigen.epitope, etc)
-        "query": "(string)",        //Search query
-        "substitutions": (int),     //The number of mismatches
-        "insertions": (int),        //The number of insertions
-        "deletions": (int),         //The number of deletions
-        "total": (int)              //Total number of differences allowed
+        "columnId": "(string)",     // Column name (cdr3 or antigen.epitope)
+        "query": "(string)",        // Search query
+        "substitutions": (int),     // The number of substitutions
+        "insertions": (int),        // The number of insertions
+        "deletions": (int),         // The number of deletions
+        "total": (int)              // Total number of mutations allowed
     }
 
-Sequence filters can only be applied to columns with ``"columnType": "seq"`` and will run an alignment (more precicely, a tree search). Text filters can be specified for any available column.
+Sequence filters can only be applied to columns with ``"columnType": "seq"`` and will invoke a search and alignment procedure
+(more precisely, a sequence tree search). Text filters can be specified for any available column.
 
+.. note::
+    Filters mirror the filtering functions implemented in VDJdb-standalone.
+    Thus, parameter description can be found in the documentation of ``*Filter.groovy`` classes implemented for
+    `sequence <https://github.com/antigenomics/vdjdb-standalone/tree/master/src/main/groovy/com/antigenomics/vdjdb/text>`__ and
+    `text <https://github.com/antigenomics/vdjdb-standalone/blob/master/src/main/groovy/com/antigenomics/vdjdb/sequence>`__ columns respectively.
 
 The structure of JSON response is the following:
 
-.. code:: json 
+.. code:: json
 
 	[
 		...
 		{
-			"entries": [ 
+			"entries": [
 				...
 				{ "columnName": "gene", "value": "TRA" }
 				...
@@ -175,3 +184,4 @@ will produce
     	}]
 	}]
 
+.. warning:: The columns ``method``, ``meta``, ``cdr3fix``, ``web.method``, ``web.method.seq`` are likely to be removed in the future.
