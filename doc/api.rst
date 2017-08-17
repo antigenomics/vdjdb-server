@@ -184,7 +184,6 @@ will produce
     	}]
 	}]
 
-	.. note::
-	    Column description can be found `here <https://github.com/antigenomics/vdjdb-db#database-specification>`__.
+.. note:: Column description can be found `here <https://github.com/antigenomics/vdjdb-db#database-specification>`__.
 
 .. warning:: The columns ``method``, ``meta``, ``cdr3fix``, ``web.method``, ``web.method.seq`` are likely to be removed in the future.
