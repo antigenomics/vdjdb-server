@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/vdjdb-server-api/badge/?version=latest)](http://vdjdb-server-api.readthedocs.io/en/latest/?badge=latest)
+
 VDJdb uses [VDJtools API](https://github.com/mikessh/vdjtools) and [VDJdb API](https://github.com/antigenomics/vdjdb-standalone) as a back-end. The software utilizes [Play framework](https://www.playframework.com/) for running the server instance.
 
 ## Installation
