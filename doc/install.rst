@@ -4,6 +4,8 @@ Installing VDJdb
 ----------------
 
 VDJdb uses VDJtools API and VDJdb API as a back-end. The software utilizes Play framework for running the server instance.
+You should first download and compile the VDJtools and VDJdb-standalone software using ``mvn clean install`` and ``gradle clean build``
+respectively. Please check that the versions of VDJtools and VDJdb-standalone are matched to that in ``.sbt`` file coming with VDJdb-server.
 
 First make sure that you have installed Java Runtime Environment (JRE) v1.8 by running
 ``java -version``.  Any recent Linux distribution will provide it via its
@@ -13,7 +15,7 @@ download the JRE from `Oracle <http://java.com/en/download/>`__.
 Installing binaries
 ^^^^^^^^^^^^^^^^^^^
 
-This section is intended for advanced users. We recommend using the standalone VDJdb application with command line interface that can be found 
+This section is intended for advanced users. We recommend using the standalone VDJdb application with command line interface that can be found
 `here <https://github.com/antigenomics/vdjdb-standalone>`__.
 
 The most straightforward way to install VDJdb as a local server is to download the `latest release package <https://github.com/antigenomics/vdjdb/releases/latest>`__.
@@ -29,9 +31,9 @@ Wait until the server is started, and go to ``localhost:9000`` URL in your brows
 
 To stop application just press `Ctrl-C` at any time in console.
 
-.. note:: 
+.. note::
 
-	Note that an exception will be thrown in case the ``9000`` port is busy: ``org.jboss.netty.channel.ChannelException: Failed to bind to: /0.0.0.0:9000``. In order to fix it, either close the application that is using this port (in UNIX the 
+	Note that an exception will be thrown in case the ``9000`` port is busy: ``org.jboss.netty.channel.ChannelException: Failed to bind to: /0.0.0.0:9000``. In order to fix it, either close the application that is using this port (in UNIX the
 	``lsof -i:9000`` will give the processes that are using the port) or pass the ``-Dhttp.port=XXXX`` (where ``XXXX`` is new port id) argument to ``vdjviz`` shell script (UNIX) / ``vdjviz.bat`` (Windows)
 
 Configuration
@@ -81,6 +83,3 @@ Refer to `Secure social <http://securesocial.ws>`__ configuration.
 
 ``smtp.*``
 Refer to `Play! Framework <https://www.playframework.com/documentation/2.2.x/Home>`__ SMTP server configuration.
-
-
-
