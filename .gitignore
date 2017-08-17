@@ -18,3 +18,7 @@ server.pid
 .settings
 .idea_modules/ref-vdjdb-build.iml
 .idea_modules/ref-vdjdb.iml
+.DS_Store
+doc/.build
+doc/.static
+doc/.templates

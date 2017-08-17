@@ -45,6 +45,7 @@ object Filters {
               case "exact_set" => textFilters.add(new ExactSetTextFilter(filter.columnId, filter.value, filter.negative))
               case "pattern" => textFilters.add(new PatternTextFilter(filter.columnId, filter.value, filter.negative))
               case "level" => textFilters.add(new LevelFilter(filter.columnId, filter.value, filter.negative))
+              case "minmax" => textFilters.add(new MinMaxFilter(filter.columnId, filter.value.split(":")(0).toInt, filter.value.split(":")(1).toInt))
               case _ =>
                 warnings += ("Bad text filter - " + filter + " - incorrect filter type")
             }

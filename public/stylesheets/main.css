@@ -572,3 +572,58 @@ div.tooltip-inner {
     margin-bottom: 5px !important;
     margin-top: 5px !important;
 }
+
+.cdr3_slider.rzslider .rz-bar {
+  background: #dcdcdc;
+  height: 2px;
+}
+.cdr3_slider.rzslider .rz-selection {
+  background: #01665e;
+}
+
+.cdr3_slider.rzslider .rz-pointer {
+    top: -7px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    background-color: #01665e;
+    border-radius: 8px;
+}
+
+.cdr3_slider.rzslider .rz-pointer.rz-active:after {
+    background-color: #ffffff;
+}
+
+.cdr3_slider.rzslider .rz-pointer:after {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 4px;
+    height: 4px;
+    background: #ffffff;
+    border-radius: 2px;
+    content: '';
+}
+
+.cdr3_slider.rzslider .rz-bubble {
+  bottom: 14px;
+}
+
+.cdr3_slider.rzslider .rz-limit {
+  font-weight: bold;
+  color: #4daf4a;
+}
+
+.cdr3_slider.rzslider .rz-tick {
+  width: 1px;
+  height: 10px;
+  margin-left: 4px;
+  border-radius: 0;
+  background: #dcdcdc;
+  top: -1px;
+}
+
+.cdr3_slider.rzslider .rz-tick.rz-selected {
+  background: orange;
+}
+
