@@ -3,12 +3,13 @@
 Installing VDJdb server
 -----------------------
 
-VDJdb uses VDJtools API and VDJdb API as a back-end. The software utilizes Play framework for running the server instance.
-
 First make sure that you have installed Java Runtime Environment (JRE) v1.8 by running
 ``java -version``.  Any recent Linux distribution will provide it via its
 package manager.  If not, or if your system is running MacOSX or Windows,
 download the JRE from `Oracle <http://java.com/en/download/>`__.
+
+You should also download and compile the VDJtools and VDJdb-standalone software using ``mvn clean install`` and ``gradle clean build``
+respectively. Please check that the versions of VDJtools and VDJdb-standalone are matched to that in ``.sbt`` file coming with VDJdb-server.
 
 Installing binaries
 ^^^^^^^^^^^^^^^^^^^
