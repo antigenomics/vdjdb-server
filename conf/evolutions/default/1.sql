@@ -36,7 +36,7 @@ create table intersection_file (
   directory_path            varchar(255),
   file_path                 varchar(255),
   software                  integer,
-  constraint ck_intersection_file_software check (software in (0,1,2,3,4,5,6,7,8,9,10)),
+  constraint ck_intersection_file_software check (software in (0,1,2,3,4,5,6,7,8,9,10,11)),
   constraint pk_intersection_file primary key (id))
 ;
 
